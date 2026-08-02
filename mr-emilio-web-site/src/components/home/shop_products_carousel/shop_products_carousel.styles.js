@@ -819,10 +819,10 @@ export const ProductDetailColumn = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  justify-content: center;
-  gap: 7px;
+  justify-content: flex-start;
 
   min-width: 0;
+  height: 100%;
 
   &:first-child {
     padding-right: 14px;
@@ -833,8 +833,6 @@ export const ProductDetailColumn = styled.div`
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
-    gap: 6px;
-
     &:first-child {
       padding-right: 9px;
     }
@@ -855,8 +853,6 @@ export const ProductDetailColumn = styled.div`
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    gap: 8px;
-
     &:first-child {
       padding-right: 16px;
     }
@@ -889,7 +885,7 @@ export const ProductDetailDivider = styled.span`
 
 export const ProductDetailHeading = styled.span`
   color: ${({ theme }) => theme.colors.text.secondary};
-
+  margin-bottom: 6px;
   font-size: 0.72rem;
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   line-height: 1.2;
@@ -919,6 +915,7 @@ export const ProductAvailabilityValue = styled.span`
   display: inline-flex;
   align-items: center;
   gap: 7px;
+  margin-bottom: 6px;
 
   min-width: 0;
 
