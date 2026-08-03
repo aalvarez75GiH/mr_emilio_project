@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { shopProductsCarouselData } from "./shop_products_carousel.data";
+// import { shopProductsCarouselData } from "./shop_products_carousel.data";
+import { useProducts } from "../../../infrastructure/services/products/use-products.hook";
 
 import {
   ShopProductsSection,
@@ -334,27 +335,32 @@ const getInventoryStatus = (stock) => {
     label: "Plenty in stock",
   };
 };
-
 export const ShopProductsCarousel = ({
   title = "Best Sellers",
   viewAllLabel = "View all best sellers",
   viewAllHref = "/products",
-  products = shopProductsCarouselData,
   onAddToCart,
 }) => {
   const viewportRef = useRef(null);
 
+  const { homepageProducts, isProductsLoading, productsError } = useProducts();
+
+  const carouselProducts = homepageProducts;
+
   const [activeIndex, setActiveIndex] = useState(0);
   const [pageCount, setPageCount] = useState(1);
-  const [favoriteProductIds, setFavoriteProductIds] = useState(() => {
-    return new Set(
-      products
+  const [favoriteProductIds, setFavoriteProductIds] = useState(() => new Set());
+  const [favoriteRequestIds, setFavoriteRequestIds] = useState(() => new Set());
+
+  useEffect(() => {
+    const initialFavoriteIds = new Set(
+      carouselProducts
         .filter((product) => product.isFavorite)
         .map((product) => product.id)
     );
-  });
 
-  const [favoriteRequestIds, setFavoriteRequestIds] = useState(() => new Set());
+    setFavoriteProductIds(initialFavoriteIds);
+  }, [carouselProducts]);
 
   const getScrollStep = useCallback(() => {
     const viewport = viewportRef.current;
@@ -386,6 +392,7 @@ export const ShopProductsCarousel = ({
     }
 
     const maximumScroll = viewport.scrollWidth - viewport.clientWidth;
+
     const scrollStep = getScrollStep();
 
     if (maximumScroll <= 1 || scrollStep <= 0) {
@@ -445,7 +452,7 @@ export const ShopProductsCarousel = ({
         window.cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [updateCarouselState, products.length]);
+  }, [updateCarouselState, carouselProducts.length]);
 
   const scrollCarousel = (direction) => {
     const viewport = viewportRef.current;
@@ -474,27 +481,8 @@ export const ShopProductsCarousel = ({
       behavior: "smooth",
     });
   };
-  const updateProductFavoriteRequest = async ({ productId, isFavorite }) => {
-    // The backend connection will be added here later.
-    //
-    // Example:
-    //
-    // const response = await fetch(
-    //   `/api/products/${productId}/favorite`,
-    //   {
-    //     method: isFavorite ? "POST" : "DELETE",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //   }
-    // );
-    //
-    // if (!response.ok) {
-    //   throw new Error("Unable to update product favorite status.");
-    // }
-    //
-    // return response.json();
 
+  const updateProductFavoriteRequest = async ({ productId, isFavorite }) => {
     console.log("Favorite request prepared:", {
       productId,
       isFavorite,
@@ -517,7 +505,6 @@ export const ShopProductsCarousel = ({
     const wasFavorite = favoriteProductIds.has(product.id);
     const nextFavoriteState = !wasFavorite;
 
-    // Optimistically update the interface.
     setFavoriteProductIds((currentIds) => {
       const nextIds = new Set(currentIds);
 
@@ -532,6 +519,7 @@ export const ShopProductsCarousel = ({
 
     setFavoriteRequestIds((currentIds) => {
       const nextIds = new Set(currentIds);
+
       nextIds.add(product.id);
 
       return nextIds;
@@ -545,7 +533,6 @@ export const ShopProductsCarousel = ({
     } catch (error) {
       console.error("Unable to update favorite product:", error);
 
-      // Roll back the optimistic update if the future request fails.
       setFavoriteProductIds((currentIds) => {
         const nextIds = new Set(currentIds);
 
@@ -560,6 +547,7 @@ export const ShopProductsCarousel = ({
     } finally {
       setFavoriteRequestIds((currentIds) => {
         const nextIds = new Set(currentIds);
+
         nextIds.delete(product.id);
 
         return nextIds;
@@ -583,7 +571,17 @@ export const ShopProductsCarousel = ({
     console.log("Add to cart:", product);
   };
 
-  if (!products.length) {
+  if (isProductsLoading) {
+    return null;
+  }
+
+  if (productsError) {
+    console.error("Unable to render database products:", productsError);
+
+    return null;
+  }
+
+  if (!carouselProducts.length) {
     return null;
   }
 
@@ -615,63 +613,87 @@ export const ShopProductsCarousel = ({
 
           <CarouselViewport ref={viewportRef}>
             <ProductsTrack>
-              {products.map((product) => {
-                const inventoryStatus = getInventoryStatus(product.stock);
+              {carouselProducts.map((product) => {
+                const productStock = Number.isFinite(product.stock)
+                  ? product.stock
+                  : 0;
+
+                const inventoryStatus = getInventoryStatus(productStock);
+
+                const displayProduct = {
+                  ...product,
+                  stock: productStock,
+                };
+
+                const quantityHighlight =
+                  displayProduct.quantityHighlight || displayProduct.sizeLabel;
+
+                const displayedPrice =
+                  displayProduct.sellingPriceLabel ||
+                  displayProduct.manufacturerPriceLabel ||
+                  "—";
 
                 return (
-                  <ProductCard key={product.id} data-product-card>
-                    {/* {products.map((product) => ( */}
-                    {/* <ProductCard key={product.id} data-product-card> */}
-                    <ProductLink to={product.href}>
+                  <ProductCard key={displayProduct.id} data-product-card>
+                    <ProductLink to={displayProduct.href}>
                       <ProductImageContainer>
-                        {product.badge && (
-                          <ProductBadge>{product.badge}</ProductBadge>
+                        {displayProduct.badgeLabel && (
+                          <ProductBadge>
+                            {displayProduct.badgeLabel}
+                          </ProductBadge>
                         )}
 
                         <ProductFavoriteButton
                           type="button"
-                          $favorite={favoriteProductIds.has(product.id)}
-                          disabled={favoriteRequestIds.has(product.id)}
+                          $favorite={favoriteProductIds.has(displayProduct.id)}
+                          disabled={favoriteRequestIds.has(displayProduct.id)}
                           aria-label={
-                            favoriteProductIds.has(product.id)
-                              ? `Remove ${product.name} from favorites`
-                              : `Add ${product.name} to favorites`
+                            favoriteProductIds.has(displayProduct.id)
+                              ? `Remove ${displayProduct.name} from favorites`
+                              : `Add ${displayProduct.name} to favorites`
                           }
-                          aria-pressed={favoriteProductIds.has(product.id)}
+                          aria-pressed={favoriteProductIds.has(
+                            displayProduct.id
+                          )}
                           onClick={(event) =>
-                            handleFavoriteToggle(event, product)
+                            handleFavoriteToggle(event, displayProduct)
                           }
                         >
                           <HeartIcon
-                            filled={favoriteProductIds.has(product.id)}
+                            filled={favoriteProductIds.has(displayProduct.id)}
                           />
                         </ProductFavoriteButton>
+
                         <ProductImage
-                          src={product.image}
-                          alt={product.alt}
+                          src={displayProduct.image}
+                          alt={displayProduct.alt}
                           loading="lazy"
-                          $imageScale={product.imageScale}
-                          $imageOffsetX={product.imageOffsetX}
-                          $imageOffsetY={product.imageOffsetY}
+                          $imageScale={displayProduct.imageScale}
+                          $imageOffsetX={displayProduct.imageOffsetX}
+                          $imageOffsetY={displayProduct.imageOffsetY}
                         />
-                        {product.quantityHighlight && (
+
+                        {quantityHighlight && (
                           <ProductQuantityBadge>
-                            <strong>{product.quantityHighlight}</strong>
+                            <strong>{quantityHighlight}</strong>
                           </ProductQuantityBadge>
                         )}
                       </ProductImageContainer>
+
                       <ProductInformation>
                         <ProductTextContent>
-                          <ProductName>{product.product_name.es}</ProductName>
+                          <ProductName>{displayProduct.name}</ProductName>
 
                           <ProductDescription>
-                            {product.description}
+                            {displayProduct.description}
                           </ProductDescription>
 
-                          {product.benefits?.length > 0 && (
+                          {displayProduct.benefits?.length > 0 && (
                             <ProductBenefits>
-                              {product.benefits.map((benefit) => (
-                                <ProductBenefitItem key={benefit.id}>
+                              {displayProduct.benefits.map((benefit) => (
+                                <ProductBenefitItem
+                                  key={`${displayProduct.id}-${benefit.type}`}
+                                >
                                   <ProductBenefitIcon $type={benefit.icon}>
                                     <BenefitIcon type={benefit.icon} />
                                   </ProductBenefitIcon>
@@ -689,7 +711,7 @@ export const ShopProductsCarousel = ({
                               <ProductDetailHeading>Size</ProductDetailHeading>
 
                               <ProductDetailValue>
-                                {product.size || "—"}
+                                {displayProduct.sizeLabel || "—"}
                               </ProductDetailValue>
                             </ProductDetailColumn>
 
@@ -697,7 +719,7 @@ export const ShopProductsCarousel = ({
 
                             <ProductDetailColumn>
                               <ProductDetailHeading>
-                                {product.stock <= 0
+                                {displayProduct.stock <= 0
                                   ? "Availability"
                                   : "In stock"}
                               </ProductDetailHeading>
@@ -709,7 +731,7 @@ export const ShopProductsCarousel = ({
                                   $status={inventoryStatus.key}
                                 />
 
-                                {getStockLabel(product)}
+                                {getStockLabel(displayProduct)}
                               </ProductAvailabilityValue>
 
                               <ProductInventoryStatusBadge
@@ -720,27 +742,29 @@ export const ShopProductsCarousel = ({
                             </ProductDetailColumn>
                           </ProductDetailsPanel>
 
-                          <ProductRating review={product.review} />
+                          <ProductRating review={displayProduct.review} />
 
                           <ProductPurchaseRow>
-                            <ProductPrice>{product.priceLabel}</ProductPrice>
+                            <ProductPrice>{displayedPrice}</ProductPrice>
 
                             <AddToCartButton
                               type="button"
                               aria-label={
-                                product.stock > 0
-                                  ? `Add ${product.name} to cart`
-                                  : `${product.name} is sold out`
+                                displayProduct.stock > 0
+                                  ? `Add ${displayProduct.name} to cart`
+                                  : `${displayProduct.name} is sold out`
                               }
-                              disabled={product.stock <= 0}
+                              disabled={displayProduct.stock <= 0}
                               onClick={(event) =>
-                                handleAddToCart(event, product)
+                                handleAddToCart(event, displayProduct)
                               }
                             >
                               <CartIcon />
 
                               <AddToCartLabel>
-                                {product.stock > 0 ? "Add to cart" : "Sold out"}
+                                {displayProduct.stock > 0
+                                  ? "Add to cart"
+                                  : "Sold out"}
                               </AddToCartLabel>
                             </AddToCartButton>
                           </ProductPurchaseRow>
@@ -782,3 +806,481 @@ export const ShopProductsCarousel = ({
     </ShopProductsSection>
   );
 };
+// export const ShopProductsCarousel = ({
+//   title = "Best Sellers",
+//   viewAllLabel = "View all best sellers",
+//   viewAllHref = "/products",
+//   // products = shopProductsCarouselData,
+//   onAddToCart,
+// }) => {
+//   const viewportRef = useRef(null);
+//   const { homepageProducts, isProductsLoading, productsError } = useProducts();
+//   console.log("HOMEPAGE PRODUCTS FROM DB:", homepageProducts);
+//   // console.log("LOCAL FALLBACK PRODUCTS:", products);
+//   console.log("PRODUCTS LOADING:", isProductsLoading);
+//   console.log("PRODUCTS ERROR:", productsError);
+//   // isProductsLoading, productsError
+//   const carouselProducts = homepageProducts;
+//   // const carouselProducts =
+//   //   homepageProducts.length > 0 ? homepageProducts : products;
+
+//   const [activeIndex, setActiveIndex] = useState(0);
+//   const [pageCount, setPageCount] = useState(1);
+//   const [favoriteProductIds, setFavoriteProductIds] = useState(() => {
+//     return new Set(
+//       carouselProducts
+//         .filter((product) => product.isFavorite)
+//         .map((product) => product.id)
+//     );
+//   });
+
+//   const [favoriteRequestIds, setFavoriteRequestIds] = useState(() => new Set());
+
+//   const getScrollStep = useCallback(() => {
+//     const viewport = viewportRef.current;
+
+//     if (!viewport) {
+//       return 0;
+//     }
+
+//     const firstCard = viewport.querySelector("[data-product-card]");
+
+//     if (!firstCard) {
+//       return viewport.clientWidth;
+//     }
+
+//     const track = firstCard.parentElement;
+//     const trackStyles = window.getComputedStyle(track);
+
+//     const gap =
+//       Number.parseFloat(trackStyles.columnGap || trackStyles.gap) || 0;
+
+//     return firstCard.getBoundingClientRect().width + gap;
+//   }, []);
+
+//   const updateCarouselState = useCallback(() => {
+//     const viewport = viewportRef.current;
+
+//     if (!viewport) {
+//       return;
+//     }
+
+//     const maximumScroll = viewport.scrollWidth - viewport.clientWidth;
+//     const scrollStep = getScrollStep();
+
+//     if (maximumScroll <= 1 || scrollStep <= 0) {
+//       setActiveIndex(0);
+//       setPageCount(1);
+//       return;
+//     }
+
+//     const calculatedPageCount = Math.max(
+//       1,
+//       Math.ceil(maximumScroll / scrollStep) + 1
+//     );
+
+//     const calculatedIndex = Math.min(
+//       calculatedPageCount - 1,
+//       Math.round(viewport.scrollLeft / scrollStep)
+//     );
+
+//     setPageCount(calculatedPageCount);
+//     setActiveIndex(calculatedIndex);
+//   }, [getScrollStep]);
+
+//   useEffect(() => {
+//     const viewport = viewportRef.current;
+
+//     if (!viewport) {
+//       return undefined;
+//     }
+
+//     let animationFrameId = null;
+
+//     const handleScroll = () => {
+//       if (animationFrameId) {
+//         window.cancelAnimationFrame(animationFrameId);
+//       }
+
+//       animationFrameId = window.requestAnimationFrame(updateCarouselState);
+//     };
+
+//     const handleResize = () => {
+//       updateCarouselState();
+//     };
+
+//     updateCarouselState();
+
+//     viewport.addEventListener("scroll", handleScroll, {
+//       passive: true,
+//     });
+
+//     window.addEventListener("resize", handleResize);
+
+//     return () => {
+//       viewport.removeEventListener("scroll", handleScroll);
+//       window.removeEventListener("resize", handleResize);
+
+//       if (animationFrameId) {
+//         window.cancelAnimationFrame(animationFrameId);
+//       }
+//     };
+//   }, [updateCarouselState, carouselProducts.length]);
+
+//   const scrollCarousel = (direction) => {
+//     const viewport = viewportRef.current;
+
+//     if (!viewport) {
+//       return;
+//     }
+
+//     const scrollStep = getScrollStep();
+
+//     viewport.scrollBy({
+//       left: direction === "next" ? scrollStep : -scrollStep,
+//       behavior: "smooth",
+//     });
+//   };
+
+//   const scrollToPage = (index) => {
+//     const viewport = viewportRef.current;
+
+//     if (!viewport) {
+//       return;
+//     }
+
+//     viewport.scrollTo({
+//       left: getScrollStep() * index,
+//       behavior: "smooth",
+//     });
+//   };
+//   const updateProductFavoriteRequest = async ({ productId, isFavorite }) => {
+//     // The backend connection will be added here later.
+//     //
+//     // Example:
+//     //
+//     // const response = await fetch(
+//     //   `/api/products/${productId}/favorite`,
+//     //   {
+//     //     method: isFavorite ? "POST" : "DELETE",
+//     //     headers: {
+//     //       "Content-Type": "application/json",
+//     //     },
+//     //   }
+//     // );
+//     //
+//     // if (!response.ok) {
+//     //   throw new Error("Unable to update product favorite status.");
+//     // }
+//     //
+//     // return response.json();
+
+//     console.log("Favorite request prepared:", {
+//       productId,
+//       isFavorite,
+//     });
+
+//     return {
+//       productId,
+//       isFavorite,
+//     };
+//   };
+
+//   const handleFavoriteToggle = async (event, product) => {
+//     event.preventDefault();
+//     event.stopPropagation();
+
+//     if (favoriteRequestIds.has(product.id)) {
+//       return;
+//     }
+
+//     const wasFavorite = favoriteProductIds.has(product.id);
+//     const nextFavoriteState = !wasFavorite;
+
+//     // Optimistically update the interface.
+//     setFavoriteProductIds((currentIds) => {
+//       const nextIds = new Set(currentIds);
+
+//       if (nextFavoriteState) {
+//         nextIds.add(product.id);
+//       } else {
+//         nextIds.delete(product.id);
+//       }
+
+//       return nextIds;
+//     });
+
+//     setFavoriteRequestIds((currentIds) => {
+//       const nextIds = new Set(currentIds);
+//       nextIds.add(product.id);
+
+//       return nextIds;
+//     });
+
+//     try {
+//       await updateProductFavoriteRequest({
+//         productId: product.id,
+//         isFavorite: nextFavoriteState,
+//       });
+//     } catch (error) {
+//       console.error("Unable to update favorite product:", error);
+
+//       // Roll back the optimistic update if the future request fails.
+//       setFavoriteProductIds((currentIds) => {
+//         const nextIds = new Set(currentIds);
+
+//         if (wasFavorite) {
+//           nextIds.add(product.id);
+//         } else {
+//           nextIds.delete(product.id);
+//         }
+
+//         return nextIds;
+//       });
+//     } finally {
+//       setFavoriteRequestIds((currentIds) => {
+//         const nextIds = new Set(currentIds);
+//         nextIds.delete(product.id);
+
+//         return nextIds;
+//       });
+//     }
+//   };
+
+//   const handleAddToCart = (event, product) => {
+//     event.preventDefault();
+//     event.stopPropagation();
+
+//     if (product.stock <= 0) {
+//       return;
+//     }
+
+//     if (onAddToCart) {
+//       onAddToCart(product);
+//       return;
+//     }
+
+//     console.log("Add to cart:", product);
+//   };
+
+//   if (!carouselProducts.length) {
+//     return null;
+//   }
+//   return (
+//     <ShopProductsSection>
+//       <ShopProductsContainer>
+//         <ShopProductsHeader>
+//           <SectionTitle>{title}</SectionTitle>
+
+//           <ViewAllLink to={viewAllHref}>
+//             {viewAllLabel}
+
+//             <ViewAllIcon aria-hidden="true">
+//               <ArrowIcon />
+//             </ViewAllIcon>
+//           </ViewAllLink>
+//         </ShopProductsHeader>
+
+//         <CarouselLayout>
+//           <CarouselArrow
+//             type="button"
+//             $position="left"
+//             onClick={() => scrollCarousel("previous")}
+//             aria-label="View previous products"
+//             disabled={activeIndex === 0}
+//           >
+//             <ArrowIcon direction="left" />
+//           </CarouselArrow>
+
+//           <CarouselViewport ref={viewportRef}>
+//             <ProductsTrack>
+//               {carouselProducts.map((product) => {
+//                 const productStock = Number.isFinite(product.stock)
+//                   ? product.stock
+//                   : 0;
+
+//                 const inventoryStatus = getInventoryStatus(productStock);
+
+//                 const displayProduct = {
+//                   ...product,
+//                   stock: productStock,
+//                 };
+
+//                 return (
+//                   <ProductCard key={displayProduct.id} data-product-card>
+//                     <ProductLink to={displayProduct.href}>
+//                       <ProductImageContainer>
+//                         {displayProduct.badgeLabel && (
+//                           <ProductBadge>
+//                             {displayProduct.badgeLabel}
+//                           </ProductBadge>
+//                         )}
+
+//                         <ProductFavoriteButton
+//                           type="button"
+//                           $favorite={favoriteProductIds.has(displayProduct.id)}
+//                           disabled={favoriteRequestIds.has(displayProduct.id)}
+//                           aria-label={
+//                             favoriteProductIds.has(displayProduct.id)
+//                               ? `Remove ${displayProduct.name} from favorites`
+//                               : `Add ${displayProduct.name} to favorites`
+//                           }
+//                           aria-pressed={favoriteProductIds.has(
+//                             displayProduct.id
+//                           )}
+//                           onClick={(event) =>
+//                             handleFavoriteToggle(event, displayProduct)
+//                           }
+//                         >
+//                           <HeartIcon
+//                             filled={favoriteProductIds.has(displayProduct.id)}
+//                           />
+//                         </ProductFavoriteButton>
+
+//                         <ProductImage
+//                           src={displayProduct.image}
+//                           alt={displayProduct.alt}
+//                           loading="lazy"
+//                           $imageScale={displayProduct.imageScale}
+//                           $imageOffsetX={displayProduct.imageOffsetX}
+//                           $imageOffsetY={displayProduct.imageOffsetY}
+//                         />
+
+//                         {displayProduct.quantityHighlight && (
+//                           <ProductQuantityBadge>
+//                             <strong>{displayProduct.quantityHighlight}</strong>
+//                           </ProductQuantityBadge>
+//                         )}
+//                       </ProductImageContainer>
+
+//                       <ProductInformation>
+//                         <ProductTextContent>
+//                           <ProductName>{displayProduct.name}</ProductName>
+
+//                           <ProductDescription>
+//                             {displayProduct.description}
+//                           </ProductDescription>
+
+//                           {displayProduct.benefits?.length > 0 && (
+//                             <ProductBenefits>
+//                               {displayProduct.benefits.map((benefit) => (
+//                                 <ProductBenefitItem key={benefit.type}>
+//                                   <ProductBenefitIcon $type={benefit.icon}>
+//                                     <BenefitIcon type={benefit.icon} />
+//                                   </ProductBenefitIcon>
+
+//                                   <ProductBenefitLabel>
+//                                     {benefit.label}
+//                                   </ProductBenefitLabel>
+//                                 </ProductBenefitItem>
+//                               ))}
+//                             </ProductBenefits>
+//                           )}
+
+//                           <ProductDetailsPanel>
+//                             <ProductDetailColumn>
+//                               <ProductDetailHeading>Size</ProductDetailHeading>
+
+//                               <ProductDetailValue>
+//                                 {displayProduct.sizeLabel ||
+//                                   displayProduct.size ||
+//                                   "—"}
+//                               </ProductDetailValue>
+//                             </ProductDetailColumn>
+
+//                             <ProductDetailDivider aria-hidden="true" />
+
+//                             <ProductDetailColumn>
+//                               <ProductDetailHeading>
+//                                 {displayProduct.stock <= 0
+//                                   ? "Availability"
+//                                   : "In stock"}
+//                               </ProductDetailHeading>
+
+//                               <ProductAvailabilityValue
+//                                 $status={inventoryStatus.key}
+//                               >
+//                                 <ProductStockDot
+//                                   $status={inventoryStatus.key}
+//                                 />
+
+//                                 {getStockLabel(displayProduct)}
+//                               </ProductAvailabilityValue>
+
+//                               <ProductInventoryStatusBadge
+//                                 $status={inventoryStatus.key}
+//                               >
+//                                 {inventoryStatus.label}
+//                               </ProductInventoryStatusBadge>
+//                             </ProductDetailColumn>
+//                           </ProductDetailsPanel>
+
+//                           <ProductRating review={displayProduct.review} />
+
+//                           <ProductPurchaseRow>
+//                             <ProductPrice>
+//                               {displayProduct.sellingPriceLabel ||
+//                                 displayProduct.manufacturerPriceLabel ||
+//                                 displayProduct.priceLabel ||
+//                                 "—"}
+//                             </ProductPrice>
+
+//                             <AddToCartButton
+//                               type="button"
+//                               aria-label={
+//                                 displayProduct.stock > 0
+//                                   ? `Add ${displayProduct.name} to cart`
+//                                   : `${displayProduct.name} is sold out`
+//                               }
+//                               disabled={displayProduct.stock <= 0}
+//                               onClick={(event) =>
+//                                 handleAddToCart(event, displayProduct)
+//                               }
+//                             >
+//                               <CartIcon />
+
+//                               <AddToCartLabel>
+//                                 {displayProduct.stock > 0
+//                                   ? "Add to cart"
+//                                   : "Sold out"}
+//                               </AddToCartLabel>
+//                             </AddToCartButton>
+//                           </ProductPurchaseRow>
+//                         </ProductTextContent>
+//                       </ProductInformation>
+//                     </ProductLink>
+//                   </ProductCard>
+//                 );
+//               })}
+//             </ProductsTrack>
+//           </CarouselViewport>
+
+//           <CarouselArrow
+//             type="button"
+//             $position="right"
+//             onClick={() => scrollCarousel("next")}
+//             aria-label="View more products"
+//             disabled={activeIndex >= pageCount - 1}
+//           >
+//             <ArrowIcon direction="right" />
+//           </CarouselArrow>
+//         </CarouselLayout>
+
+//         {pageCount > 1 && (
+//           <CarouselDots aria-label={`${title} carousel navigation`}>
+//             {Array.from({ length: pageCount }, (_, index) => (
+//               <CarouselDot
+//                 key={index}
+//                 type="button"
+//                 $active={index === activeIndex}
+//                 aria-label={`Go to ${title} page ${index + 1}`}
+//                 aria-current={index === activeIndex ? "true" : undefined}
+//                 onClick={() => scrollToPage(index)}
+//               />
+//             ))}
+//           </CarouselDots>
+//         )}
+//       </ShopProductsContainer>
+//     </ShopProductsSection>
+//   );
+// };

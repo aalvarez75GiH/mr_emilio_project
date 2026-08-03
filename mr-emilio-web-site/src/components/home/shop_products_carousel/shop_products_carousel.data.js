@@ -14,7 +14,6 @@ export const shopProductsCarouselData = [
       en: "Venezuelan tequeños",
       es: "Tequeños venezolanos",
     },
-    name: "Venezuelan tequeños",
     description: "Precooked Cheese Sticks",
     size: "20 units",
 
@@ -66,7 +65,6 @@ export const shopProductsCarouselData = [
       en: "Llanero Whey",
       es: "Suero Llanero",
     },
-    name: "Suero Llanero",
     description: "Salted and Sour Soft Cream",
     size: "28 oz",
 
@@ -118,7 +116,6 @@ export const shopProductsCarouselData = [
       en: "White cheese (small)",
       es: "Queso blanco (pequeño)",
     },
-    name: "White cheese (small)",
     description: "Small White Cheese",
     size: "1.5 lb",
 
@@ -170,7 +167,6 @@ export const shopProductsCarouselData = [
       en: "White Cheese (large)",
       es: "Queso Blanco (grande)",
     },
-    name: "White Cheese (large)",
     description: "Large White Cheese",
     size: "6 lb",
 
@@ -222,7 +218,6 @@ export const shopProductsCarouselData = [
       en: "Gouda Cheese Small)",
       es: "Queso Gouda (pequeño)",
     },
-    name: "Gouda Cheese Small)",
     description: "Small Gouda Cheese",
     size: "1.5 lb",
 
@@ -274,7 +269,6 @@ export const shopProductsCarouselData = [
       en: "Gouda Cheese (large)",
       es: "Queso Gouda (grande)",
     },
-    name: "Gouda Cheese (large)",
     description: "Large Gouda Cheese",
     size: "6 lb",
 
@@ -326,7 +320,6 @@ export const shopProductsCarouselData = [
       en: "Caramel spread",
       es: "Arequipe",
     },
-    name: "Arequipe",
     description: "Venezuelan Caramel Spread",
     size: "15 oz",
 
@@ -378,7 +371,6 @@ export const shopProductsCarouselData = [
       en: "Venezuelan Cream",
       es: "Crema Venezolana",
     },
-    name: "Venezuelan Cream",
     description: "Salted Sour Cream",
     size: "8.5 oz",
 
@@ -423,5 +415,83 @@ export const shopProductsCarouselData = [
         icon: "clock",
       },
     ],
+  },
+];
+
+export const productsCatalog = [
+  {
+    id: "tequenos",
+    slug: "tequenos",
+
+    product_name: {
+      en: "Venezuelan Tequeños",
+      es: "Tequeños Venezolanos",
+    },
+
+    description: {
+      en: "Precooked cheese sticks",
+      es: "Palitos de queso precocidos",
+    },
+
+    category: "frozen-food",
+
+    size: {
+      value: 20,
+      unit: "piece",
+    },
+
+    stockUnit: "package",
+
+    manufacturerPriceInCents: 1299,
+
+    image: {
+      url: "",
+      storagePath: "",
+      alt: {
+        en: "Mr. Emilio Venezuelan tequeños",
+        es: "Tequeños venezolanos Mr. Emilio",
+      },
+    },
+
+    presentation: {
+      imageScale: 1.08,
+      imageOffsetX: 0,
+      imageOffsetY: 8,
+    },
+
+    benefits: [
+      {
+        id: "storage",
+        type: "keepFrozen",
+        icon: "snowflake",
+      },
+      {
+        id: "preparation",
+        type: "readyToCook",
+        icon: "clock",
+      },
+      {
+        id: "quantity",
+        type: "pieceCount",
+        icon: "package",
+        value: 20,
+      },
+    ],
+
+    reviewSummary: {
+      average: 5,
+      count: 120,
+    },
+
+    badge: "bestSeller",
+
+    merchandising: {
+      featured: true,
+      showOnHomepage: true,
+      homepageOrder: 1,
+      catalogOrder: 1,
+    },
+
+    active: true,
   },
 ];

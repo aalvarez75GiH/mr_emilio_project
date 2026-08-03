@@ -1,0 +1,39 @@
+{
+  "products": {
+    "benefits": {
+      "keepFrozen": "Keep Frozen",
+      "keepRefrigerated": "Keep Refrigerated",
+      "readyToCook": "Ready to Cook",
+      "readyToServe": "Ready to Serve",
+      "familySize": "Family Size",
+      "snackFavorite": "Perfect for Snacking",
+      "breakfastFavorite": "Breakfast Favorite",
+      "venezuelanStyle": "Venezuelan Style",
+      "venezuelanFavorite": "Venezuelan Favorite",
+      "caramelSpread": "Caramel Spread",
+      "highProtein": "High in Protein",
+      "perfectForGrilling": "Perfect for Grilling",
+      "kidsFavorite": "Kids’ Favorite",
+      "partyFavorite": "Party Favorite",
+      "pieceCount_one": "{{count}} Piece",
+      "pieceCount_other": "{{count}} Pieces"
+    },
+
+    "badges": {
+      "bestSeller": "Best Seller",
+      "familyFavorite": "Family Favorite",
+      "limited": "Limited"
+    },
+
+    "units": {
+      "piece_one": "piece",
+      "piece_other": "pieces",
+      "unit_one": "unit",
+      "unit_other": "units",
+      "package_one": "package",
+      "package_other": "packages",
+      "oz": "oz",
+      "lb": "lb"
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "products": {
+    "benefits": {
+      "keepFrozen": "Mantener congelado",
+      "keepRefrigerated": "Mantener refrigerado",
+      "readyToCook": "Listo para cocinar",
+      "readyToServe": "Listo para servir",
+      "familySize": "Tamaño familiar",
+      "snackFavorite": "Ideal para picar",
+      "breakfastFavorite": "Favorito para el desayuno",
+      "venezuelanStyle": "Estilo venezolano",
+      "venezuelanFavorite": "Favorito venezolano",
+      "caramelSpread": "Crema de caramelo",
+      "highProtein": "Alto en proteína",
+      "perfectForGrilling": "Ideal para la parrilla",
+      "kidsFavorite": "Favorito de los niños",
+      "partyFavorite": "Ideal para fiestas",
+      "pieceCount_one": "{{count}} unidad",
+      "pieceCount_other": "{{count}} unidades"
+    },
+
+    "badges": {
+      "bestSeller": "Más vendido",
+      "familyFavorite": "Favorito familiar",
+      "limited": "Edición limitada"
+    },
+
+    "units": {
+      "piece_one": "unidad",
+      "piece_other": "unidades",
+      "unit_one": "unidad",
+      "unit_other": "unidades",
+      "package_one": "paquete",
+      "package_other": "paquetes",
+      "oz": "oz",
+      "lb": "lb"
+    }
+  }
+}
