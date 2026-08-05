@@ -3,33 +3,30 @@ import { Link } from "react-router-dom";
 
 export const ShopProductsSection = styled.section`
   width: 100%;
+  padding: 1rem 3.5rem 0;
 
-  padding: 64px 32px;
-
-  background: ${({ theme }) => theme.colors.background.primary};
-
-  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
-    padding: 72px 48px;
+  @media (min-width: 1440px) {
+    padding: 1.1rem 4.5rem 0;
   }
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
-    padding: 60px 28px;
+  @media (max-width: 1280px) {
+    padding: 0.95rem 3rem 0;
   }
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
-    padding: 56px 24px;
+  @media (max-width: 1024px) {
+    padding: 0.85rem 2rem 0;
   }
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
-    padding: 48px 20px;
+  @media (max-width: 768px) {
+    padding: 0.75rem 1.25rem 0;
   }
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    padding: 44px 20px;
+  @media (max-width: 480px) {
+    padding: 0.7rem 1rem 0;
   }
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
-    padding: 40px 16px;
+  @media (max-width: 375px) {
+    padding-inline: 0.875rem;
   }
 `;
 

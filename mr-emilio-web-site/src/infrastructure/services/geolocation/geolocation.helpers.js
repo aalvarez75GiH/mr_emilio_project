@@ -11,9 +11,18 @@ export const GEOLOCATION_ERROR_CODES = Object.freeze({
   POSITION_UNAVAILABLE: "positionUnavailable",
   TIMEOUT: "timeout",
   UNSUPPORTED: "unsupported",
+  SECURE_CONTEXT_REQUIRED: "secureContextRequired",
   INVALID_POSITION: "invalidPosition",
   UNKNOWN: "unknown",
 });
+// export const GEOLOCATION_ERROR_CODES = Object.freeze({
+//   PERMISSION_DENIED: "permissionDenied",
+//   POSITION_UNAVAILABLE: "positionUnavailable",
+//   TIMEOUT: "timeout",
+//   UNSUPPORTED: "unsupported",
+//   INVALID_POSITION: "invalidPosition",
+//   UNKNOWN: "unknown",
+// });
 
 export const DEFAULT_GEOLOCATION_OPTIONS = Object.freeze({
   enableHighAccuracy: false,
@@ -155,6 +164,16 @@ export const normalizeGeolocationError = (error) => {
     };
   }
 
+  if (error?.code === GEOLOCATION_ERROR_CODES.SECURE_CONTEXT_REQUIRED) {
+    return {
+      code: GEOLOCATION_ERROR_CODES.SECURE_CONTEXT_REQUIRED,
+
+      message: "Location requires a secure HTTPS connection.",
+
+      originalError: error || null,
+    };
+  }
+
   return {
     code: GEOLOCATION_ERROR_CODES.UNKNOWN,
 
@@ -169,27 +188,78 @@ export const getBrowserGeolocationSupport = () => {
   if (typeof window === "undefined") {
     return {
       supported: false,
+      secureContext: false,
       geolocation: null,
+      reason: GEOLOCATION_ERROR_CODES.UNSUPPORTED,
+    };
+  }
+
+  const secureContext = window.isSecureContext === true;
+
+  if (!secureContext) {
+    return {
+      supported: false,
+      secureContext: false,
+      geolocation: null,
+      reason: GEOLOCATION_ERROR_CODES.SECURE_CONTEXT_REQUIRED,
     };
   }
 
   const geolocation = window.navigator?.geolocation || null;
 
+  if (!geolocation) {
+    return {
+      supported: false,
+      secureContext: true,
+      geolocation: null,
+      reason: GEOLOCATION_ERROR_CODES.UNSUPPORTED,
+    };
+  }
+
   return {
-    supported: Boolean(geolocation),
+    supported: true,
+    secureContext: true,
     geolocation,
+    reason: null,
   };
 };
+// export const getBrowserGeolocationSupport = () => {
+//   if (typeof window === "undefined") {
+//     return {
+//       supported: false,
+//       geolocation: null,
+//     };
+//   }
+
+//   const geolocation = window.navigator?.geolocation || null;
+
+//   return {
+//     supported: Boolean(geolocation),
+//     geolocation,
+//   };
+// };
 
 export const getCurrentBrowserPosition = (
   options = DEFAULT_GEOLOCATION_OPTIONS
 ) =>
   new Promise((resolve, reject) => {
-    const { supported, geolocation } = getBrowserGeolocationSupport();
+    const { supported, secureContext, geolocation, reason } =
+      getBrowserGeolocationSupport();
+
+    if (!secureContext) {
+      reject({
+        code: GEOLOCATION_ERROR_CODES.SECURE_CONTEXT_REQUIRED,
+
+        message: "Location requires a secure HTTPS connection.",
+      });
+
+      return;
+    }
 
     if (!supported || !geolocation) {
       reject({
-        code: GEOLOCATION_ERROR_CODES.UNSUPPORTED,
+        code: reason || GEOLOCATION_ERROR_CODES.UNSUPPORTED,
+
         message: "Browser geolocation is not supported.",
       });
 
@@ -203,6 +273,7 @@ export const getCurrentBrowserPosition = (
         } catch (error) {
           reject({
             code: GEOLOCATION_ERROR_CODES.INVALID_POSITION,
+
             message: error.message,
             originalError: error,
           });
@@ -219,6 +290,44 @@ export const getCurrentBrowserPosition = (
       }
     );
   });
+// export const getCurrentBrowserPosition = (
+//   options = DEFAULT_GEOLOCATION_OPTIONS
+// ) =>
+//   new Promise((resolve, reject) => {
+//     const { supported, geolocation } = getBrowserGeolocationSupport();
+
+//     if (!supported || !geolocation) {
+//       reject({
+//         code: GEOLOCATION_ERROR_CODES.UNSUPPORTED,
+//         message: "Browser geolocation is not supported.",
+//       });
+
+//       return;
+//     }
+
+//     geolocation.getCurrentPosition(
+//       (position) => {
+//         try {
+//           resolve(normalizeBrowserPosition(position));
+//         } catch (error) {
+//           reject({
+//             code: GEOLOCATION_ERROR_CODES.INVALID_POSITION,
+//             message: error.message,
+//             originalError: error,
+//           });
+//         }
+//       },
+
+//       (error) => {
+//         reject(normalizeGeolocationError(error));
+//       },
+
+//       {
+//         ...DEFAULT_GEOLOCATION_OPTIONS,
+//         ...options,
+//       }
+//     );
+//   });
 
 export const getGeolocationPermissionStatus = async () => {
   if (typeof window === "undefined") {

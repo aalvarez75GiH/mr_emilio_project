@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { CustomerCatalogContext } from "./customer_catalog.context";
 
 import { useProducts } from "../products/use-products.hook";
-import { useWarehouse } from "../warehouse/se-warehouse.hook";
+import { useWarehouse } from "../warehouse/use-warehouse.hook";
 
 import { mergeProductsWithWarehouseInventory } from "../warehouse/warehouse.helpers";
 

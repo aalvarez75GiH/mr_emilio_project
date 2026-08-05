@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
-import { useGeolocation } from "../../../infrastructure/services/geolocation/se-geolocation.hook";
-import { useWarehouse } from "../../../infrastructure/services/warehouse/se-warehouse.hook";
+import { useGeolocation } from "../../../infrastructure/services/geolocation/use-geolocation.hook";
+import { useWarehouse } from "../../../infrastructure/services/warehouse/use-warehouse.hook";
 
 import {
   ShoppingContextSection,

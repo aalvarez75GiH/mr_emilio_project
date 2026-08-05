@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { WarehouseContext } from "./warehouse.context";
 
-import { useGeolocation } from "../geolocation/se-geolocation.hook";
+import { useGeolocation } from "../geolocation/use-geolocation.hook";
 
 import {
   getClosestWarehouseRequest,
