@@ -52,38 +52,6 @@ export const LocationSelectorSection = styled.section`
     margin-top: 1rem;
   }
 `;
-// export const LocationSelectorSection = styled.section`
-//   width: 100%;
-//   padding: 0 3.5rem;
-//   margin-top: 0.85rem;
-//   margin-bottom: 0.65rem;
-
-//   @media (min-width: 1440px) {
-//     padding-inline: 4.5rem;
-//   }
-
-//   @media (max-width: 1280px) {
-//     padding-inline: 3rem;
-//   }
-
-//   @media (max-width: 1024px) {
-//     padding-inline: 2rem;
-//   }
-
-//   @media (max-width: 768px) {
-//     padding-inline: 1.25rem;
-//     margin-top: 0.7rem;
-//     margin-bottom: 0.5rem;
-//   }
-
-//   @media (max-width: 480px) {
-//     padding-inline: 1rem;
-//   }
-
-//   @media (max-width: 375px) {
-//     padding-inline: 0.875rem;
-//   }
-// `;
 
 export const LocationSelectorSectionInner = styled.div`
   width: 100%;
@@ -113,6 +81,16 @@ export const LocationSelectorBannerContainer = styled.div`
     rgba(244, 247, 252, 0.96) 55%,
     rgba(238, 243, 251, 0.92) 100%
   );
+
+  transition: border-color 180ms ease, box-shadow 180ms ease,
+    background-color 180ms ease;
+
+  ${({ $isRefreshing }) =>
+    $isRefreshing &&
+    `
+    border-color: rgba(23, 70, 162, 0.18);
+    box-shadow: 0 5px 18px rgba(23, 70, 162, 0.07);
+  `}
 
   border: 1px solid rgba(23, 70, 162, 0.08);
   border-radius: 10px;
@@ -199,6 +177,22 @@ export const LocationSelectorBannerInformation = styled.div`
   flex-wrap: wrap;
   gap: 0.25rem 0.6rem;
 
+  text-align: left;
+
+  animation: location-selector-store-enter 220ms ease both;
+
+  @keyframes location-selector-store-enter {
+    from {
+      opacity: 0.18;
+      transform: translateY(2px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   @media (max-width: 480px) {
     grid-column: 2;
     grid-row: 1;
@@ -209,8 +203,34 @@ export const LocationSelectorBannerInformation = styled.div`
     gap: 0.1rem;
 
     width: 100%;
+
+    text-align: left;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
   }
 `;
+// export const LocationSelectorBannerInformation = styled.div`
+//   min-width: 0;
+
+//   display: flex;
+//   align-items: center;
+//   flex-wrap: wrap;
+//   gap: 0.25rem 0.6rem;
+
+//   @media (max-width: 480px) {
+//     grid-column: 2;
+//     grid-row: 1;
+
+//     display: flex;
+//     flex-direction: column;
+//     align-items: flex-start;
+//     gap: 0.1rem;
+
+//     width: 100%;
+//   }
+// `;
 
 export const LocationSelectorBannerPrimary = styled.span`
   min-width: 0;
@@ -326,13 +346,13 @@ export const LocationSelectorBannerMessage = styled.span`
 `;
 
 export const LocationSelectorBannerAction = styled.button`
+  min-width: 126px;
   min-height: 34px;
   padding: 0.42rem 0.65rem;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.3rem;
 
   color: ${BRAND_BLUE};
   background: transparent;
@@ -362,7 +382,7 @@ export const LocationSelectorBannerAction = styled.button`
   }
 
   &:disabled {
-    opacity: 0.58;
+    opacity: 0.72;
     cursor: wait;
   }
 
@@ -372,6 +392,7 @@ export const LocationSelectorBannerAction = styled.button`
 
     justify-self: start;
 
+    min-width: 0;
     min-height: 28px;
     margin-top: 0.05rem;
     padding: 0.2rem 0;
@@ -389,10 +410,146 @@ export const LocationSelectorBannerAction = styled.button`
   }
 `;
 
+export const LocationSelectorBannerActionContent = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+
+  animation: location-selector-action-enter 180ms ease both;
+
+  @keyframes location-selector-action-enter {
+    from {
+      opacity: 0;
+      transform: translateY(2px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+`;
+
+// export const LocationSelectorBannerAction = styled.button`
+//   min-height: 34px;
+//   padding: 0.42rem 0.65rem;
+
+//   display: inline-flex;
+//   align-items: center;
+//   justify-content: center;
+//   gap: 0.3rem;
+
+//   color: ${BRAND_BLUE};
+//   background: transparent;
+
+//   border: none;
+//   border-radius: 999px;
+
+//   font-family: "DM Sans", sans-serif;
+//   font-size: 0.77rem;
+//   font-weight: 750;
+//   line-height: 1;
+
+//   white-space: nowrap;
+//   cursor: pointer;
+
+//   transition: background-color 180ms ease, opacity 180ms ease,
+//     transform 180ms ease;
+
+//   &:hover:not(:disabled) {
+//     background: rgba(23, 70, 162, 0.07);
+//     transform: translateX(1px);
+//   }
+
+//   &:focus-visible {
+//     outline: 3px solid rgba(23, 70, 162, 0.2);
+//     outline-offset: 2px;
+//   }
+
+//   &:disabled {
+//     opacity: 0.58;
+//     cursor: wait;
+//   }
+
+//   @media (max-width: 480px) {
+//     grid-column: 2;
+//     grid-row: 2;
+
+//     justify-self: start;
+
+//     min-height: 28px;
+//     margin-top: 0.05rem;
+//     padding: 0.2rem 0;
+
+//     font-size: 0.72rem;
+//   }
+
+//   @media (max-width: 375px) {
+//     font-size: 0.69rem;
+
+//     svg {
+//       width: 15px;
+//       height: 15px;
+//     }
+//   }
+// `;
+
 export const LocationSelectorBannerActionLabel = styled.span`
   display: inline-block;
 `;
 
+export const LocationSelectorBannerSpinner = styled.span`
+  width: 14px;
+  height: 14px;
+
+  display: inline-block;
+  flex-shrink: 0;
+
+  border: 2px solid rgba(23, 70, 162, 0.24);
+  border-top-color: ${BRAND_BLUE};
+  border-radius: 50%;
+
+  animation: location-selector-spin 700ms linear infinite;
+
+  @keyframes location-selector-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation-duration: 1400ms;
+  }
+`;
+
+export const LocationSelectorBannerCheck = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  color: ${BRAND_BLUE};
+
+  font-size: 0.95rem;
+  font-weight: 750;
+  line-height: 1;
+
+  @keyframes location-selector-success {
+    from {
+      opacity: 0;
+      transform: scale(0.7);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+`;
 export const LocationSelectorBannerError = styled.span`
   position: absolute;
   top: calc(100% + 0.25rem);

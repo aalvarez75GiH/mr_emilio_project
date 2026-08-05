@@ -25,6 +25,7 @@ import {
   ProductName,
   ProductDescription,
   ProductDetailsPanel,
+  ProductWarehouseData,
   ProductDetailColumn,
   ProductDetailHeading,
   ProductDetailValue,
@@ -712,69 +713,78 @@ export const ShopProductsCarousel = ({
                               ))}
                             </ProductBenefits>
                           )}
+                          <ProductWarehouseData
+                            key={`details-${displayProduct.warehouseId}-${displayProduct.id}`}
+                          >
+                            <ProductDetailsPanel>
+                              <ProductDetailColumn>
+                                <ProductDetailHeading>
+                                  Size
+                                </ProductDetailHeading>
 
-                          <ProductDetailsPanel>
-                            <ProductDetailColumn>
-                              <ProductDetailHeading>Size</ProductDetailHeading>
+                                <ProductDetailValue>
+                                  {displayProduct.sizeLabel || "—"}
+                                </ProductDetailValue>
+                              </ProductDetailColumn>
 
-                              <ProductDetailValue>
-                                {displayProduct.sizeLabel || "—"}
-                              </ProductDetailValue>
-                            </ProductDetailColumn>
+                              <ProductDetailDivider aria-hidden="true" />
 
-                            <ProductDetailDivider aria-hidden="true" />
+                              <ProductDetailColumn>
+                                <ProductDetailHeading>
+                                  {displayProduct.stock <= 0
+                                    ? "Availability"
+                                    : "In stock"}
+                                </ProductDetailHeading>
 
-                            <ProductDetailColumn>
-                              <ProductDetailHeading>
-                                {displayProduct.stock <= 0
-                                  ? "Availability"
-                                  : "In stock"}
-                              </ProductDetailHeading>
-
-                              <ProductAvailabilityValue
-                                $status={inventoryStatus.key}
-                              >
-                                <ProductStockDot
+                                <ProductAvailabilityValue
                                   $status={inventoryStatus.key}
-                                />
+                                >
+                                  <ProductStockDot
+                                    $status={inventoryStatus.key}
+                                  />
 
-                                {getStockLabel(displayProduct)}
-                              </ProductAvailabilityValue>
+                                  {getStockLabel(displayProduct)}
+                                </ProductAvailabilityValue>
 
-                              <ProductInventoryStatusBadge
-                                $status={inventoryStatus.key}
-                              >
-                                {inventoryStatus.label}
-                              </ProductInventoryStatusBadge>
-                            </ProductDetailColumn>
-                          </ProductDetailsPanel>
+                                <ProductInventoryStatusBadge
+                                  $status={inventoryStatus.key}
+                                >
+                                  {inventoryStatus.label}
+                                </ProductInventoryStatusBadge>
+                              </ProductDetailColumn>
+                            </ProductDetailsPanel>
+                          </ProductWarehouseData>
 
                           <ProductRating review={displayProduct.review} />
 
-                          <ProductPurchaseRow>
-                            <ProductPrice>{displayedPrice}</ProductPrice>
+                          <ProductWarehouseData
+                            key={`purchase-${displayProduct.warehouseId}-${displayProduct.id}`}
+                          >
+                            <ProductPurchaseRow>
+                              <ProductPrice>{displayedPrice}</ProductPrice>
 
-                            <AddToCartButton
-                              type="button"
-                              aria-label={
-                                displayProduct.stock > 0
-                                  ? `Add ${displayProduct.name} to cart`
-                                  : `${displayProduct.name} is sold out`
-                              }
-                              disabled={displayProduct.stock <= 0}
-                              onClick={(event) =>
-                                handleAddToCart(event, displayProduct)
-                              }
-                            >
-                              <CartIcon />
+                              <AddToCartButton
+                                type="button"
+                                aria-label={
+                                  displayProduct.stock > 0
+                                    ? `Add ${displayProduct.name} to cart`
+                                    : `${displayProduct.name} is sold out`
+                                }
+                                disabled={displayProduct.stock <= 0}
+                                onClick={(event) =>
+                                  handleAddToCart(event, displayProduct)
+                                }
+                              >
+                                <CartIcon />
 
-                              <AddToCartLabel>
-                                {displayProduct.stock > 0
-                                  ? "Add to cart"
-                                  : "Sold out"}
-                              </AddToCartLabel>
-                            </AddToCartButton>
-                          </ProductPurchaseRow>
+                                <AddToCartLabel>
+                                  {displayProduct.stock > 0
+                                    ? "Add to cart"
+                                    : "Sold out"}
+                                </AddToCartLabel>
+                              </AddToCartButton>
+                            </ProductPurchaseRow>
+                          </ProductWarehouseData>
                         </ProductTextContent>
                       </ProductInformation>
                     </ProductLink>

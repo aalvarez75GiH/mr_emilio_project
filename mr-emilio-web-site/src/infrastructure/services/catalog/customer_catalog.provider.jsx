@@ -31,12 +31,17 @@ export const CustomerCatalogProvider = ({
     });
   }, [products, warehouse, locale, currency]);
 
-  const isCustomerCatalogLoading = isProductsLoading || isWarehouseLoading;
+  const isInitialCustomerCatalogLoading =
+    isProductsLoading || (!warehouse && isWarehouseLoading);
+
+  const isCustomerCatalogRefreshing = Boolean(warehouse) && isWarehouseLoading;
 
   const customerCatalogError = productsError || warehouseError || null;
 
   const isCustomerCatalogReady =
-    !isCustomerCatalogLoading && !customerCatalogError && Boolean(warehouse);
+    !isInitialCustomerCatalogLoading &&
+    !customerCatalogError &&
+    Boolean(warehouse);
 
   const contextValue = useMemo(
     () => ({
@@ -46,7 +51,10 @@ export const CustomerCatalogProvider = ({
       warehouse,
       customerContext,
 
-      isCustomerCatalogLoading,
+      isCustomerCatalogLoading: isInitialCustomerCatalogLoading,
+
+      isCustomerCatalogRefreshing,
+
       customerCatalogError,
       isCustomerCatalogReady,
     }),
@@ -54,7 +62,8 @@ export const CustomerCatalogProvider = ({
       customerCatalogProducts,
       warehouse,
       customerContext,
-      isCustomerCatalogLoading,
+      isInitialCustomerCatalogLoading,
+      isCustomerCatalogRefreshing,
       customerCatalogError,
       isCustomerCatalogReady,
     ]

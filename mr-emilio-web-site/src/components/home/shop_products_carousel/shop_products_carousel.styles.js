@@ -812,6 +812,29 @@ export const ProductDetailsPanel = styled.div`
   }
 `;
 
+export const ProductWarehouseData = styled.div`
+  display: flex;
+  flex-direction: column;
+
+  animation: warehouse-product-data-enter 220ms ease both;
+
+  @keyframes warehouse-product-data-enter {
+    from {
+      opacity: 0.2;
+      transform: translateY(2px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+`;
+
 export const ProductDetailColumn = styled.div`
   display: flex;
   flex-direction: column;

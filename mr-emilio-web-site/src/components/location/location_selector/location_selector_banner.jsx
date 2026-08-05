@@ -8,8 +8,11 @@ import {
   LocationSelectorBannerLocation,
   LocationSelectorBannerMessage,
   LocationSelectorBannerAction,
+  LocationSelectorBannerActionContent,
   LocationSelectorBannerActionLabel,
+  LocationSelectorBannerSpinner,
   LocationSelectorBannerError,
+  LocationSelectorBannerCheck,
 } from "./location_selector.styles";
 
 const LocationPinIcon = () => {
@@ -64,17 +67,33 @@ export const LocationSelectorBanner = ({
   message,
   errorMessage,
   onAction,
+  buttonState,
 }) => {
   const hasDistance =
     !isUsingDefaultWarehouse && Number.isFinite(distanceMiles);
 
+  const formattedDistance = hasDistance ? distanceMiles.toFixed(1) : "";
+
+  const warehouseTransitionKey = [
+    warehouseName,
+    warehouseLocation,
+    formattedDistance,
+  ].join("-");
+
+  const buttonLabel =
+    buttonState === "loading"
+      ? "Updating..."
+      : buttonState === "success"
+      ? "Location updated"
+      : actionLabel;
+
   return (
-    <LocationSelectorBannerContainer>
+    <LocationSelectorBannerContainer $isRefreshing={isLoading}>
       <LocationSelectorBannerIcon>
         <LocationPinIcon />
       </LocationSelectorBannerIcon>
 
-      <LocationSelectorBannerInformation>
+      <LocationSelectorBannerInformation key={warehouseTransitionKey}>
         <LocationSelectorBannerPrimary>
           Shopping from{" "}
           <LocationSelectorBannerWarehouse>
@@ -91,7 +110,7 @@ export const LocationSelectorBanner = ({
             <LocationSelectorBannerLocation>
               {warehouseLocation}
 
-              {hasDistance && ` · ${distanceMiles.toFixed(1)} miles away`}
+              {hasDistance && ` · ${formattedDistance} miles away`}
             </LocationSelectorBannerLocation>
           </>
         )}
@@ -103,12 +122,25 @@ export const LocationSelectorBanner = ({
         type="button"
         onClick={onAction}
         disabled={isLoading}
+        aria-busy={isLoading}
       >
-        <LocationSelectorBannerActionLabel>
-          {isLoading ? "Finding your store..." : actionLabel}
-        </LocationSelectorBannerActionLabel>
+        <LocationSelectorBannerActionContent key={buttonState}>
+          {buttonState === "loading" && (
+            <LocationSelectorBannerSpinner aria-hidden="true" />
+          )}
 
-        {!isLoading && <ArrowIcon />}
+          {buttonState === "success" && (
+            <LocationSelectorBannerCheck aria-hidden="true">
+              ✓
+            </LocationSelectorBannerCheck>
+          )}
+
+          <LocationSelectorBannerActionLabel aria-live="polite">
+            {buttonLabel}
+          </LocationSelectorBannerActionLabel>
+
+          {buttonState === "idle" && <ArrowIcon />}
+        </LocationSelectorBannerActionContent>
       </LocationSelectorBannerAction>
 
       {errorMessage && (
