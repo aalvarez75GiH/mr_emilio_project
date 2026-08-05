@@ -39,15 +39,3 @@ apiClient.interceptors.response.use(
 );
 
 export default apiClient;
-// import axios from "axios";
-// import environment from "../../config/environment";
-// console.log("API BASE URL:", environment.apiBaseUrl);
-
-// const apiClient = axios.create({
-//   baseURL: environment.apiBaseUrl,
-//   headers: {
-//     "Content-Type": "application/json",
-//   },
-// });
-
-// export default apiClient;

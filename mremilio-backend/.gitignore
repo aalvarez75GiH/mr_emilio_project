@@ -67,3 +67,4 @@ node_modules/
 
 # Google keys for firestore
 serviceAccountKey.json
+functions/serviceAccountKey.json
