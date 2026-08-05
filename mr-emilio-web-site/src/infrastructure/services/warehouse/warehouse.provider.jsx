@@ -4,38 +4,161 @@ import { WarehouseContext } from "./warehouse.context";
 
 import { useGeolocation } from "../geolocation/se-geolocation.hook";
 
-import { getClosestWarehouseRequest } from "./warehouse.requests";
+import {
+  getClosestWarehouseRequest,
+  getWarehouseByIdRequest,
+} from "./warehouse.requests";
 
 import { normalizeClosestWarehouseResponse } from "./warehouse.helpers";
+
+const DEFAULT_WAREHOUSE_ID = "main-warehouse-cumming";
+
+const WAREHOUSE_RESOLUTION_SOURCES = Object.freeze({
+  DEFAULT: "default",
+  STORED_LOCATION: "storedLocation",
+  BROWSER_LOCATION: "browserLocation",
+  MANUAL_LOCATION: "manualLocation",
+});
 
 const isCanceledRequest = (error) =>
   error?.name === "CanceledError" ||
   error?.name === "AbortError" ||
   error?.code === "ERR_CANCELED";
 
+const normalizeDefaultWarehouseResponse = (warehouse) => {
+  if (!warehouse || typeof warehouse !== "object" || Array.isArray(warehouse)) {
+    return null;
+  }
+
+  return {
+    warehouse,
+
+    customerContext: {
+      distance: {
+        miles: null,
+      },
+
+      fulfillment: {
+        pickup: {
+          available:
+            warehouse.active === true &&
+            warehouse.status === "open" &&
+            warehouse.fulfillment?.pickup?.enabled === true,
+
+          preparationTimeMinutes:
+            warehouse.fulfillment?.pickup?.preparationTimeMinutes ?? null,
+        },
+
+        localDelivery: {
+          /*
+           * Delivery eligibility cannot be determined until
+           * the customer's location is known.
+           */
+          available: false,
+
+          radiusMiles:
+            warehouse.fulfillment?.localDelivery?.radiusMiles ?? null,
+
+          estimatedTimeMinutes:
+            warehouse.fulfillment?.localDelivery?.estimatedTimeMinutes ?? null,
+
+          provider: warehouse.fulfillment?.localDelivery?.provider ?? null,
+
+          reason: "CUSTOMER_LOCATION_REQUIRED",
+        },
+
+        pickupDistanceWarning: {
+          shouldDisplay: false,
+          reason: null,
+          distanceMiles: null,
+
+          deliveryRadiusMiles:
+            warehouse.fulfillment?.localDelivery?.radiusMiles ?? null,
+
+          messageKey: null,
+        },
+      },
+    },
+  };
+};
+
 export const WarehouseProvider = ({ children }) => {
   const {
     coordinates,
+    location,
     hasResolvedLocation,
     isGeolocationLoading,
     geolocationError,
   } = useGeolocation();
 
-  console.log(
-    ` WarehouseProvider: coordinates=${JSON.stringify(
-      coordinates
-    )}, hasResolvedLocation=${hasResolvedLocation}, isGeolocationLoading=${isGeolocationLoading}, geolocationError=${geolocationError}`
-  );
   const [resolvedWarehouse, setResolvedWarehouse] = useState(null);
 
   const [resolvedCustomerContext, setResolvedCustomerContext] = useState(null);
 
-  const [isWarehouseLoading, setIsWarehouseLoading] = useState(false);
+  const [warehouseResolutionSource, setWarehouseResolutionSource] =
+    useState(null);
+
+  const [isWarehouseLoading, setIsWarehouseLoading] = useState(true);
 
   const [warehouseError, setWarehouseError] = useState(null);
 
-  const resolveWarehouse = useCallback(
-    async (nextCoordinates, { signal } = {}) => {
+  const resolveDefaultWarehouse = useCallback(async ({ signal } = {}) => {
+    setIsWarehouseLoading(true);
+    setWarehouseError(null);
+
+    try {
+      const warehouseResponse = await getWarehouseByIdRequest(
+        DEFAULT_WAREHOUSE_ID,
+        {
+          signal,
+        }
+      );
+
+      if (signal?.aborted) {
+        return null;
+      }
+
+      const normalizedResponse =
+        normalizeDefaultWarehouseResponse(warehouseResponse);
+
+      if (!normalizedResponse) {
+        throw new Error(
+          "The default warehouse response could not be normalized."
+        );
+      }
+
+      setResolvedWarehouse(normalizedResponse.warehouse);
+
+      setResolvedCustomerContext(normalizedResponse.customerContext);
+
+      setWarehouseResolutionSource(WAREHOUSE_RESOLUTION_SOURCES.DEFAULT);
+
+      return normalizedResponse;
+    } catch (requestError) {
+      if (signal?.aborted || isCanceledRequest(requestError)) {
+        return null;
+      }
+
+      console.error("Error resolving default warehouse:", requestError);
+
+      setResolvedWarehouse(null);
+      setResolvedCustomerContext(null);
+      setWarehouseResolutionSource(null);
+      setWarehouseError(requestError);
+
+      return null;
+    } finally {
+      if (!signal?.aborted) {
+        setIsWarehouseLoading(false);
+      }
+    }
+  }, []);
+
+  const resolveClosestWarehouse = useCallback(
+    async (
+      nextCoordinates,
+      { signal, source = WAREHOUSE_RESOLUTION_SOURCES.BROWSER_LOCATION } = {}
+    ) => {
       if (!nextCoordinates) {
         return null;
       }
@@ -64,6 +187,8 @@ export const WarehouseProvider = ({ children }) => {
 
         setResolvedCustomerContext(normalizedResponse.customerContext);
 
+        setWarehouseResolutionSource(source);
+
         return normalizedResponse;
       } catch (requestError) {
         if (signal?.aborted || isCanceledRequest(requestError)) {
@@ -72,8 +197,6 @@ export const WarehouseProvider = ({ children }) => {
 
         console.error("Error resolving closest warehouse:", requestError);
 
-        setResolvedWarehouse(null);
-        setResolvedCustomerContext(null);
         setWarehouseError(requestError);
 
         return null;
@@ -87,86 +210,115 @@ export const WarehouseProvider = ({ children }) => {
   );
 
   useEffect(() => {
-    if (!hasResolvedLocation || !coordinates) {
-      return undefined;
-    }
-
     const abortController = new AbortController();
 
-    const resolveCurrentWarehouse = async () => {
-      await resolveWarehouse(coordinates, {
+    const initializeWarehouse = async () => {
+      if (hasResolvedLocation && coordinates) {
+        const locationSource =
+          location?.source === "storage"
+            ? WAREHOUSE_RESOLUTION_SOURCES.STORED_LOCATION
+            : WAREHOUSE_RESOLUTION_SOURCES.BROWSER_LOCATION;
+
+        await resolveClosestWarehouse(coordinates, {
+          signal: abortController.signal,
+
+          source: locationSource,
+        });
+
+        return;
+      }
+
+      await resolveDefaultWarehouse({
         signal: abortController.signal,
       });
     };
 
-    resolveCurrentWarehouse();
+    initializeWarehouse();
 
     return () => {
       abortController.abort();
     };
-  }, [coordinates, hasResolvedLocation, resolveWarehouse]);
+  }, [
+    coordinates,
+    hasResolvedLocation,
+    location?.source,
+    resolveClosestWarehouse,
+    resolveDefaultWarehouse,
+  ]);
 
-  /*
-   * Do not expose a previously resolved warehouse when
-   * the customer no longer has a resolved location.
-   *
-   * These values are derived instead of being cleared
-   * synchronously inside the effect.
-   */
-  const warehouse = hasResolvedLocation ? resolvedWarehouse : null;
+  const warehouse = resolvedWarehouse;
 
-  const customerContext = hasResolvedLocation ? resolvedCustomerContext : null;
+  const customerContext = resolvedCustomerContext;
 
-  const effectiveWarehouseError = hasResolvedLocation ? warehouseError : null;
-
-  const effectiveWarehouseLoading = hasResolvedLocation
-    ? isWarehouseLoading
-    : false;
-
-  const isResolvingLocationOrWarehouse =
-    isGeolocationLoading || effectiveWarehouseLoading;
-
-  const combinedWarehouseError =
-    effectiveWarehouseError || geolocationError || null;
+  const isUsingDefaultWarehouse =
+    warehouseResolutionSource === WAREHOUSE_RESOLUTION_SOURCES.DEFAULT;
 
   const hasResolvedWarehouse = Boolean(warehouse);
 
+  const isResolvingLocationOrWarehouse =
+    isGeolocationLoading || isWarehouseLoading;
+
+  const combinedWarehouseError = warehouseError || geolocationError || null;
+
   const reloadWarehouse = useCallback(() => {
-    if (!coordinates) {
-      return Promise.resolve(null);
+    if (hasResolvedLocation && coordinates) {
+      const locationSource =
+        location?.source === "storage"
+          ? WAREHOUSE_RESOLUTION_SOURCES.STORED_LOCATION
+          : WAREHOUSE_RESOLUTION_SOURCES.BROWSER_LOCATION;
+
+      return resolveClosestWarehouse(coordinates, {
+        source: locationSource,
+      });
     }
 
-    return resolveWarehouse(coordinates);
-  }, [coordinates, resolveWarehouse]);
+    return resolveDefaultWarehouse();
+  }, [
+    coordinates,
+    hasResolvedLocation,
+    location?.source,
+    resolveClosestWarehouse,
+    resolveDefaultWarehouse,
+  ]);
 
   const contextValue = useMemo(
     () => ({
       warehouse,
       customerContext,
 
-      isWarehouseLoading: effectiveWarehouseLoading,
+      warehouseResolutionSource,
+      isUsingDefaultWarehouse,
 
-      warehouseError: effectiveWarehouseError,
+      isWarehouseLoading,
+      warehouseError,
 
       isResolvingLocationOrWarehouse,
       combinedWarehouseError,
 
       hasResolvedWarehouse,
 
-      resolveWarehouse,
+      resolveWarehouse: resolveClosestWarehouse,
+
+      resolveClosestWarehouse,
+      resolveDefaultWarehouse,
       reloadWarehouse,
 
       customerCoordinates: coordinates,
+
+      defaultWarehouseId: DEFAULT_WAREHOUSE_ID,
     }),
     [
       warehouse,
       customerContext,
-      effectiveWarehouseLoading,
-      effectiveWarehouseError,
+      warehouseResolutionSource,
+      isUsingDefaultWarehouse,
+      isWarehouseLoading,
+      warehouseError,
       isResolvingLocationOrWarehouse,
       combinedWarehouseError,
       hasResolvedWarehouse,
-      resolveWarehouse,
+      resolveClosestWarehouse,
+      resolveDefaultWarehouse,
       reloadWarehouse,
       coordinates,
     ]
