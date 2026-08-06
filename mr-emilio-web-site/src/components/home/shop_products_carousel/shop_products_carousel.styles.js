@@ -816,6 +816,9 @@ export const ProductWarehouseData = styled.div`
   display: flex;
   flex-direction: column;
 
+  width: 100%;
+  min-width: 0;
+
   animation: warehouse-product-data-enter 220ms ease both;
 
   @keyframes warehouse-product-data-enter {
@@ -1140,12 +1143,9 @@ export const ProductNotReviewed = styled.span`
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   line-height: 1.2;
 `;
-
 export const ProductPurchaseRow = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
 
   width: 100%;
 
@@ -1154,13 +1154,13 @@ export const ProductPurchaseRow = styled.div`
 
 export const ProductPrice = styled.p`
   margin: 0;
+  margin-right: auto;
 
   color: ${({ theme }) => theme.colors.brand.primary};
 
   font-size: ${({ theme }) => theme.fontSizes.text_18};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   line-height: 1.15;
-  text-align: left;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
     font-size: ${({ theme }) => theme.fontSizes.text_20};
@@ -1169,11 +1169,13 @@ export const ProductPrice = styled.p`
 
 export const AddToCartButton = styled.button`
   display: inline-flex;
+  margin-left: auto;
+
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  /* gap: 8px; */
-  gap: 0.35rem;
+  gap: 8px;
+  /* gap: 0.35rem; */
 
   min-width: 116px;
   min-height: 44px;
