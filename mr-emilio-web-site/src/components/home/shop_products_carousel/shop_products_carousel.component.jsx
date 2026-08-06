@@ -1,7 +1,4 @@
-import { useCallback, useEffect, useRef, useState, useMemo } from "react";
-
-// import { shopProductsCarouselData } from "./shop_products_carousel.data";
-// import { useProducts } from "../../../infrastructure/services/products/use-products.hook";
+import { useMemo } from "react";
 import { useCustomerCatalog } from "../../../infrastructure/services/catalog/use-customer_catalog.hook";
 
 import {
@@ -33,11 +30,6 @@ import {
   ProductDetailDivider,
   ProductInventoryStatusBadge,
   ProductStockDot,
-  ProductRatingContainer,
-  ProductStars,
-  ProductStar,
-  ProductReviewCount,
-  ProductNotReviewed,
   ProductPurchaseRow,
   ProductPrice,
   AddToCartButton,
@@ -52,516 +44,48 @@ import {
   AddToCartLabel,
 } from "./shop_products_carousel.styles";
 
-const ArrowIcon = ({ direction = "right" }) => {
-  const isLeft = direction === "left";
+import {
+  ArrowIcon,
+  CartIcon,
+  BenefitIcon,
+  HeartIcon,
+} from "../../../assets/shop_products_carousel/product_card/icons";
 
-  return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d={isLeft ? "M15 18L9 12L15 6" : "M9 18L15 12L9 6"}
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-};
+import {
+  getHomepageCarouselProducts,
+  getStockLabel,
+  getInventoryStatus,
+} from "./shop_products_carousel.helpers";
 
-const CartIcon = () => {
-  return (
-    <svg
-      width="21"
-      height="21"
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M3.5 4.5H5.5L7.2 15.2C7.3 15.9 7.9 16.4 8.6 16.4H17.6C18.3 16.4 18.9 15.9 19 15.2L20.2 8H6.1"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+import { ProductRating } from "./product_rating.component";
+import { useProductFavorites } from "./use-product-favorites.hook";
+import { useShopProductsCarousel } from "./use-shop-products-carousel.hook";
 
-      <circle
-        cx="9.2"
-        cy="19.2"
-        r="1.2"
-        stroke="currentColor"
-        strokeWidth="1.7"
-      />
-
-      <circle
-        cx="17.3"
-        cy="19.2"
-        r="1.2"
-        stroke="currentColor"
-        strokeWidth="1.7"
-      />
-    </svg>
-  );
-};
-const BenefitIcon = ({ type }) => {
-  if (type === "snowflake") {
-    return (
-      <svg
-        width="22"
-        height="22"
-        viewBox="0 0 24 24"
-        fill="none"
-        aria-hidden="true"
-      >
-        <path
-          d="M12 2V22M4.2 6.5L19.8 17.5M4.2 17.5L19.8 6.5M8.5 4L12 7.5L15.5 4M8.5 20L12 16.5L15.5 20M3.5 10L8 12L3.5 14M20.5 10L16 12L20.5 14"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
-  }
-
-  if (type === "clock") {
-    return (
-      <svg
-        width="22"
-        height="22"
-        viewBox="0 0 24 24"
-        fill="none"
-        aria-hidden="true"
-      >
-        <circle
-          cx="12"
-          cy="12"
-          r="8.5"
-          stroke="currentColor"
-          strokeWidth="1.6"
-        />
-
-        <path
-          d="M12 7.5V12L15.2 14"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
-  }
-
-  if (type === "heart") {
-    return (
-      <svg
-        width="22"
-        height="22"
-        viewBox="0 0 24 24"
-        fill="none"
-        aria-hidden="true"
-      >
-        <defs>
-          <linearGradient
-            id="venezuela-heart-gradient"
-            x1="12"
-            y1="3"
-            x2="12"
-            y2="21"
-            gradientUnits="userSpaceOnUse"
-          >
-            <stop offset="0%" stopColor="#F4D000" />
-            <stop offset="33.33%" stopColor="#F4D000" />
-
-            <stop offset="33.34%" stopColor="#1646AC" />
-            <stop offset="66.66%" stopColor="#1646AC" />
-
-            <stop offset="66.67%" stopColor="#CF142B" />
-            <stop offset="100%" stopColor="#CF142B" />
-          </linearGradient>
-        </defs>
-
-        <path
-          d="M20.8 4.8C18.7 2.7 15.3 2.7 13.2 4.8L12 6L10.8 4.8C8.7 2.7 5.3 2.7 3.2 4.8C1.1 6.9 1.1 10.3 3.2 12.4L12 21L20.8 12.4C22.9 10.3 22.9 6.9 20.8 4.8Z"
-          fill="url(#venezuela-heart-gradient)"
-        />
-      </svg>
-    );
-  }
-
-  if (type === "scale") {
-    return (
-      <svg
-        width="22"
-        height="22"
-        viewBox="0 0 24 24"
-        fill="none"
-        aria-hidden="true"
-      >
-        <path
-          d="M12 4V19M7 20H17M5 7H19M7 7L4 13H10L7 7ZM17 7L14 13H20L17 7Z"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
-  }
-
-  return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M5 7.5L12 4L19 7.5V16.5L12 20L5 16.5V7.5Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-
-      <path
-        d="M5 7.5L12 11L19 7.5M12 11V20"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-};
-const HeartIcon = ({ filled = false }) => {
-  return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill={filled ? "currentColor" : "none"}
-      aria-hidden="true"
-    >
-      <path
-        d="M20.8 4.8C18.7 2.7 15.3 2.7 13.2 4.8L12 6L10.8 4.8C8.7 2.7 5.3 2.7 3.2 4.8C1.1 6.9 1.1 10.3 3.2 12.4L12 21L20.8 12.4C22.9 10.3 22.9 6.9 20.8 4.8Z"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-};
-
-const StarIcon = ({ filled }) => {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        d="M12 2.75L14.86 8.55L21.26 9.48L16.63 13.99L17.72 20.37L12 17.36L6.28 20.37L7.37 13.99L2.74 9.48L9.14 8.55L12 2.75Z"
-        fill={filled ? "currentColor" : "none"}
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-};
-
-const ProductRating = ({ review }) => {
-  if (!review || review.count <= 0) {
-    return (
-      <ProductRatingContainer>
-        <ProductNotReviewed>Not reviewed yet</ProductNotReviewed>
-      </ProductRatingContainer>
-    );
-  }
-
-  const normalizedAverage = Math.max(0, Math.min(5, review.average));
-  const filledStars = Math.round(normalizedAverage);
-
-  return (
-    <ProductRatingContainer
-      aria-label={`${normalizedAverage} out of 5 stars from ${review.count} reviews`}
-    >
-      <ProductStars aria-hidden="true">
-        {Array.from({ length: 5 }, (_, index) => (
-          <ProductStar key={index} $filled={index < filledStars}>
-            <StarIcon filled={index < filledStars} />
-          </ProductStar>
-        ))}
-      </ProductStars>
-
-      <ProductReviewCount>({review.count})</ProductReviewCount>
-    </ProductRatingContainer>
-  );
-};
-const getStockLabel = (product) => {
-  if (product.stock <= 0) {
-    return "Sold out";
-  }
-
-  if (product.stockUnit === "count" || product.stockUnit === "ct") {
-    return `${product.stock} count`;
-  }
-
-  if (product.stock === 1) {
-    return "1 unit";
-  }
-
-  return `${product.stock} units`;
-};
-
-const getInventoryStatus = (stock) => {
-  if (stock <= 0) {
-    return {
-      key: "soldOut",
-      label: "Out of stock",
-    };
-  }
-
-  if (stock <= 10) {
-    return {
-      key: "runningLow",
-      label: "Running low",
-    };
-  }
-
-  return {
-    key: "plenty",
-    label: "Plenty in stock",
-  };
-};
 export const ShopProductsCarousel = ({
   title = "Best Sellers",
   viewAllLabel = "View all best sellers",
   viewAllHref = "/products",
   onAddToCart,
 }) => {
-  const viewportRef = useRef(null);
-
   // const { homepageProducts, isProductsLoading, productsError } = useProducts();
   const {
     customerCatalogProducts,
     isCustomerCatalogLoading,
     customerCatalogError,
   } = useCustomerCatalog();
+
   const carouselProducts = useMemo(
-    () =>
-      customerCatalogProducts
-        .filter((product) => product.showOnHomepage)
-        .sort(
-          (productA, productB) =>
-            productA.homepageOrder - productB.homepageOrder
-        ),
+    () => getHomepageCarouselProducts(customerCatalogProducts),
     [customerCatalogProducts]
   );
-  // const carouselProducts = homepageProducts;
 
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [pageCount, setPageCount] = useState(1);
-
-  const [favoriteProductIds, setFavoriteProductIds] = useState(() => new Set());
-
-  const [favoriteRequestIds, setFavoriteRequestIds] = useState(() => new Set());
-
-  const getScrollStep = useCallback(() => {
-    const viewport = viewportRef.current;
-
-    if (!viewport) {
-      return 0;
-    }
-
-    const firstCard = viewport.querySelector("[data-product-card]");
-
-    if (!firstCard) {
-      return viewport.clientWidth;
-    }
-
-    const track = firstCard.parentElement;
-    const trackStyles = window.getComputedStyle(track);
-
-    const gap =
-      Number.parseFloat(trackStyles.columnGap || trackStyles.gap) || 0;
-
-    return firstCard.getBoundingClientRect().width + gap;
-  }, []);
-
-  const updateCarouselState = useCallback(() => {
-    const viewport = viewportRef.current;
-
-    if (!viewport) {
-      return;
-    }
-
-    const maximumScroll = viewport.scrollWidth - viewport.clientWidth;
-
-    const scrollStep = getScrollStep();
-
-    if (maximumScroll <= 1 || scrollStep <= 0) {
-      setActiveIndex(0);
-      setPageCount(1);
-      return;
-    }
-
-    const calculatedPageCount = Math.max(
-      1,
-      Math.ceil(maximumScroll / scrollStep) + 1
-    );
-
-    const calculatedIndex = Math.min(
-      calculatedPageCount - 1,
-      Math.round(viewport.scrollLeft / scrollStep)
-    );
-
-    setPageCount(calculatedPageCount);
-    setActiveIndex(calculatedIndex);
-  }, [getScrollStep]);
-
-  useEffect(() => {
-    const viewport = viewportRef.current;
-
-    if (!viewport) {
-      return undefined;
-    }
-
-    let animationFrameId = null;
-
-    const handleScroll = () => {
-      if (animationFrameId) {
-        window.cancelAnimationFrame(animationFrameId);
-      }
-
-      animationFrameId = window.requestAnimationFrame(updateCarouselState);
-    };
-
-    const handleResize = () => {
-      updateCarouselState();
-    };
-
-    updateCarouselState();
-
-    viewport.addEventListener("scroll", handleScroll, {
-      passive: true,
+  const { viewportRef, activeIndex, pageCount, scrollCarousel, scrollToPage } =
+    useShopProductsCarousel({
+      productCount: carouselProducts.length,
     });
 
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      viewport.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleResize);
-
-      if (animationFrameId) {
-        window.cancelAnimationFrame(animationFrameId);
-      }
-    };
-  }, [updateCarouselState, carouselProducts.length]);
-
-  const scrollCarousel = (direction) => {
-    const viewport = viewportRef.current;
-
-    if (!viewport) {
-      return;
-    }
-
-    const scrollStep = getScrollStep();
-
-    viewport.scrollBy({
-      left: direction === "next" ? scrollStep : -scrollStep,
-      behavior: "smooth",
-    });
-  };
-
-  const scrollToPage = (index) => {
-    const viewport = viewportRef.current;
-
-    if (!viewport) {
-      return;
-    }
-
-    viewport.scrollTo({
-      left: getScrollStep() * index,
-      behavior: "smooth",
-    });
-  };
-
-  const updateProductFavoriteRequest = async ({ productId, isFavorite }) => {
-    console.log("Favorite request prepared:", {
-      productId,
-      isFavorite,
-    });
-
-    return {
-      productId,
-      isFavorite,
-    };
-  };
-
-  const handleFavoriteToggle = async (event, product) => {
-    event.preventDefault();
-    event.stopPropagation();
-
-    if (favoriteRequestIds.has(product.id)) {
-      return;
-    }
-
-    const wasFavorite = favoriteProductIds.has(product.id);
-    const nextFavoriteState = !wasFavorite;
-
-    setFavoriteProductIds((currentIds) => {
-      const nextIds = new Set(currentIds);
-
-      if (nextFavoriteState) {
-        nextIds.add(product.id);
-      } else {
-        nextIds.delete(product.id);
-      }
-
-      return nextIds;
-    });
-
-    setFavoriteRequestIds((currentIds) => {
-      const nextIds = new Set(currentIds);
-
-      nextIds.add(product.id);
-
-      return nextIds;
-    });
-
-    try {
-      await updateProductFavoriteRequest({
-        productId: product.id,
-        isFavorite: nextFavoriteState,
-      });
-    } catch (error) {
-      console.error("Unable to update favorite product:", error);
-
-      setFavoriteProductIds((currentIds) => {
-        const nextIds = new Set(currentIds);
-
-        if (wasFavorite) {
-          nextIds.add(product.id);
-        } else {
-          nextIds.delete(product.id);
-        }
-
-        return nextIds;
-      });
-    } finally {
-      setFavoriteRequestIds((currentIds) => {
-        const nextIds = new Set(currentIds);
-
-        nextIds.delete(product.id);
-
-        return nextIds;
-      });
-    }
-  };
+  const { isProductFavorite, isFavoriteRequestPending, toggleProductFavorite } =
+    useProductFavorites();
 
   const handleAddToCart = (event, product) => {
     event.preventDefault();
@@ -588,10 +112,6 @@ export const ShopProductsCarousel = ({
 
     return null;
   }
-
-  // if (!customerCatalogError.length) {
-  //   return null;
-  // }
 
   return (
     <ShopProductsSection>
@@ -653,6 +173,27 @@ export const ShopProductsCarousel = ({
 
                         <ProductFavoriteButton
                           type="button"
+                          $favorite={isProductFavorite(displayProduct.id)}
+                          disabled={isFavoriteRequestPending(displayProduct.id)}
+                          aria-label={
+                            isProductFavorite(displayProduct.id)
+                              ? `Remove ${displayProduct.name} from favorites`
+                              : `Add ${displayProduct.name} to favorites`
+                          }
+                          aria-pressed={isProductFavorite(displayProduct.id)}
+                          onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+
+                            toggleProductFavorite(displayProduct);
+                          }}
+                        >
+                          <HeartIcon
+                            filled={isProductFavorite(displayProduct.id)}
+                          />
+                        </ProductFavoriteButton>
+                        {/* <ProductFavoriteButton
+                          type="button"
                           $favorite={favoriteProductIds.has(displayProduct.id)}
                           disabled={favoriteRequestIds.has(displayProduct.id)}
                           aria-label={
@@ -670,7 +211,7 @@ export const ShopProductsCarousel = ({
                           <HeartIcon
                             filled={favoriteProductIds.has(displayProduct.id)}
                           />
-                        </ProductFavoriteButton>
+                        </ProductFavoriteButton> */}
 
                         <ProductImage
                           src={displayProduct.image}

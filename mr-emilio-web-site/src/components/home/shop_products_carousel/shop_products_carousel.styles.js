@@ -1172,7 +1172,8 @@ export const AddToCartButton = styled.button`
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  /* gap: 8px; */
+  gap: 0.35rem;
 
   min-width: 116px;
   min-height: 44px;
@@ -1234,8 +1235,13 @@ export const AddToCartLabel = styled.span`
   line-height: 1;
   white-space: nowrap;
 
+  display: inline-block;
+  transform: translateY(3px);
+
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
     font-size: 0.88rem;
+    display: inline-block;
+    transform: translateY(2px);
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {

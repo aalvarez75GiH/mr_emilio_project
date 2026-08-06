@@ -19,7 +19,6 @@ export const HomeScreen = () => {
       <Hero />
       <BrandBenefits />
       <LocationSelector />
-      {/* <ShoppingContext /> */}
       <ShopProductsCarousel
         title="Best Sellers"
         viewAllLabel="View all best sellers"
