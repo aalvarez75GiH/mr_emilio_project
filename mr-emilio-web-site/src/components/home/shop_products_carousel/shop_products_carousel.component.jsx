@@ -21,13 +21,12 @@ import { ArrowIcon } from "../../../assets/shop_products_carousel/product_card/i
 import {
   getHomepageCarouselProducts,
   getDisplayProduct,
-  // getStockLabel,
 } from "./shop_products_carousel.helpers";
 
-// import { ProductRating } from "./product_rating.component";
 import { ShopProductCard } from "./product_card.component";
 import { useProductFavorites } from "./use-product-favorites.hook";
 import { useShopProductsCarousel } from "./use-shop-products-carousel.hook";
+import { ShopProductsCarouselSkeleton } from "./shop_products_carousel_skeleton.component";
 
 export const ShopProductsCarousel = ({
   title = "Best Sellers",
@@ -71,7 +70,9 @@ export const ShopProductsCarousel = ({
   };
 
   if (isCustomerCatalogLoading) {
-    return null;
+    return (
+      <ShopProductsCarouselSkeleton title={title} viewAllLabel={viewAllLabel} />
+    );
   }
 
   if (customerCatalogError) {
