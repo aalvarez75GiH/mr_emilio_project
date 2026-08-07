@@ -1,6 +1,5 @@
 import {
   BenefitIcon,
-  CartIcon,
   HeartIcon,
 } from "../../../assets/shop_products_carousel/product_card/icons";
 
@@ -175,8 +174,6 @@ export const ShopProductCard = ({
                   disabled={product.stock <= 0}
                   onClick={handleAddToCartClick}
                 >
-                  <CartIcon />
-
                   <AddToCartLabel>
                     {product.stock > 0 ? "Add to cart" : "Sold out"}
                   </AddToCartLabel>

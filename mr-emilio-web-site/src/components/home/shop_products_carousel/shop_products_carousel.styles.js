@@ -273,11 +273,7 @@ export const ProductCard = styled.article`
     width: 100%;
 
     border-radius: 16px;
-
-    &:hover {
-      transform: none;
-      box-shadow: none;
-    }
+    border: ${({ theme }) => `3px solid ${theme.colors.brand.primary}`};
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
@@ -1111,7 +1107,11 @@ export const ProductRatingContainer = styled.div`
   width: 100%;
   min-height: 19px;
 
-  margin-bottom: 11px;
+  margin-bottom: 7px;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    margin-bottom: 6px;
+  }
 `;
 
 export const ProductStars = styled.span`
@@ -1146,10 +1146,28 @@ export const ProductNotReviewed = styled.span`
 export const ProductPurchaseRow = styled.div`
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 
   width: 100%;
 
   margin-top: auto;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    gap: 6px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    gap: 10px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    gap: 14px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    gap: 10px;
+  }
 `;
 
 export const ProductPrice = styled.p`
@@ -1158,12 +1176,18 @@ export const ProductPrice = styled.p`
 
   color: ${({ theme }) => theme.colors.brand.primary};
 
-  font-size: ${({ theme }) => theme.fontSizes.text_18};
+  font-size: ${({ theme }) => theme.fontSizes.text_20};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  line-height: 1.15;
+  line-height: 1.1;
+
+  white-space: nowrap;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    font-size: ${({ theme }) => theme.fontSizes.text_20};
+    font-size: 1.6rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    font-size: 1.5rem;
   }
 `;
 
@@ -1174,13 +1198,11 @@ export const AddToCartButton = styled.button`
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  /* gap: 0.35rem; */
 
-  min-width: 116px;
-  min-height: 44px;
+  min-width: 106px;
+  min-height: 40px;
 
-  padding: 0 14px;
+  padding: 0 11px;
 
   border: none;
   border-radius: 999px;
@@ -1188,15 +1210,15 @@ export const AddToCartButton = styled.button`
   background: ${({ theme }) => theme.colors.brand.primary};
   color: #ffffff;
 
+  text-align: center;
+
   cursor: pointer;
 
   transition: opacity 180ms ease, transform 180ms ease, box-shadow 180ms ease;
 
   &:hover:not(:disabled) {
     opacity: 0.92;
-
     transform: translateY(-2px);
-
     box-shadow: 0 8px 18px rgba(22, 70, 172, 0.2);
   }
 
@@ -1208,6 +1230,20 @@ export const AddToCartButton = styled.button`
   &:focus-visible {
     outline: 3px solid rgba(22, 70, 172, 0.25);
     outline-offset: 3px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.wide}) {
+    min-width: 102px;
+    min-height: 40px;
+
+    padding: 0 10px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    min-width: 98px;
+    min-height: 40px;
+
+    padding: 0 9px;
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
@@ -1232,22 +1268,24 @@ export const AddToCartButton = styled.button`
 `;
 
 export const AddToCartLabel = styled.span`
+  display: block;
+
+  margin: 0;
+
+  color: inherit;
+
   font-size: 0.76rem;
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   line-height: 1;
+  text-align: center;
   white-space: nowrap;
 
-  display: inline-block;
-  transform: translateY(3px);
-
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    font-size: 0.88rem;
-    display: inline-block;
-    transform: translateY(2px);
+    font-size: 0.98rem;
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
-    font-size: 0.8rem;
+    font-size: 0.88rem;
   }
 `;
 
