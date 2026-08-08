@@ -20,8 +20,8 @@ export const HomeScreen = () => {
       <BrandBenefits />
       <LocationSelector />
       <ShopProductsCarousel
-        title="Best Sellers"
-        viewAllLabel="View all best sellers"
+        title="Our Products"
+        viewAllLabel="Coming soon"
         viewAllHref="/products"
         products={shopProductsCarouselData}
       />

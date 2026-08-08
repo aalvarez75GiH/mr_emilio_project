@@ -17,6 +17,21 @@ import {
 } from "./hero.styles";
 
 export const Hero = () => {
+  const handleShopNowClick = (event) => {
+    event.preventDefault();
+
+    const locationSelector = document.getElementById("location-selector");
+
+    if (!locationSelector) {
+      return;
+    }
+
+    locationSelector.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
   return (
     <HeroSection spacing="none">
       <HeroContainer>
@@ -34,7 +49,12 @@ export const Hero = () => {
             </Text>
 
             <HeroActions>
-              <Button variant="primary" size="large">
+              <Button
+                variant="primary"
+                size="large"
+                href="#location-selector"
+                onClick={handleShopNowClick}
+              >
                 Shop Now
               </Button>
             </HeroActions>

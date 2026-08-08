@@ -6,8 +6,6 @@ import {
   ShopProductsContainer,
   ShopProductsHeader,
   SectionTitle,
-  ViewAllLink,
-  ViewAllIcon,
   CarouselLayout,
   CarouselViewport,
   ProductsTrack,
@@ -29,9 +27,7 @@ import { useShopProductsCarousel } from "./use-shop-products-carousel.hook";
 import { ShopProductsCarouselSkeleton } from "./shop_products_carousel_skeleton.component";
 
 export const ShopProductsCarousel = ({
-  title = "Best Sellers",
-  viewAllLabel = "View all best sellers",
-  viewAllHref = "/products",
+  title = "Buy our products",
   onAddToCart,
 }) => {
   const {
@@ -70,9 +66,7 @@ export const ShopProductsCarousel = ({
   };
 
   if (isCustomerCatalogLoading) {
-    return (
-      <ShopProductsCarouselSkeleton title={title} viewAllLabel={viewAllLabel} />
-    );
+    return <ShopProductsCarouselSkeleton title={title} />;
   }
 
   if (customerCatalogError) {
@@ -86,14 +80,6 @@ export const ShopProductsCarousel = ({
       <ShopProductsContainer>
         <ShopProductsHeader>
           <SectionTitle>{title}</SectionTitle>
-
-          <ViewAllLink to={viewAllHref}>
-            {viewAllLabel}
-
-            <ViewAllIcon aria-hidden="true">
-              <ArrowIcon />
-            </ViewAllIcon>
-          </ViewAllLink>
         </ShopProductsHeader>
 
         <CarouselLayout>

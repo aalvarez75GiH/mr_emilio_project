@@ -128,18 +128,18 @@ export const LocationSelector = ({
 
   if (variant === LOCATION_SELECTOR_VARIANTS.BANNER) {
     return (
-      <LocationSelectorSection>
+      <LocationSelectorSection id="location-selector">
         <LocationSelectorSectionInner>
           <LocationSelectorBanner
             warehouseName={warehouse.warehouse_name}
             warehouseLocation={warehouseLocation}
             distanceMiles={distanceMiles}
-            isUsingDefaultWarehouse={isUsingDefaultWarehouse}
-            isLoading={isLoading}
-            buttonState={buttonState}
-            actionLabel={actionLabel}
             message={message}
+            actionLabel={actionLabel}
+            buttonState={buttonState}
+            isLoading={isLoading}
             errorMessage={errorMessage}
+            onLocationRequest={handleLocationRequest}
             onAction={handleLocationRequest}
           />
         </LocationSelectorSectionInner>

@@ -11,11 +11,15 @@ export const LocationSelectorSection = styled.section`
   margin-top: 1.65rem;
   margin-bottom: 0.35rem;
 
+  scroll-margin-top: 90px;
+
   @media (min-width: 1440px) {
     padding-inline: 4.5rem;
 
     margin-top: 1.9rem;
     margin-bottom: 0.4rem;
+
+    scroll-margin-top: 100px;
   }
 
   @media (max-width: 1280px) {
@@ -23,6 +27,8 @@ export const LocationSelectorSection = styled.section`
 
     margin-top: 1.5rem;
     margin-bottom: 0.35rem;
+
+    scroll-margin-top: 90px;
   }
 
   @media (max-width: 1024px) {
@@ -30,6 +36,8 @@ export const LocationSelectorSection = styled.section`
 
     margin-top: 1.35rem;
     margin-bottom: 0.3rem;
+
+    scroll-margin-top: 82px;
   }
 
   @media (max-width: 768px) {
@@ -37,6 +45,8 @@ export const LocationSelectorSection = styled.section`
 
     margin-top: 1.25rem;
     margin-bottom: 0.25rem;
+
+    scroll-margin-top: 78px;
   }
 
   @media (max-width: 480px) {
@@ -44,14 +54,66 @@ export const LocationSelectorSection = styled.section`
 
     margin-top: 1.1rem;
     margin-bottom: 0.2rem;
+
+    scroll-margin-top: 72px;
   }
 
   @media (max-width: 375px) {
     padding-inline: 0.875rem;
 
     margin-top: 1rem;
+
+    scroll-margin-top: 68px;
   }
 `;
+// export const LocationSelectorSection = styled.section`
+//   width: 100%;
+//   padding: 0 3.5rem;
+
+//   margin-top: 1.65rem;
+//   margin-bottom: 0.35rem;
+
+//   @media (min-width: 1440px) {
+//     padding-inline: 4.5rem;
+
+//     margin-top: 1.9rem;
+//     margin-bottom: 0.4rem;
+//   }
+
+//   @media (max-width: 1280px) {
+//     padding-inline: 3rem;
+
+//     margin-top: 1.5rem;
+//     margin-bottom: 0.35rem;
+//   }
+
+//   @media (max-width: 1024px) {
+//     padding-inline: 2rem;
+
+//     margin-top: 1.35rem;
+//     margin-bottom: 0.3rem;
+//   }
+
+//   @media (max-width: 768px) {
+//     padding-inline: 1.25rem;
+
+//     margin-top: 1.25rem;
+//     margin-bottom: 0.25rem;
+//   }
+
+//   @media (max-width: 480px) {
+//     padding-inline: 1rem;
+
+//     margin-top: 1.1rem;
+//     margin-bottom: 0.2rem;
+//   }
+
+//   @media (max-width: 375px) {
+//     padding-inline: 0.875rem;
+
+//     margin-top: 1rem;
+//   }
+// `;
 
 export const LocationSelectorSectionInner = styled.div`
   width: 100%;

@@ -22,13 +22,41 @@ export const ShopProductsSection = styled.section`
   }
 
   @media (max-width: 480px) {
-    padding: 0.7rem 1rem 0;
+    padding: 1.75rem 1rem 0;
   }
 
   @media (max-width: 375px) {
-    padding-inline: 0.875rem;
+    padding: 1.5rem 0.875rem 0;
   }
 `;
+// export const ShopProductsSection = styled.section`
+//   width: 100%;
+//   padding: 1rem 3.5rem 0;
+
+//   @media (min-width: 1440px) {
+//     padding: 1.1rem 4.5rem 0;
+//   }
+
+//   @media (max-width: 1280px) {
+//     padding: 0.95rem 3rem 0;
+//   }
+
+//   @media (max-width: 1024px) {
+//     padding: 0.85rem 2rem 0;
+//   }
+
+//   @media (max-width: 768px) {
+//     padding: 0.75rem 1.25rem 0;
+//   }
+
+//   @media (max-width: 480px) {
+//     padding: 0.7rem 1rem 0;
+//   }
+
+//   @media (max-width: 375px) {
+//     padding-inline: 0.875rem;
+//   }
+// `;
 
 export const ShopProductsContainer = styled.div`
   width: 100%;
@@ -73,7 +101,7 @@ export const ShopProductsHeader = styled.div`
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-
+  margin-left: 10px;
   margin-bottom: 22px;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {

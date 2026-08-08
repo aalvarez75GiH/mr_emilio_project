@@ -218,7 +218,9 @@ const SkeletonCardItem = () => {
   );
 };
 
-export const ShopProductsCarouselSkeleton = ({ title = "Best Sellers" }) => {
+export const ShopProductsCarouselSkeleton = ({
+  title = "Buy our products",
+}) => {
   return (
     <ShopProductsSection aria-busy="true" aria-label="Loading products">
       <ShopProductsContainer>
