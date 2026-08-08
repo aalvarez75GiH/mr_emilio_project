@@ -12,6 +12,7 @@ import { ProductsProvider } from "./infrastructure/services/products/products.pr
 import { WarehouseProvider } from "./infrastructure/services/warehouse/warehouse.provider.jsx";
 import { CustomerCatalogProvider } from "./infrastructure/services/catalog/customer_catalog.provider.jsx";
 import { GeolocationProvider } from "./infrastructure/services/geolocation/geolocation.provider.jsx";
+import { CartProvider } from "./infrastructure/services/cart/cart.provider.jsx";
 
 import { GlobalStyles } from "./styles/global.styles";
 
@@ -24,7 +25,9 @@ createRoot(document.getElementById("root")).render(
           <GeolocationProvider>
             <WarehouseProvider>
               <CustomerCatalogProvider>
-                <App />
+                <CartProvider>
+                  <App />
+                </CartProvider>
               </CustomerCatalogProvider>
             </WarehouseProvider>
           </GeolocationProvider>

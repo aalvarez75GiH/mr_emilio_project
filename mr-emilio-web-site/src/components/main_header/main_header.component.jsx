@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { FiMenu, FiShoppingCart, FiUser } from "react-icons/fi";
 
+import { useCart } from "../../infrastructure/services/cart/use-cart.hook";
+
 import logo from "../../assets/branding/logo.jpeg";
 
 import {
@@ -11,6 +13,8 @@ import {
   NavigationLink,
   Actions,
   ActionButton,
+  CartActionContainer,
+  CartQuantityBadge,
   MobileMenuButton,
 } from "./main_header.styles";
 
@@ -38,6 +42,15 @@ const navigation = [
 ];
 
 export const MainHeader = () => {
+  const { cartQuantity } = useCart();
+
+  const cartAriaLabel =
+    cartQuantity > 0
+      ? `Shopping cart, ${cartQuantity} ${
+          cartQuantity === 1 ? "item" : "items"
+        }`
+      : "Shopping cart";
+
   return (
     <Header>
       <HeaderContainer>
@@ -58,9 +71,28 @@ export const MainHeader = () => {
             <FiUser />
           </ActionButton>
 
-          <ActionButton type="button" aria-label="Shopping cart">
-            <FiShoppingCart />
-          </ActionButton>
+          <CartActionContainer>
+            <ActionButton as={Link} to="/cart" aria-label={cartAriaLabel}>
+              <FiShoppingCart />
+            </ActionButton>
+
+            {cartQuantity > 0 && (
+              <CartQuantityBadge aria-hidden="true">
+                {cartQuantity > 99 ? "99+" : cartQuantity}
+              </CartQuantityBadge>
+            )}
+          </CartActionContainer>
+          {/* <CartActionContainer>
+            <ActionButton type="button" aria-label={cartAriaLabel}>
+              <FiShoppingCart />
+            </ActionButton>
+
+            {cartQuantity > 0 && (
+              <CartQuantityBadge aria-hidden="true">
+                {cartQuantity > 99 ? "99+" : cartQuantity}
+              </CartQuantityBadge>
+            )}
+          </CartActionContainer> */}
 
           <MobileMenuButton type="button" aria-label="Open navigation menu">
             <FiMenu />

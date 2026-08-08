@@ -167,6 +167,7 @@ export const ActionButton = styled.button`
   color: ${({ theme }) => theme.colors.text.primary};
 
   font-size: 22px;
+  text-decoration: none;
 
   cursor: pointer;
 
@@ -199,6 +200,83 @@ export const ActionButton = styled.button`
     height: 38px;
 
     font-size: 20px;
+  }
+`;
+
+export const CartActionContainer = styled.div`
+  position: relative;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 42px;
+  height: 42px;
+
+  flex: 0 0 auto;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    width: 40px;
+    height: 40px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    width: 38px;
+    height: 38px;
+  }
+`;
+
+export const CartQuantityBadge = styled.span`
+  position: absolute;
+  z-index: 2;
+
+  top: -2px;
+  right: -3px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 18px;
+  height: 18px;
+
+  padding: 0 5px;
+
+  border: 2px solid ${({ theme }) => theme.colors.background.primary};
+  border-radius: 999px;
+
+  background: ${({ theme }) => theme.colors.brand.primary};
+  color: #ffffff;
+
+  font-family: ${({ theme }) => theme.fonts.body};
+  font-size: 0.65rem;
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  line-height: 1;
+
+  pointer-events: none;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    top: -1px;
+    right: -2px;
+
+    min-width: 17px;
+    height: 17px;
+
+    padding: 0 4px;
+
+    font-size: 0.61rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    top: 0;
+    right: -1px;
+
+    min-width: 16px;
+    height: 16px;
+
+    padding: 0 4px;
+
+    font-size: 0.58rem;
   }
 `;
 
