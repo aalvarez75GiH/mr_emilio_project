@@ -4,26 +4,26 @@ export const SnackbarContainer = styled.div`
   position: fixed;
   z-index: 2000;
 
-  right: 32px;
-  bottom: 32px;
+  top: ${({ theme }) => theme.sizes.header.desktopHeight};
+  right: 0;
+  left: 0;
+  bottom: auto;
 
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
 
-  width: min(420px, calc(100vw - 64px));
-  min-height: 72px;
+  width: 100%;
+  min-height: 64px;
 
-  padding: 14px 14px 14px 16px;
+  padding: 12px 64px;
 
-  border: 1px solid
-    ${({ $type }) =>
-      $type === "success"
-        ? "rgba(255, 255, 255, 0.16)"
-        : "rgba(182, 109, 0, 0.22)"};
-
-  border-radius: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  border-right: none;
+  border-left: none;
+  border-radius: 0;
 
   background: ${({ $type, theme }) =>
     $type === "success"
@@ -34,14 +34,14 @@ export const SnackbarContainer = styled.div`
         )`
       : theme.colors.background.primary};
 
-  box-shadow: 0 18px 48px rgba(18, 26, 42, 0.22);
+  box-shadow: 0 10px 28px rgba(18, 26, 42, 0.14);
 
   animation: snackbar-enter 220ms ease both;
 
   @keyframes snackbar-enter {
     from {
       opacity: 0;
-      transform: translateY(10px);
+      transform: translateY(-8px);
     }
 
     to {
@@ -50,14 +50,26 @@ export const SnackbarContainer = styled.div`
     }
   }
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
-    right: 24px;
-    bottom: 24px;
+  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
+    padding-inline: 80px;
+  }
 
-    width: min(400px, calc(100vw - 48px));
+  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    padding-inline: 48px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    padding-inline: 32px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    top: ${({ theme }) => theme.sizes.header.tabletHeight};
+
+    padding-inline: 24px;
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    top: auto;
     right: 16px;
     bottom: 18px;
     left: 16px;
@@ -67,7 +79,29 @@ export const SnackbarContainer = styled.div`
 
     padding: 13px 12px 13px 14px;
 
+    border: 1px solid
+      ${({ $type }) =>
+        $type === "success"
+          ? "rgba(255, 255, 255, 0.16)"
+          : "rgba(182, 109, 0, 0.22)"};
+
     border-radius: 12px;
+
+    box-shadow: 0 18px 48px rgba(18, 26, 42, 0.22);
+
+    animation: snackbar-mobile-enter 220ms ease both;
+
+    @keyframes snackbar-mobile-enter {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {

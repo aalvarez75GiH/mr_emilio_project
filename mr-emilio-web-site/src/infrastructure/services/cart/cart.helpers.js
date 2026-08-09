@@ -45,7 +45,19 @@ export const createCartItemFromProduct = (product) => {
     image: product.image,
     alt: product.alt || product.name,
 
+    imageScale: Number(product.imageScale) || 1,
+    imageOffsetX: Number(product.imageOffsetX) || 0,
+    imageOffsetY: Number(product.imageOffsetY) || 0,
+
     sizeLabel: product.sizeLabel || "",
+
+    benefits: Array.isArray(product.benefits)
+      ? product.benefits.map((benefit) => ({
+          type: benefit.type || benefit.id || benefit.label,
+          icon: benefit.icon,
+          label: benefit.label,
+        }))
+      : [],
 
     price: getCartProductPrice(product),
     displayedPrice: product.displayedPrice || "",
@@ -70,7 +82,7 @@ export const createCartItemFromProduct = (product) => {
 
 //     sizeLabel: product.sizeLabel || "",
 
-//     price: Number(product.price) || 0,
+//     price: getCartProductPrice(product),
 //     displayedPrice: product.displayedPrice || "",
 
 //     quantity: 1,

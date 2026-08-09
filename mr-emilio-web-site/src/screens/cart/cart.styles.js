@@ -394,6 +394,72 @@ export const CartItemPrice = styled.span`
   }
 `;
 
+export const CartItemBenefits = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  width: min(100%, 390px);
+
+  margin-top: 16px;
+  padding-top: 14px;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    margin-top: 14px;
+    padding-top: 12px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    width: 100%;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    display: none;
+  }
+`;
+
+export const CartItemBenefit = styled.div`
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 6px;
+
+  min-width: 0;
+  padding: 0 10px;
+
+  text-align: center;
+
+  &:not(:last-child) {
+    border-right: 1px solid ${({ theme }) => theme.colors.border.light};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    padding-inline: 7px;
+  }
+`;
+
+export const CartItemBenefitIcon = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  color: ${({ theme }) => theme.colors.brand.primary};
+
+  svg {
+    display: block;
+
+    width: 20px;
+    height: 20px;
+  }
+`;
+
+export const CartItemBenefitLabel = styled.span`
+  color: ${({ theme }) => theme.colors.text.secondary};
+
+  font-size: 0.67rem;
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  line-height: 1.25;
+`;
+
 export const CartItemControlsRow = styled.div`
   display: flex;
   align-items: center;
@@ -403,7 +469,23 @@ export const CartItemControlsRow = styled.div`
   width: 100%;
 
   margin-top: auto;
-  padding-top: 14px;
+  padding-top: 32px;
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
+    padding-top: 34px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    padding-top: 32px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    padding-top: 28px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    padding-top: 24px;
+  }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
     gap: 10px;
@@ -417,6 +499,29 @@ export const CartItemControlsRow = styled.div`
     padding-top: 8px;
   }
 `;
+// export const CartItemControlsRow = styled.div`
+//   display: flex;
+//   align-items: center;
+//   justify-content: space-between;
+//   gap: 12px;
+
+//   width: 100%;
+
+//   margin-top: auto;
+//   padding-top: 14px;
+
+//   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+//     gap: 10px;
+
+//     padding-top: 10px;
+//   }
+
+//   @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+//     gap: 8px;
+
+//     padding-top: 8px;
+//   }
+// `;
 
 export const QuantityControl = styled.div`
   display: grid;
@@ -506,16 +611,17 @@ export const CartItemLineTotal = styled.strong`
 `;
 
 export const RemoveItemButton = styled.button`
+  position: absolute;
+  top: 48px;
+  right: 28px;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  align-self: flex-end;
-
   width: 34px;
   height: 34px;
 
-  margin-top: 10px;
   padding: 0;
 
   border: 1px solid ${({ theme }) => theme.colors.border.light};
@@ -524,48 +630,128 @@ export const RemoveItemButton = styled.button`
   background: ${({ theme }) => theme.colors.background.primary};
   color: ${({ theme }) => theme.colors.text.secondary};
 
+  font-size: 15px;
+
   cursor: pointer;
 
   transition: color 180ms ease, border-color 180ms ease, background 180ms ease;
 
   svg {
-    width: 14px;
-    height: 14px;
+    width: 1em;
+    height: 1em;
   }
 
   &:hover {
+    color: ${({ theme }) => theme.colors.brand.primary};
     border-color: ${({ theme }) => theme.colors.brand.primary};
     background: ${({ theme }) => theme.colors.background.softBlue};
-    color: ${({ theme }) => theme.colors.brand.primary};
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.brand.primary};
+    outline-offset: 2px;
+  }
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
+    top: 48px;
+    right: 30px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    top: 46px;
+    right: 24px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    top: 44px;
+    right: 22px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    top: 42px;
+    right: 20px;
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    position: absolute;
-
-    right: 10px;
-    bottom: -12px;
+    top: auto;
+    right: 12px;
+    bottom: -14px;
 
     width: 30px;
     height: 30px;
 
-    margin: 0;
-
-    box-shadow: 0 5px 12px rgba(18, 26, 42, 0.08);
-
-    svg {
-      width: 13px;
-      height: 13px;
-    }
+    font-size: 13px;
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
-    right: 8px;
-    bottom: -11px;
+    right: 10px;
+    bottom: -13px;
 
     width: 28px;
     height: 28px;
   }
 `;
+// export const RemoveItemButton = styled.button`
+//   display: inline-flex;
+//   align-items: center;
+//   justify-content: center;
+
+//   align-self: flex-end;
+
+//   width: 34px;
+//   height: 34px;
+
+//   margin-top: 10px;
+//   padding: 0;
+
+//   border: 1px solid ${({ theme }) => theme.colors.border.light};
+//   border-radius: 50%;
+
+//   background: ${({ theme }) => theme.colors.background.primary};
+//   color: ${({ theme }) => theme.colors.text.secondary};
+
+//   cursor: pointer;
+
+//   transition: color 180ms ease, border-color 180ms ease, background 180ms ease;
+
+//   svg {
+//     width: 14px;
+//     height: 14px;
+//   }
+
+//   &:hover {
+//     border-color: ${({ theme }) => theme.colors.brand.primary};
+//     background: ${({ theme }) => theme.colors.background.softBlue};
+//     color: ${({ theme }) => theme.colors.brand.primary};
+//   }
+
+//   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+//     position: absolute;
+
+//     right: 10px;
+//     bottom: -12px;
+
+//     width: 30px;
+//     height: 30px;
+
+//     margin: 0;
+
+//     box-shadow: 0 5px 12px rgba(18, 26, 42, 0.08);
+
+//     svg {
+//       width: 13px;
+//       height: 13px;
+//     }
+//   }
+
+//   @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+//     right: 8px;
+//     bottom: -11px;
+
+//     width: 28px;
+//     height: 28px;
+//   }
+// `;
 
 export const CartSummaryColumn = styled.aside`
   display: flex;
@@ -763,23 +949,53 @@ export const ContinueShoppingButton = styled.a`
 
 export const SecurePanel = styled.section`
   display: flex;
-  align-items: flex-start;
-  gap: 14px;
+  align-items: center;
+  gap: 16px;
 
-  padding: 20px;
+  width: 100%;
+
+  margin-top: 22px;
+  padding: 20px 22px;
 
   border: 1px solid ${({ theme }) => theme.colors.border.light};
   border-radius: 14px;
 
-  background: ${({ theme }) => theme.colors.background.primary};
+  background: linear-gradient(
+    90deg,
+    rgba(235, 242, 253, 0.72) 0%,
+    rgba(255, 255, 255, 1) 72%
+  );
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
+    margin-top: 24px;
+    padding: 22px 24px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    margin-top: 20px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    padding: 18px 20px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    margin-top: 18px;
+  }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    align-items: center;
     gap: 12px;
 
-    padding: 13px 14px;
+    margin-top: 18px;
+    padding: 14px 16px;
 
     border-radius: 12px;
+
+    background: ${({ theme }) => theme.colors.background.primary};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    padding: 13px 14px;
   }
 `;
 
@@ -798,22 +1014,35 @@ export const SecureIcon = styled.span`
 `;
 
 export const SecureContent = styled.div`
+  flex: 1;
   min-width: 0;
+
+  text-align: left;
 `;
 
 export const SecureTitle = styled.strong`
+  display: block;
+
+  width: 100%;
+
   color: ${({ theme }) => theme.colors.text.primary};
 
   font-size: 0.85rem;
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  line-height: 1.25;
+  text-align: left;
 `;
 
 export const SecureMessage = styled.p`
+  width: 100%;
+
   margin: 5px 0 0;
 
   color: ${({ theme }) => theme.colors.text.secondary};
 
   font-size: 0.72rem;
   line-height: 1.45;
+  text-align: left;
 `;
 
 export const EmptyCart = styled.section`
@@ -891,3 +1120,212 @@ export const EmptyCartButton = styled.a`
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   text-decoration: none;
 `;
+
+export const PaymentPanel = styled.section`
+  padding: 20px;
+
+  border: 1px solid ${({ theme }) => theme.colors.border.light};
+  border-radius: 14px;
+
+  background: ${({ theme }) => theme.colors.background.primary};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    padding: 16px;
+
+    border: none;
+    border-radius: 0;
+  }
+`;
+
+export const PaymentPanelTitle = styled.h3`
+  margin: 0 0 14px;
+
+  color: ${({ theme }) => theme.colors.text.primary};
+
+  font-size: 0.76rem;
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  line-height: 1.2;
+  text-align: left;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    margin-bottom: 12px;
+    font-size: 0.72rem;
+  }
+`;
+
+export const PaymentMethods = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  width: 100%;
+`;
+
+export const PaymentMethod = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 44px;
+  height: 28px;
+
+  padding: 0 7px;
+
+  border: 1px solid ${({ theme }) => theme.colors.border.light};
+  border-radius: 4px;
+
+  background: #ffffff;
+  color: ${({ $variant }) =>
+    $variant === "amex"
+      ? "#1877b8"
+      : $variant === "google"
+      ? "#303134"
+      : "#1746a2"};
+
+  font-family: Arial, sans-serif;
+  font-size: 0.67rem;
+  font-weight: 700;
+  line-height: 1;
+
+  ${({ $variant }) =>
+    $variant === "mastercard" &&
+    `
+      min-width: 46px;
+
+      span {
+        width: 15px;
+        height: 15px;
+
+        border-radius: 50%;
+      }
+
+      span:first-child {
+        margin-right: -4px;
+        background: #eb001b;
+      }
+
+      span:last-child {
+        background: #f79e1b;
+      }
+    `}
+
+  ${({ $variant }) =>
+    $variant === "apple" &&
+    `
+      color: #111111;
+      font-weight: 600;
+    `}
+
+  strong {
+    margin-right: 2px;
+
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    min-width: 42px;
+    height: 27px;
+
+    font-size: 0.63rem;
+  }
+`;
+
+export const TrustBenefitsPanel = styled.section`
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+
+  padding: 22px 20px;
+
+  border: 1px solid ${({ theme }) => theme.colors.border.light};
+  border-radius: 14px;
+
+  background: ${({ theme }) => theme.colors.background.primary};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    display: none;
+  }
+`;
+
+export const TrustBenefit = styled.div`
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+
+  min-width: 0;
+`;
+
+export const TrustBenefitIcon = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  color: ${({ theme }) => theme.colors.brand.primary};
+
+  svg {
+    width: 25px;
+    height: 25px;
+  }
+`;
+
+export const TrustBenefitContent = styled.div`
+  min-width: 0;
+
+  text-align: left;
+`;
+
+export const TrustBenefitTitle = styled.strong`
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: ${({ theme }) => theme.colors.brand.primary};
+
+  font-size: 0.76rem;
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  line-height: 1.25;
+  text-align: left;
+`;
+
+export const TrustBenefitMessage = styled.p`
+  margin: 0;
+
+  color: ${({ theme }) => theme.colors.text.secondary};
+
+  font-size: 0.68rem;
+  line-height: 1.45;
+  text-align: left;
+`;
+// export const TrustBenefitContent = styled.div`
+//   min-width: 0;
+// `;
+
+// export const TrustBenefitTitle = styled.strong`
+//   display: block;
+
+//   margin-bottom: 5px;
+
+//   color: ${({ theme }) => theme.colors.brand.primary};
+
+//   font-size: 0.76rem;
+//   font-weight: ${({ theme }) => theme.fontWeights.bold};
+//   line-height: 1.25;
+// `;
+
+// export const TrustBenefitMessage = styled.p`
+//   margin: 0;
+
+//   color: ${({ theme }) => theme.colors.text.secondary};
+
+//   font-size: 0.68rem;
+//   line-height: 1.45;
+// `;
