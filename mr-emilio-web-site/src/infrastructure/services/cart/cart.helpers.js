@@ -67,29 +67,6 @@ export const createCartItemFromProduct = (product) => {
     availableStock: Number(product.stock) || 0,
   };
 };
-// export const createCartItemFromProduct = (product) => {
-//   return {
-//     key: getCartItemKey(product.id, product.warehouseId),
-
-//     productId: product.id,
-//     warehouseId: product.warehouseId,
-
-//     name: product.name,
-//     description: product.description || "",
-
-//     image: product.image,
-//     alt: product.alt || product.name,
-
-//     sizeLabel: product.sizeLabel || "",
-
-//     price: getCartProductPrice(product),
-//     displayedPrice: product.displayedPrice || "",
-
-//     quantity: 1,
-
-//     availableStock: Number(product.stock) || 0,
-//   };
-// };
 
 export const getCartQuantity = (cartItems = []) => {
   return cartItems.reduce((total, item) => {
@@ -134,31 +111,6 @@ export const readStoredCart = () => {
     return [];
   }
 };
-// export const readStoredCart = () => {
-//   if (typeof window === "undefined") {
-//     return [];
-//   }
-
-//   try {
-//     const storedCart = window.localStorage.getItem(CART_STORAGE_KEY);
-
-//     if (!storedCart) {
-//       return [];
-//     }
-
-//     const parsedCart = JSON.parse(storedCart);
-
-//     if (!Array.isArray(parsedCart)) {
-//       return [];
-//     }
-
-//     return parsedCart;
-//   } catch (error) {
-//     console.error("Unable to read cart from localStorage:", error);
-
-//     return [];
-//   }
-// };
 
 export const persistCart = (cartItems = []) => {
   if (typeof window === "undefined") {

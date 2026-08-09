@@ -1,5 +1,66 @@
 import styled from "styled-components";
 
+export const CartScreenTransition = styled.div`
+  width: 100%;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    animation: ${({ $isExiting }) =>
+        $isExiting ? "cart-screen-exit" : "cart-screen-enter"}
+      260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+
+    @keyframes cart-screen-enter {
+      from {
+        opacity: 0.96;
+        transform: translateX(100%);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes cart-screen-exit {
+      from {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      to {
+        opacity: 0.96;
+        transform: translateX(100%);
+      }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+`;
+// export const CartScreenTransition = styled.div`
+//   width: 100%;
+
+//   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+//     animation: cart-screen-enter 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+
+//     @keyframes cart-screen-enter {
+//       from {
+//         opacity: 0.96;
+//         transform: translateX(100%);
+//       }
+
+//       to {
+//         opacity: 1;
+//         transform: translateX(0);
+//       }
+//     }
+//   }
+
+//   @media (prefers-reduced-motion: reduce) {
+//     animation: none;
+//   }
+// `;
+
 export const CartPage = styled.main`
   width: 100%;
   min-height: calc(100vh - ${({ theme }) => theme.sizes.header.desktopHeight});
@@ -499,29 +560,6 @@ export const CartItemControlsRow = styled.div`
     padding-top: 8px;
   }
 `;
-// export const CartItemControlsRow = styled.div`
-//   display: flex;
-//   align-items: center;
-//   justify-content: space-between;
-//   gap: 12px;
-
-//   width: 100%;
-
-//   margin-top: auto;
-//   padding-top: 14px;
-
-//   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-//     gap: 10px;
-
-//     padding-top: 10px;
-//   }
-
-//   @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
-//     gap: 8px;
-
-//     padding-top: 8px;
-//   }
-// `;
 
 export const QuantityControl = styled.div`
   display: grid;
@@ -691,67 +729,6 @@ export const RemoveItemButton = styled.button`
     height: 28px;
   }
 `;
-// export const RemoveItemButton = styled.button`
-//   display: inline-flex;
-//   align-items: center;
-//   justify-content: center;
-
-//   align-self: flex-end;
-
-//   width: 34px;
-//   height: 34px;
-
-//   margin-top: 10px;
-//   padding: 0;
-
-//   border: 1px solid ${({ theme }) => theme.colors.border.light};
-//   border-radius: 50%;
-
-//   background: ${({ theme }) => theme.colors.background.primary};
-//   color: ${({ theme }) => theme.colors.text.secondary};
-
-//   cursor: pointer;
-
-//   transition: color 180ms ease, border-color 180ms ease, background 180ms ease;
-
-//   svg {
-//     width: 14px;
-//     height: 14px;
-//   }
-
-//   &:hover {
-//     border-color: ${({ theme }) => theme.colors.brand.primary};
-//     background: ${({ theme }) => theme.colors.background.softBlue};
-//     color: ${({ theme }) => theme.colors.brand.primary};
-//   }
-
-//   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-//     position: absolute;
-
-//     right: 10px;
-//     bottom: -12px;
-
-//     width: 30px;
-//     height: 30px;
-
-//     margin: 0;
-
-//     box-shadow: 0 5px 12px rgba(18, 26, 42, 0.08);
-
-//     svg {
-//       width: 13px;
-//       height: 13px;
-//     }
-//   }
-
-//   @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
-//     right: 8px;
-//     bottom: -11px;
-
-//     width: 28px;
-//     height: 28px;
-//   }
-// `;
 
 export const CartSummaryColumn = styled.aside`
   display: flex;
@@ -1156,7 +1133,8 @@ export const PaymentPanelTitle = styled.h3`
 export const PaymentMethods = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  /* justify-content: space-between; */
+  justify-content: flex-start;
   flex-wrap: wrap;
   gap: 8px;
 
@@ -1305,27 +1283,3 @@ export const TrustBenefitMessage = styled.p`
   line-height: 1.45;
   text-align: left;
 `;
-// export const TrustBenefitContent = styled.div`
-//   min-width: 0;
-// `;
-
-// export const TrustBenefitTitle = styled.strong`
-//   display: block;
-
-//   margin-bottom: 5px;
-
-//   color: ${({ theme }) => theme.colors.brand.primary};
-
-//   font-size: 0.76rem;
-//   font-weight: ${({ theme }) => theme.fontWeights.bold};
-//   line-height: 1.25;
-// `;
-
-// export const TrustBenefitMessage = styled.p`
-//   margin: 0;
-
-//   color: ${({ theme }) => theme.colors.text.secondary};
-
-//   font-size: 0.68rem;
-//   line-height: 1.45;
-// `;

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   FiAward,
   FiChevronLeft,
@@ -13,11 +14,12 @@ import {
 } from "react-icons/fi";
 import { BenefitIcon } from "../../assets/shop_products_carousel/product_card/icons";
 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { useCart } from "../../infrastructure/services/cart/use-cart.hook";
 
 import {
+  CartScreenTransition,
   CartPage,
   CartPageContainer,
   CartHeader,
@@ -83,6 +85,7 @@ import {
   TrustBenefitMessage,
 } from "./cart.styles";
 import { MainHeader } from "../../components/main_header/main_header.component";
+import { CheckoutBackHeader } from "../../components/layout/checkout_back_header/checkout_back_header.component";
 
 const formatCurrency = (amount) =>
   new Intl.NumberFormat("en-US", {
@@ -128,277 +131,316 @@ export const Cart = () => {
     clearCart,
   } = useCart();
 
+  const navigate = useNavigate();
+  const [isExiting, setIsExiting] = useState(false);
+
+  const handleBackToShopping = (event) => {
+    event?.preventDefault();
+
+    setIsExiting(true);
+
+    window.setTimeout(() => {
+      navigate("/");
+    }, 260);
+  };
+
+  const handleProceedToCheckout = () => {
+    setIsExiting(true);
+
+    window.setTimeout(() => {
+      navigate("/checkout");
+    }, 260);
+  };
+
   if (cartItems.length === 0) {
     return (
       <>
-        <MainHeader />
+        <CartScreenTransition $isExiting={isExiting}>
+          <MainHeader />
+          <CheckoutBackHeader
+            label="Continue shopping"
+            ariaLabel="Return to shopping"
+            onBack={handleBackToShopping}
+          />
+          <CartPage>
+            <CartPageContainer>
+              <EmptyCart>
+                <EmptyCartIcon aria-hidden="true">
+                  <FiShoppingBag />
+                </EmptyCartIcon>
 
-        <CartPage>
-          <CartPageContainer>
-            <EmptyCart>
-              <EmptyCartIcon aria-hidden="true">
-                <FiShoppingBag />
-              </EmptyCartIcon>
+                <EmptyCartTitle>Your cart is empty</EmptyCartTitle>
 
-              <EmptyCartTitle>Your cart is empty</EmptyCartTitle>
+                <EmptyCartMessage>
+                  Add some Mr. Emilio favorites and they will appear here.
+                </EmptyCartMessage>
 
-              <EmptyCartMessage>
-                Add some Mr. Emilio favorites and they will appear here.
-              </EmptyCartMessage>
-
-              <EmptyCartButton as={Link} to="/">
-                Continue shopping
-              </EmptyCartButton>
-            </EmptyCart>
-          </CartPageContainer>
-        </CartPage>
+                <EmptyCartButton as={Link} to="/">
+                  Continue shopping
+                </EmptyCartButton>
+              </EmptyCart>
+            </CartPageContainer>
+          </CartPage>
+        </CartScreenTransition>
       </>
     );
   }
 
   return (
     <>
-      <MainHeader />
+      <CartScreenTransition $isExiting={isExiting}>
+        <MainHeader />
+        <CheckoutBackHeader
+          label="Continue shopping"
+          ariaLabel="Return to shopping"
+          onBack={handleBackToShopping}
+        />
 
-      <CartPage>
-        <CartPageContainer>
-          <CartHeader>
-            <CartTitleGroup>
-              <CartTitle>
-                Your Cart <span>({cartQuantity})</span>
-              </CartTitle>
+        <CartPage>
+          <CartPageContainer>
+            <CartHeader>
+              <CartTitleGroup>
+                <CartTitle>
+                  Your Cart <span>({cartQuantity})</span>
+                </CartTitle>
 
-              <CartSubtitle>
-                Review your items and proceed to secure checkout.
-              </CartSubtitle>
-            </CartTitleGroup>
+                <CartSubtitle>
+                  Review your items and proceed to secure checkout.
+                </CartSubtitle>
+              </CartTitleGroup>
 
-            <ClearCartButton type="button" onClick={clearCart}>
-              <FiTrash2 />
-              Clear cart
-            </ClearCartButton>
-          </CartHeader>
+              <ClearCartButton type="button" onClick={clearCart}>
+                <FiTrash2 />
+                Clear cart
+              </ClearCartButton>
+            </CartHeader>
 
-          <CartLayout>
-            <CartItemsColumn>
-              <CartItemsList>
-                {cartItems.map((item) => {
-                  const lineTotal =
-                    Number(item.price || 0) * Number(item.quantity || 0);
+            <CartLayout>
+              <CartItemsColumn>
+                <CartItemsList>
+                  {cartItems.map((item) => {
+                    const lineTotal =
+                      Number(item.price || 0) * Number(item.quantity || 0);
 
-                  const hasReachedStockLimit =
-                    item.quantity >= item.availableStock;
+                    const hasReachedStockLimit =
+                      item.quantity >= item.availableStock;
 
-                  return (
-                    <CartItem key={item.key}>
-                      <CartItemImageColumn>
-                        <CartItemImageContainer>
-                          <CartItemImage
-                            src={item.image}
-                            alt={item.alt || item.name}
-                            $imageScale={item.imageScale}
-                            $imageOffsetX={item.imageOffsetX}
-                            $imageOffsetY={item.imageOffsetY}
-                          />
+                    return (
+                      <CartItem key={item.key}>
+                        <CartItemImageColumn>
+                          <CartItemImageContainer>
+                            <CartItemImage
+                              src={item.image}
+                              alt={item.alt || item.name}
+                              $imageScale={item.imageScale}
+                              $imageOffsetX={item.imageOffsetX}
+                              $imageOffsetY={item.imageOffsetY}
+                            />
 
-                          {item.sizeLabel && (
-                            <CartItemSizeBadge>
-                              {item.sizeLabel}
-                            </CartItemSizeBadge>
-                          )}
-                        </CartItemImageContainer>
-                      </CartItemImageColumn>
-
-                      <CartItemContent>
-                        <RemoveItemButton
-                          type="button"
-                          aria-label={`Remove ${item.name} from cart`}
-                          onClick={() => removeProductFromCart(item.key)}
-                        >
-                          <FiTrash2 />
-                        </RemoveItemButton>
-                        <CartItemHeading>
-                          <div>
-                            <CartItemName>{item.name}</CartItemName>
-
-                            {item.description && (
-                              <CartItemDescription>
-                                {item.description}
-                              </CartItemDescription>
+                            {item.sizeLabel && (
+                              <CartItemSizeBadge>
+                                {item.sizeLabel}
+                              </CartItemSizeBadge>
                             )}
+                          </CartItemImageContainer>
+                        </CartItemImageColumn>
 
-                            <CartItemPrice>
-                              {item.displayedPrice ||
-                                formatCurrency(item.price)}
-                            </CartItemPrice>
-                          </div>
-                        </CartItemHeading>
-
-                        {item.benefits?.length > 0 && (
-                          <CartItemBenefits>
-                            {item.benefits.slice(0, 3).map((benefit) => (
-                              <CartItemBenefit
-                                key={`${item.key}-${benefit.type}`}
-                              >
-                                <CartItemBenefitIcon aria-hidden="true">
-                                  <BenefitIcon type={benefit.icon} />
-                                </CartItemBenefitIcon>
-
-                                <CartItemBenefitLabel>
-                                  {benefit.label}
-                                </CartItemBenefitLabel>
-                              </CartItemBenefit>
-                            ))}
-                          </CartItemBenefits>
-                        )}
-
-                        <CartItemControlsRow>
-                          <QuantityControl
-                            aria-label={`Quantity for ${item.name}`}
+                        <CartItemContent>
+                          <RemoveItemButton
+                            type="button"
+                            aria-label={`Remove ${item.name} from cart`}
+                            onClick={() => removeProductFromCart(item.key)}
                           >
-                            <QuantityButton
-                              type="button"
-                              aria-label={`Decrease ${item.name} quantity`}
-                              onClick={() => decreaseCartItemQuantity(item.key)}
+                            <FiTrash2 />
+                          </RemoveItemButton>
+                          <CartItemHeading>
+                            <div>
+                              <CartItemName>{item.name}</CartItemName>
+
+                              {item.description && (
+                                <CartItemDescription>
+                                  {item.description}
+                                </CartItemDescription>
+                              )}
+
+                              <CartItemPrice>
+                                {item.displayedPrice ||
+                                  formatCurrency(item.price)}
+                              </CartItemPrice>
+                            </div>
+                          </CartItemHeading>
+
+                          {item.benefits?.length > 0 && (
+                            <CartItemBenefits>
+                              {item.benefits.slice(0, 3).map((benefit) => (
+                                <CartItemBenefit
+                                  key={`${item.key}-${benefit.type}`}
+                                >
+                                  <CartItemBenefitIcon aria-hidden="true">
+                                    <BenefitIcon type={benefit.icon} />
+                                  </CartItemBenefitIcon>
+
+                                  <CartItemBenefitLabel>
+                                    {benefit.label}
+                                  </CartItemBenefitLabel>
+                                </CartItemBenefit>
+                              ))}
+                            </CartItemBenefits>
+                          )}
+
+                          <CartItemControlsRow>
+                            <QuantityControl
+                              aria-label={`Quantity for ${item.name}`}
                             >
-                              <FiMinus />
-                            </QuantityButton>
+                              <QuantityButton
+                                type="button"
+                                aria-label={`Decrease ${item.name} quantity`}
+                                onClick={() =>
+                                  decreaseCartItemQuantity(item.key)
+                                }
+                              >
+                                <FiMinus />
+                              </QuantityButton>
 
-                            <QuantityValue>{item.quantity}</QuantityValue>
+                              <QuantityValue>{item.quantity}</QuantityValue>
 
-                            <QuantityButton
-                              type="button"
-                              aria-label={`Increase ${item.name} quantity`}
-                              disabled={hasReachedStockLimit}
-                              onClick={() => increaseCartItemQuantity(item.key)}
-                            >
-                              <FiPlus />
-                            </QuantityButton>
-                          </QuantityControl>
+                              <QuantityButton
+                                type="button"
+                                aria-label={`Increase ${item.name} quantity`}
+                                disabled={hasReachedStockLimit}
+                                onClick={() =>
+                                  increaseCartItemQuantity(item.key)
+                                }
+                              >
+                                <FiPlus />
+                              </QuantityButton>
+                            </QuantityControl>
 
-                          <CartItemLineTotal>
-                            {formatCurrency(lineTotal)}
-                          </CartItemLineTotal>
-                        </CartItemControlsRow>
+                            <CartItemLineTotal>
+                              {formatCurrency(lineTotal)}
+                            </CartItemLineTotal>
+                          </CartItemControlsRow>
+                        </CartItemContent>
+                      </CartItem>
+                    );
+                  })}
+                </CartItemsList>
+                <SecurePanel>
+                  <SecureIcon aria-hidden="true">
+                    <FiShield />
+                  </SecureIcon>
 
-                        {/* <RemoveItemButton
-                          type="button"
-                          aria-label={`Remove ${item.name} from cart`}
-                          onClick={() => removeProductFromCart(item.key)}
-                        >
-                          <FiTrash2 />
-                        </RemoveItemButton> */}
-                      </CartItemContent>
-                    </CartItem>
-                  );
-                })}
-              </CartItemsList>
-              <SecurePanel>
-                <SecureIcon aria-hidden="true">
-                  <FiShield />
-                </SecureIcon>
+                  <SecureContent>
+                    <SecureTitle>Safe &amp; Secure</SecureTitle>
 
-                <SecureContent>
-                  <SecureTitle>Safe &amp; Secure</SecureTitle>
+                    <SecureMessage>
+                      Your checkout information will be protected and handled
+                      securely.
+                    </SecureMessage>
+                  </SecureContent>
+                </SecurePanel>
+              </CartItemsColumn>
 
-                  <SecureMessage>
-                    Your checkout information will be protected and handled
-                    securely.
-                  </SecureMessage>
-                </SecureContent>
-              </SecurePanel>
-            </CartItemsColumn>
+              <CartSummaryColumn>
+                <OrderSummary>
+                  <OrderSummaryTitle>Order Summary</OrderSummaryTitle>
 
-            <CartSummaryColumn>
-              <OrderSummary>
-                <OrderSummaryTitle>Order Summary</OrderSummaryTitle>
+                  <SummaryRow>
+                    <SummaryLabel>
+                      Subtotal ({cartQuantity}{" "}
+                      {cartQuantity === 1 ? "item" : "items"})
+                    </SummaryLabel>
 
-                <SummaryRow>
-                  <SummaryLabel>
-                    Subtotal ({cartQuantity}{" "}
-                    {cartQuantity === 1 ? "item" : "items"})
-                  </SummaryLabel>
+                    <SummaryValue>{formatCurrency(cartSubtotal)}</SummaryValue>
+                  </SummaryRow>
 
-                  <SummaryValue>{formatCurrency(cartSubtotal)}</SummaryValue>
-                </SummaryRow>
+                  <SummaryRow>
+                    <SummaryLabel>Shipping</SummaryLabel>
 
-                <SummaryRow>
-                  <SummaryLabel>Shipping</SummaryLabel>
+                    <SummaryValue>Calculated at checkout</SummaryValue>
+                  </SummaryRow>
 
-                  <SummaryValue>Calculated at checkout</SummaryValue>
-                </SummaryRow>
+                  <SummaryDivider />
 
-                <SummaryDivider />
+                  <SummaryTotalRow>
+                    <SummaryTotalLabel>Estimated subtotal</SummaryTotalLabel>
 
-                <SummaryTotalRow>
-                  <SummaryTotalLabel>Estimated subtotal</SummaryTotalLabel>
+                    <SummaryTotalValue>
+                      {formatCurrency(cartSubtotal)}
+                    </SummaryTotalValue>
+                  </SummaryTotalRow>
 
-                  <SummaryTotalValue>
-                    {formatCurrency(cartSubtotal)}
-                  </SummaryTotalValue>
-                </SummaryTotalRow>
+                  <ShippingMessage>
+                    Delivery and pickup options will be confirmed during
+                    checkout based on your selected store.
+                  </ShippingMessage>
+                  <CheckoutButton
+                    type="button"
+                    onClick={handleProceedToCheckout}
+                  >
+                    <FiLock />
+                    Proceed to Checkout
+                  </CheckoutButton>
+                  {/* <CheckoutButton type="button">
+                    <FiLock />
+                    Proceed to Checkout
+                  </CheckoutButton> */}
+                  <ContinueShoppingButton
+                    as={Link}
+                    to="/"
+                    onClick={handleBackToShopping}
+                  >
+                    <FiChevronLeft />
+                    Continue Shopping
+                  </ContinueShoppingButton>
+                </OrderSummary>
+                <PaymentPanel>
+                  <PaymentPanelTitle>We accept</PaymentPanelTitle>
 
-                <ShippingMessage>
-                  Delivery and pickup options will be confirmed during checkout
-                  based on your selected store.
-                </ShippingMessage>
+                  <PaymentMethods>
+                    <PaymentMethod>VISA</PaymentMethod>
 
-                <CheckoutButton type="button">
-                  <FiLock />
-                  Proceed to Checkout
-                </CheckoutButton>
+                    <PaymentMethod $variant="mastercard">
+                      <span />
+                      <span />
+                    </PaymentMethod>
 
-                <ContinueShoppingButton as={Link} to="/">
-                  <FiChevronLeft />
-                  Continue Shopping
-                </ContinueShoppingButton>
-              </OrderSummary>
-              <PaymentPanel>
-                <PaymentPanelTitle>We accept</PaymentPanelTitle>
+                    <PaymentMethod $variant="amex">AMEX</PaymentMethod>
 
-                <PaymentMethods>
-                  <PaymentMethod>VISA</PaymentMethod>
+                    <PaymentMethod $variant="apple">Pay</PaymentMethod>
 
-                  <PaymentMethod $variant="mastercard">
-                    <span />
-                    <span />
-                  </PaymentMethod>
+                    <PaymentMethod $variant="google">
+                      <strong>G</strong> Pay
+                    </PaymentMethod>
+                  </PaymentMethods>
+                </PaymentPanel>
 
-                  <PaymentMethod $variant="amex">AMEX</PaymentMethod>
+                <TrustBenefitsPanel>
+                  {trustBenefits.map((benefit) => {
+                    const Icon = benefit.icon;
 
-                  <PaymentMethod $variant="apple">Pay</PaymentMethod>
+                    return (
+                      <TrustBenefit key={benefit.id}>
+                        <TrustBenefitIcon aria-hidden="true">
+                          <Icon />
+                        </TrustBenefitIcon>
 
-                  <PaymentMethod $variant="google">
-                    <strong>G</strong> Pay
-                  </PaymentMethod>
-                </PaymentMethods>
-              </PaymentPanel>
+                        <TrustBenefitContent>
+                          <TrustBenefitTitle>{benefit.title}</TrustBenefitTitle>
 
-              <TrustBenefitsPanel>
-                {trustBenefits.map((benefit) => {
-                  const Icon = benefit.icon;
-
-                  return (
-                    <TrustBenefit key={benefit.id}>
-                      <TrustBenefitIcon aria-hidden="true">
-                        <Icon />
-                      </TrustBenefitIcon>
-
-                      <TrustBenefitContent>
-                        <TrustBenefitTitle>{benefit.title}</TrustBenefitTitle>
-
-                        <TrustBenefitMessage>
-                          {benefit.message}
-                        </TrustBenefitMessage>
-                      </TrustBenefitContent>
-                    </TrustBenefit>
-                  );
-                })}
-              </TrustBenefitsPanel>
-            </CartSummaryColumn>
-          </CartLayout>
-        </CartPageContainer>
-      </CartPage>
+                          <TrustBenefitMessage>
+                            {benefit.message}
+                          </TrustBenefitMessage>
+                        </TrustBenefitContent>
+                      </TrustBenefit>
+                    );
+                  })}
+                </TrustBenefitsPanel>
+              </CartSummaryColumn>
+            </CartLayout>
+          </CartPageContainer>
+        </CartPage>
+      </CartScreenTransition>
     </>
   );
 };
