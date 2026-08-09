@@ -9,13 +9,13 @@ export const CartPage = styled.main`
 
 export const CartPageContainer = styled.div`
   width: 100%;
-  max-width: 1440px;
+  max-width: 1280px;
 
   margin: 0 auto;
   padding: 42px 64px 72px;
 
   @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
-    max-width: 1600px;
+    max-width: 1360px;
     padding: 48px 80px 80px;
   }
 
@@ -58,6 +58,8 @@ export const CartHeader = styled.div`
 
 export const CartTitleGroup = styled.div`
   min-width: 0;
+
+  text-align: left;
 `;
 
 export const CartTitle = styled.h1`
@@ -100,9 +102,10 @@ export const CartSubtitle = styled.p`
 
   font-size: ${({ theme }) => theme.fontSizes.text_14};
   line-height: 1.45;
+  text-align: left;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    max-width: 260px;
+    max-width: 280px;
 
     margin-top: 6px;
 
@@ -155,17 +158,22 @@ export const ClearCartButton = styled.button`
 
 export const CartLayout = styled.div`
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+  grid-template-columns: minmax(0, 760px) minmax(300px, 340px);
   align-items: start;
-  gap: 30px;
+  justify-content: center;
+  gap: 28px;
 
   @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
-    grid-template-columns: minmax(0, 1fr) 380px;
-    gap: 36px;
+    grid-template-columns: minmax(0, 800px) 360px;
+    gap: 32px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    grid-template-columns: minmax(0, 1fr) 330px;
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
-    grid-template-columns: minmax(0, 1fr) 320px;
+    grid-template-columns: minmax(0, 1fr) 310px;
     gap: 24px;
   }
 
@@ -212,19 +220,20 @@ export const CartItem = styled.article`
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    grid-template-columns: 120px minmax(0, 1fr);
+    grid-template-columns: 132px minmax(0, 1fr);
+    align-items: start;
     gap: 14px;
 
-    padding: 14px;
+    padding: 12px 14px 16px;
 
-    border-radius: 14px;
+    border-radius: 12px;
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
-    grid-template-columns: 104px minmax(0, 1fr);
+    grid-template-columns: 116px minmax(0, 1fr);
     gap: 12px;
 
-    padding: 12px;
+    padding: 11px 12px 15px;
   }
 `;
 
@@ -248,6 +257,17 @@ export const CartItemImageContainer = styled.div`
   border-radius: 12px;
 
   background: ${({ theme }) => theme.colors.background.primary};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    padding: 8px;
+
+    border-color: rgba(22, 70, 172, 0.08);
+    border-radius: 10px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    padding: 7px;
+  }
 `;
 
 export const CartItemImage = styled.img`
@@ -258,6 +278,7 @@ export const CartItemImage = styled.img`
 
   object-fit: contain;
 `;
+// export const CartItemImage = styled.img`
 
 export const CartItemSizeBadge = styled.span`
   position: absolute;
@@ -297,19 +318,19 @@ export const CartItemSizeBadge = styled.span`
 export const CartItemContent = styled.div`
   display: flex;
   flex-direction: column;
+  align-items: stretch;
 
   min-width: 0;
+
+  text-align: left;
 `;
 
 export const CartItemHeading = styled.div`
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 18px;
+  display: block;
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    gap: 8px;
-  }
+  min-width: 0;
+
+  text-align: left;
 `;
 
 export const CartItemName = styled.h2`
@@ -320,62 +341,80 @@ export const CartItemName = styled.h2`
   font-size: 1.15rem;
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   line-height: 1.2;
+  text-align: left;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    font-size: 0.93rem;
+    font-size: 0.9rem;
+    line-height: 1.18;
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
-    font-size: 0.86rem;
+    font-size: 0.84rem;
   }
 `;
 
 export const CartItemDescription = styled.p`
-  margin: 5px 0 0;
+  margin: 4px 0 0;
 
   color: ${({ theme }) => theme.colors.text.secondary};
 
   font-size: 0.8rem;
   line-height: 1.35;
+  text-align: left;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    font-size: 0.7rem;
+    margin-top: 3px;
+
+    font-size: 0.68rem;
+    line-height: 1.3;
   }
 `;
 
 export const CartItemPrice = styled.span`
-  flex: 0 0 auto;
+  display: block;
+
+  margin-top: 6px;
 
   color: ${({ theme }) => theme.colors.brand.primary};
 
   font-size: 1rem;
   font-weight: ${({ theme }) => theme.fontWeights.bold};
+  text-align: left;
 
   white-space: nowrap;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    margin-top: 5px;
+
     font-size: 0.82rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    font-size: 0.76rem;
   }
 `;
 
 export const CartItemControlsRow = styled.div`
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 24px;
+  justify-content: space-between;
+  gap: 12px;
+
+  width: 100%;
 
   margin-top: auto;
-  padding-top: 18px;
+  padding-top: 14px;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    gap: 14px;
+    gap: 10px;
 
-    padding-top: 14px;
+    padding-top: 10px;
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
-    flex-wrap: wrap;
-    row-gap: 8px;
+    gap: 8px;
+
+    padding-top: 8px;
   }
 `;
 
@@ -392,9 +431,17 @@ export const QuantityControl = styled.div`
   border-radius: 9px;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    grid-template-columns: 32px 36px 32px;
+    grid-template-columns: 30px 34px 30px;
 
-    min-height: 38px;
+    min-height: 34px;
+
+    border-radius: 8px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    grid-template-columns: 28px 32px 28px;
+
+    min-height: 32px;
   }
 `;
 
@@ -436,6 +483,8 @@ export const QuantityValue = styled.span`
 `;
 
 export const CartItemLineTotal = styled.strong`
+  flex: 0 0 auto;
+
   min-width: 72px;
 
   color: ${({ theme }) => theme.colors.text.primary};
@@ -448,27 +497,36 @@ export const CartItemLineTotal = styled.strong`
 
     font-size: 0.82rem;
   }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    min-width: 52px;
+
+    font-size: 0.78rem;
+  }
 `;
 
 export const RemoveItemButton = styled.button`
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  justify-content: center;
 
   align-self: flex-end;
 
-  margin-top: 12px;
-  padding: 4px 0;
+  width: 34px;
+  height: 34px;
 
-  border: none;
+  margin-top: 10px;
+  padding: 0;
 
-  background: transparent;
+  border: 1px solid ${({ theme }) => theme.colors.border.light};
+  border-radius: 50%;
+
+  background: ${({ theme }) => theme.colors.background.primary};
   color: ${({ theme }) => theme.colors.text.secondary};
 
-  font-size: 0.72rem;
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-
   cursor: pointer;
+
+  transition: color 180ms ease, border-color 180ms ease, background 180ms ease;
 
   svg {
     width: 14px;
@@ -476,7 +534,36 @@ export const RemoveItemButton = styled.button`
   }
 
   &:hover {
+    border-color: ${({ theme }) => theme.colors.brand.primary};
+    background: ${({ theme }) => theme.colors.background.softBlue};
     color: ${({ theme }) => theme.colors.brand.primary};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    position: absolute;
+
+    right: 10px;
+    bottom: -12px;
+
+    width: 30px;
+    height: 30px;
+
+    margin: 0;
+
+    box-shadow: 0 5px 12px rgba(18, 26, 42, 0.08);
+
+    svg {
+      width: 13px;
+      height: 13px;
+    }
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    right: 8px;
+    bottom: -11px;
+
+    width: 28px;
+    height: 28px;
   }
 `;
 
@@ -504,9 +591,13 @@ export const OrderSummary = styled.section`
   background: ${({ theme }) => theme.colors.background.primary};
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    padding: 20px 16px;
+    padding: 16px;
 
-    border-radius: 14px;
+    border-radius: 12px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    padding: 14px;
   }
 `;
 
@@ -517,11 +608,12 @@ export const OrderSummaryTitle = styled.h2`
 
   font-size: 1.3rem;
   font-weight: ${({ theme }) => theme.fontWeights.bold};
+  text-align: left;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    margin-bottom: 18px;
+    margin-bottom: 14px;
 
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
 `;
 
@@ -532,6 +624,10 @@ export const SummaryRow = styled.div`
   gap: 20px;
 
   margin-bottom: 14px;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    margin-bottom: 11px;
+  }
 `;
 
 export const SummaryLabel = styled.span`
@@ -555,6 +651,10 @@ export const SummaryDivider = styled.div`
   margin: 20px 0;
 
   background: ${({ theme }) => theme.colors.border.light};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    margin: 14px 0;
+  }
 `;
 
 export const SummaryTotalRow = styled.div`
@@ -588,6 +688,14 @@ export const ShippingMessage = styled.div`
 
   font-size: 0.73rem;
   line-height: 1.4;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    margin-top: 14px;
+    padding: 9px 11px;
+
+    font-size: 0.67rem;
+    line-height: 1.35;
+  }
 `;
 
 export const CheckoutButton = styled.button`
@@ -620,6 +728,14 @@ export const CheckoutButton = styled.button`
     transform: translateY(-2px);
 
     box-shadow: 0 10px 22px rgba(22, 70, 172, 0.2);
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    min-height: 44px;
+
+    margin-top: 16px;
+
+    font-size: 0.82rem;
   }
 `;
 
@@ -658,7 +774,12 @@ export const SecurePanel = styled.section`
   background: ${({ theme }) => theme.colors.background.primary};
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    padding: 16px;
+    align-items: center;
+    gap: 12px;
+
+    padding: 13px 14px;
+
+    border-radius: 12px;
   }
 `;
 
@@ -670,6 +791,10 @@ export const SecureIcon = styled.span`
   color: ${({ theme }) => theme.colors.brand.primary};
 
   font-size: 26px;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    font-size: 22px;
+  }
 `;
 
 export const SecureContent = styled.div`

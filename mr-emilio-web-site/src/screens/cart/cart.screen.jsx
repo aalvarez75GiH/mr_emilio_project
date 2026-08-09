@@ -161,12 +161,27 @@ export const Cart = () => {
                               {item.description}
                             </CartItemDescription>
                           )}
+
+                          <CartItemPrice>
+                            {item.displayedPrice || formatCurrency(item.price)}
+                          </CartItemPrice>
+                        </div>
+                      </CartItemHeading>
+                      {/* <CartItemHeading>
+                        <div>
+                          <CartItemName>{item.name}</CartItemName>
+
+                          {item.description && (
+                            <CartItemDescription>
+                              {item.description}
+                            </CartItemDescription>
+                          )}
                         </div>
 
                         <CartItemPrice>
                           {item.displayedPrice || formatCurrency(item.price)}
                         </CartItemPrice>
-                      </CartItemHeading>
+                      </CartItemHeading> */}
 
                       <CartItemControlsRow>
                         <QuantityControl
@@ -203,7 +218,6 @@ export const Cart = () => {
                         onClick={() => removeProductFromCart(item.key)}
                       >
                         <FiTrash2 />
-                        Remove
                       </RemoveItemButton>
                     </CartItemContent>
                   </CartItem>
