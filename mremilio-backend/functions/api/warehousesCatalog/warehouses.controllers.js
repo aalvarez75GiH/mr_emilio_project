@@ -10,6 +10,7 @@ const {
   WAREHOUSE_STATUS,
   WAREHOUSE_STATUS_VALUES,
   DELIVERY_PROVIDER_TYPE_VALUES,
+  LOCAL_DELIVERY_FEE_PER_MILE_IN_CENTS,
 } = require("./warehouses.constants");
 
 const {
@@ -21,6 +22,7 @@ const {
   normalizeInventoryEntry,
   validateWarehouseSellingPrice,
   validateCoordinates,
+  calculateLocalDeliveryFeeInCents,
 } = require("./warehouses.handlers");
 
 const createControllerError = (message, statusCode = 500, details = null) => {
@@ -764,6 +766,157 @@ const deleteWarehouseById = async (warehouseId) => {
   };
 };
 
+const getLocalDeliveryQuote = async ({ address }) => {
+  const normalizedAddress = validateRequiredString(address, "address");
+
+  /*
+   * Resolve the customer's checkout address.
+   *
+   * This is intentionally separate from browser geolocation.
+   */
+  const geo = await forwardGeocodeAddress(normalizedAddress);
+
+  const customerCoordinates = validateCoordinates(
+    {
+      lat: geo.lat,
+      lng: geo.lng,
+    },
+    "deliveryAddressCoordinates"
+  );
+
+  const activeWarehouses = await getActiveWarehouses();
+
+  const warehousesByDistance = sortWarehousesByDistance(
+    activeWarehouses,
+    customerCoordinates
+  );
+
+  if (warehousesByDistance.length === 0) {
+    return {
+      available: false,
+
+      reason: "NO_ACTIVE_WAREHOUSES",
+
+      address: {
+        input: normalizedAddress,
+        formattedAddress: geo.formatted_address,
+        coordinates: customerCoordinates,
+        placeId: geo.place_id || null,
+      },
+
+      warehouse: null,
+      distance: null,
+      deliveryFee: null,
+    };
+  }
+
+  let nearestWarehouse = null;
+  let deliveryWarehouse = null;
+  let deliveryFulfillment = null;
+
+  for (const warehouse of warehousesByDistance) {
+    const distanceMiles = warehouse.distance.miles;
+
+    const fulfillmentAvailability = buildFulfillmentAvailability({
+      warehouse,
+      distanceMiles,
+    });
+
+    if (!nearestWarehouse) {
+      nearestWarehouse = {
+        warehouse,
+        fulfillment: fulfillmentAvailability,
+      };
+    }
+
+    if (fulfillmentAvailability.localDelivery.available === true) {
+      deliveryWarehouse = warehouse;
+      deliveryFulfillment = fulfillmentAvailability;
+
+      break;
+    }
+  }
+
+  /*
+   * No store can currently deliver to this address.
+   */
+  if (!deliveryWarehouse) {
+    const nearestDistance =
+      nearestWarehouse?.warehouse?.distance?.miles ?? null;
+
+    const { distance: _distance, ...nearestWarehouseWithoutDistance } =
+      nearestWarehouse?.warehouse || {};
+
+    return {
+      available: false,
+
+      reason:
+        nearestWarehouse?.fulfillment?.localDelivery?.reason ||
+        "LOCAL_DELIVERY_UNAVAILABLE",
+
+      address: {
+        input: normalizedAddress,
+        formattedAddress: geo.formatted_address,
+        coordinates: customerCoordinates,
+        placeId: geo.place_id || null,
+      },
+
+      warehouse: nearestWarehouseWithoutDistance || null,
+
+      distance: {
+        miles: nearestDistance,
+      },
+
+      deliveryFee: null,
+    };
+  }
+
+  const distanceMiles = deliveryWarehouse.distance.miles;
+
+  const deliveryFeeInCents = calculateLocalDeliveryFeeInCents(
+    distanceMiles,
+    LOCAL_DELIVERY_FEE_PER_MILE_IN_CENTS
+  );
+
+  const { distance: _warehouseDistance, ...warehouseWithoutDistance } =
+    deliveryWarehouse;
+
+  return {
+    available: true,
+    reason: null,
+
+    address: {
+      input: normalizedAddress,
+
+      formattedAddress: geo.formatted_address,
+
+      coordinates: customerCoordinates,
+
+      placeId: geo.place_id || null,
+    },
+
+    warehouse: warehouseWithoutDistance,
+
+    distance: {
+      miles: distanceMiles,
+    },
+
+    deliveryFee: {
+      amountInCents: deliveryFeeInCents,
+
+      amount: deliveryFeeInCents / 100,
+
+      pricePerMileInCents: LOCAL_DELIVERY_FEE_PER_MILE_IN_CENTS,
+
+      pricePerMile: LOCAL_DELIVERY_FEE_PER_MILE_IN_CENTS / 100,
+    },
+
+    fulfillment: {
+      localDelivery: deliveryFulfillment.localDelivery,
+    },
+  };
+};
+
 module.exports = {
   getWarehouseById,
   getAllWarehouses,
@@ -776,4 +929,5 @@ module.exports = {
   updateWarehouseInventory,
   decrementWarehouseInventoryFromOrder,
   deleteWarehouseById,
+  getLocalDeliveryQuote,
 };

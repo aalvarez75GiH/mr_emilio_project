@@ -72,7 +72,9 @@ export const DeliveryOptions = () => {
       return;
     }
 
-    navigateWithTransition("/checkout/delivery/local", "forward");
+    if (checkout.fulfillmentMethod === FULFILLMENT_METHODS.LOCAL_DELIVERY) {
+      navigateWithTransition("/checkout/information", "forward");
+    }
   };
 
   const isPickupSelected =

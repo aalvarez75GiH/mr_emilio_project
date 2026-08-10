@@ -232,48 +232,6 @@ const findClosestWarehouse = (warehouses = [], customerCoordinates) => {
   return warehousesByDistance[0] || null;
 };
 
-// const findClosestWarehouse = (warehouses = [], customerCoordinates) => {
-//   if (!Array.isArray(warehouses)) {
-//     throw createHandlerError("Warehouses must be provided as an array", 400);
-//   }
-
-//   const activeWarehouses = warehouses.filter(
-//     (warehouse) =>
-//       warehouse?.active === true &&
-//       Number.isFinite(Number(warehouse?.geo?.lat)) &&
-//       Number.isFinite(Number(warehouse?.geo?.lng))
-//   );
-
-//   if (activeWarehouses.length === 0) {
-//     return null;
-//   }
-
-//   const warehousesWithDistance = activeWarehouses.map((warehouse) => {
-//     const distanceMiles = calculateHaversineDistanceMiles(customerCoordinates, {
-//       lat: warehouse.geo.lat,
-//       lng: warehouse.geo.lng,
-//     });
-
-//     return {
-//       ...warehouse,
-
-//       distance: {
-//         miles: distanceMiles,
-//       },
-//     };
-//   });
-
-//   return warehousesWithDistance.reduce((closestWarehouse, currentWarehouse) => {
-//     if (!closestWarehouse) {
-//       return currentWarehouse;
-//     }
-
-//     return currentWarehouse.distance.miles < closestWarehouse.distance.miles
-//       ? currentWarehouse
-//       : closestWarehouse;
-//   }, null);
-// };
-
 const buildFulfillmentAvailability = ({ warehouse, distanceMiles }) => {
   if (!warehouse || typeof warehouse !== "object") {
     throw createHandlerError(
@@ -533,6 +491,27 @@ const normalizeWarehouseInventory = (inventory = {}) => {
   );
 };
 
+const calculateLocalDeliveryFeeInCents = (
+  distanceMiles,
+  pricePerMileInCents = 100
+) => {
+  const normalizedDistance = Number(distanceMiles);
+  const normalizedPricePerMile = Number(pricePerMileInCents);
+
+  if (!Number.isFinite(normalizedDistance) || normalizedDistance < 0) {
+    throw createHandlerError("A valid delivery distance is required", 400);
+  }
+
+  if (!Number.isInteger(normalizedPricePerMile) || normalizedPricePerMile < 0) {
+    throw createHandlerError(
+      "A valid delivery price per mile is required",
+      500
+    );
+  }
+
+  return Math.round(normalizedDistance * normalizedPricePerMile);
+};
+
 module.exports = {
   WAREHOUSE_PRICE_RULES,
 
@@ -550,21 +529,6 @@ module.exports = {
 
   normalizeInventoryEntry,
   normalizeWarehouseInventory,
+
+  calculateLocalDeliveryFeeInCents,
 };
-// module.exports = {
-//   WAREHOUSE_PRICE_RULES,
-
-//   forwardGeocodeAddress,
-
-//   validateCoordinates,
-//   calculateHaversineDistanceMiles,
-//   findClosestWarehouse,
-//   buildFulfillmentAvailability,
-
-//   calculateRecommendedSellingPriceInCents,
-//   calculateMaximumSellingPriceInCents,
-//   validateWarehouseSellingPrice,
-
-//   normalizeInventoryEntry,
-//   normalizeWarehouseInventory,
-// };

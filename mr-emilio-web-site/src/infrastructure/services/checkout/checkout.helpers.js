@@ -46,8 +46,20 @@ export const createInitialCheckoutState = () => ({
       postalCode: "",
     },
 
+    resolvedAddress: null,
+
+    coordinates: null,
+
+    fulfillingWarehouseId: null,
+    fulfillingWarehouse: null,
+
     distanceMiles: null,
+
+    deliveryFeeInCents: 0,
     deliveryFee: 0,
+
+    available: null,
+    unavailableReason: null,
   },
 
   pricing: {
@@ -59,3 +71,20 @@ export const createInitialCheckoutState = () => ({
 
   payment: null,
 });
+
+export const buildDeliveryAddressString = (address = {}) => {
+  const street =
+    typeof address.street === "string" ? address.street.trim() : "";
+
+  const unit = typeof address.unit === "string" ? address.unit.trim() : "";
+
+  const city = typeof address.city === "string" ? address.city.trim() : "";
+
+  const state =
+    typeof address.state === "string" ? address.state.trim().toUpperCase() : "";
+
+  const postalCode =
+    typeof address.postalCode === "string" ? address.postalCode.trim() : "";
+
+  return [street, unit, city, state, postalCode].filter(Boolean).join(", ");
+};

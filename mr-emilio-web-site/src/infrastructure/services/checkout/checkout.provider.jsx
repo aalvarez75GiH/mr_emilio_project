@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { CheckoutContext } from "./checkout.context";
 
@@ -9,12 +9,69 @@ import {
   createInitialCheckoutState,
 } from "./checkout.helpers";
 
+const CHECKOUT_STORAGE_KEY = "mr-emilio-checkout";
+
+const readStoredCheckout = () => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const storedCheckout = window.localStorage.getItem(CHECKOUT_STORAGE_KEY);
+
+    if (!storedCheckout) {
+      return null;
+    }
+
+    const parsedCheckout = JSON.parse(storedCheckout);
+
+    if (
+      !parsedCheckout ||
+      typeof parsedCheckout !== "object" ||
+      Array.isArray(parsedCheckout)
+    ) {
+      window.localStorage.removeItem(CHECKOUT_STORAGE_KEY);
+
+      return null;
+    }
+
+    return parsedCheckout;
+  } catch (error) {
+    console.error("Unable to restore checkout state:", error);
+
+    window.localStorage.removeItem(CHECKOUT_STORAGE_KEY);
+
+    return null;
+  }
+};
+
+const persistCheckout = (checkout) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(CHECKOUT_STORAGE_KEY, JSON.stringify(checkout));
+  } catch (error) {
+    console.error("Unable to persist checkout state:", error);
+  }
+};
+
 export const CheckoutProvider = ({ children }) => {
-  const [checkout, setCheckout] = useState(createInitialCheckoutState);
+  const [checkout, setCheckout] = useState(() => {
+    const storedCheckout = readStoredCheckout();
+
+    return storedCheckout || createInitialCheckoutState();
+  });
+
+  useEffect(() => {
+    persistCheckout(checkout);
+  }, [checkout]);
 
   const setGuestCheckout = useCallback(() => {
     setCheckout((currentCheckout) => ({
       ...currentCheckout,
+
       checkoutMode: CHECKOUT_MODES.GUEST,
     }));
   }, []);
@@ -22,6 +79,7 @@ export const CheckoutProvider = ({ children }) => {
   const setAuthenticatedCheckout = useCallback(() => {
     setCheckout((currentCheckout) => ({
       ...currentCheckout,
+
       checkoutMode: CHECKOUT_MODES.AUTHENTICATED,
     }));
   }, []);
@@ -33,6 +91,7 @@ export const CheckoutProvider = ({ children }) => {
 
     setCheckout((currentCheckout) => ({
       ...currentCheckout,
+
       fulfillmentMethod: method,
     }));
   }, []);
@@ -87,7 +146,54 @@ export const CheckoutProvider = ({ children }) => {
 
       pricing: {
         ...currentCheckout.pricing,
+
         deliveryFee,
+      },
+    }));
+  }, []);
+
+  const setLocalDeliveryQuote = useCallback((quote) => {
+    if (!quote || typeof quote !== "object") {
+      return;
+    }
+
+    const deliveryFeeInCents = Number(quote.deliveryFee?.amountInCents ?? 0);
+
+    const deliveryFee = Number(quote.deliveryFee?.amount ?? 0);
+
+    setCheckout((currentCheckout) => ({
+      ...currentCheckout,
+
+      delivery: {
+        ...currentCheckout.delivery,
+
+        resolvedAddress: quote.address?.formattedAddress || null,
+
+        coordinates: quote.address?.coordinates || null,
+
+        fulfillingWarehouseId: quote.warehouse?.id || null,
+
+        fulfillingWarehouse: quote.warehouse || null,
+
+        distanceMiles: Number.isFinite(Number(quote.distance?.miles))
+          ? Number(quote.distance.miles)
+          : null,
+
+        deliveryFeeInCents: Number.isInteger(deliveryFeeInCents)
+          ? deliveryFeeInCents
+          : 0,
+
+        deliveryFee: Number.isFinite(deliveryFee) ? deliveryFee : 0,
+
+        available: quote.available === true,
+
+        unavailableReason: quote.reason || null,
+      },
+
+      pricing: {
+        ...currentCheckout.pricing,
+
+        deliveryFee: Number.isFinite(deliveryFee) ? deliveryFee : 0,
       },
     }));
   }, []);
@@ -119,6 +225,7 @@ export const CheckoutProvider = ({ children }) => {
 
       updateDeliveryAddress,
       setDeliveryDistance,
+      setLocalDeliveryQuote,
 
       updateCustomer,
 
@@ -132,6 +239,7 @@ export const CheckoutProvider = ({ children }) => {
       selectPickupWarehouse,
       updateDeliveryAddress,
       setDeliveryDistance,
+      setLocalDeliveryQuote,
       updateCustomer,
       resetCheckout,
     ]

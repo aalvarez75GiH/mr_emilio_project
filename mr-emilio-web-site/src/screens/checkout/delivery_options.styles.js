@@ -429,49 +429,6 @@ export const DeliveryOptionMeta = styled.span`
     font-size: 0.86rem;
   }
 `;
-// export const DeliveryOptionTitle = styled.strong`
-//   display: block;
-
-//   color: ${({ theme }) => theme.colors.text.primary};
-
-//   font-size: 0.98rem;
-//   font-weight: ${({ theme }) => theme.fontWeights.bold};
-//   line-height: 1.2;
-
-//   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-//     font-size: 0.9rem;
-//   }
-// `;
-
-// export const DeliveryOptionDescription = styled.span`
-//   display: block;
-
-//   margin-top: 5px;
-
-//   color: ${({ theme }) => theme.colors.text.secondary};
-
-//   font-size: 0.76rem;
-//   line-height: 1.4;
-
-//   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-//     font-size: 0.69rem;
-//   }
-// `;
-
-// export const DeliveryOptionMeta = styled.span`
-//   display: block;
-
-//   margin-top: 7px;
-
-//   color: ${({ theme }) => theme.colors.brand.primary};
-
-//   font-size: 0.76rem;
-//   font-weight: ${({ theme }) => theme.fontWeights.bold};
-
-//   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-//     font-size: 0.7rem;
-//   }
-// `;
 
 export const DeliveryOptionRadio = styled.span`
   position: relative;
@@ -554,24 +511,6 @@ export const DeliveryInfo = styled.div`
     font-size: 0.78rem;
   }
 `;
-// export const DeliveryInfo = styled.div`
-//   margin-top: 18px;
-//   padding: 12px 14px;
-
-//   border-radius: 10px;
-
-//   background: ${({ theme }) => theme.colors.background.softBlue};
-//   color: ${({ theme }) => theme.colors.text.secondary};
-
-//   font-size: 0.72rem;
-//   line-height: 1.45;
-
-//   text-align: center;
-
-//   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-//     font-size: 0.66rem;
-//   }
-// `;
 
 export const DeliveryContinueButton = styled.button`
   display: inline-flex;

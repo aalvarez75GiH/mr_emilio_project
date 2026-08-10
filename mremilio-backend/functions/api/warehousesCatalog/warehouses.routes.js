@@ -103,6 +103,30 @@ warehousesCatalogRouter.get("/by-distance", async (req, res) => {
 });
 
 /**
+ * POST /api/warehouses-catalog/local-delivery-quote
+ *
+ * Resolves a customer delivery address and determines:
+ *
+ * - whether local delivery is available;
+ * - which store will fulfill the delivery;
+ * - customer distance from that store;
+ * - delivery fee at $1.00 per mile.
+ */
+warehousesCatalogRouter.post("/local-delivery-quote", async (req, res) => {
+  try {
+    const { address } = req.body;
+
+    const quote = await warehousesControllers.getLocalDeliveryQuote({
+      address,
+    });
+
+    return res.status(200).json(quote);
+  } catch (error) {
+    return sendErrorResponse(res, error);
+  }
+});
+
+/**
  * GET /api/warehouses-catalog/:id
  */
 warehousesCatalogRouter.get("/:id", async (req, res) => {

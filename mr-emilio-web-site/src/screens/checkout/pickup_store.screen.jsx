@@ -5,7 +5,7 @@ import {
   FiNavigation,
 } from "react-icons/fi";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { MainHeader } from "../../components/main_header/main_header.component";
@@ -50,6 +50,7 @@ import {
 } from "./pickup_store.styles";
 
 const TRANSITION_DURATION_MS = 260;
+import { FULFILLMENT_METHODS } from "../../infrastructure/services/checkout/checkout.helpers";
 
 export const PickupStore = () => {
   const navigate = useNavigate();
@@ -61,12 +62,18 @@ export const PickupStore = () => {
     isWarehouseLoading,
   } = useWarehouse();
 
-  const { checkout, selectPickupWarehouse } = useCheckout();
+  const { checkout, selectFulfillmentMethod, selectPickupWarehouse } =
+    useCheckout();
 
   const [transitionState, setTransitionState] = useState({
     isExiting: false,
     direction: "forward",
   });
+  useEffect(() => {
+    if (checkout.fulfillmentMethod !== FULFILLMENT_METHODS.PICKUP) {
+      selectFulfillmentMethod(FULFILLMENT_METHODS.PICKUP);
+    }
+  }, [checkout.fulfillmentMethod, selectFulfillmentMethod]);
 
   const pickupStores = useMemo(() => {
     return warehousesByDistance.filter(
@@ -114,6 +121,7 @@ export const PickupStore = () => {
   };
 
   const handleStoreSelection = (storeEntry) => {
+    selectFulfillmentMethod(FULFILLMENT_METHODS.PICKUP);
     selectPickupWarehouse(storeEntry.warehouse);
   };
 
@@ -122,13 +130,7 @@ export const PickupStore = () => {
       return;
     }
 
-    /*
-     * Next screen:
-     * Guest customer information.
-     *
-     * We'll create this route next.
-     */
-    console.log("Selected pickup store:", checkout.pickup.selectedWarehouse);
+    navigateWithTransition("/checkout/information", "forward");
   };
 
   return (

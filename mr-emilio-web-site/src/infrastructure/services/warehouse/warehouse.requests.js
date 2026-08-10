@@ -218,3 +218,24 @@ export const deleteWarehouseByIdRequest = async (
 
   return data;
 };
+
+export const getLocalDeliveryQuoteRequest = async (
+  address,
+  { signal } = {}
+) => {
+  if (typeof address !== "string" || !address.trim()) {
+    throw new Error("A valid delivery address is required");
+  }
+
+  const { data } = await apiClient.post(
+    `${WAREHOUSES_CATALOG_PATH}/local-delivery-quote`,
+    {
+      address: address.trim(),
+    },
+    {
+      signal,
+    }
+  );
+
+  return data;
+};
