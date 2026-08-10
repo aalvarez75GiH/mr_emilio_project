@@ -32,6 +32,8 @@ import {
   CheckoutLegalLink,
 } from "./checkout_entry.styles";
 
+import { useCheckout } from "../../infrastructure/services/checkout/use-checkout.hook";
+
 const TRANSITION_DURATION_MS = 260;
 
 export const CheckoutEntry = () => {
@@ -41,6 +43,8 @@ export const CheckoutEntry = () => {
     isExiting: false,
     direction: "forward",
   });
+
+  const { setGuestCheckout } = useCheckout();
 
   const navigateWithTransition = (path, direction) => {
     setTransitionState({
@@ -58,11 +62,8 @@ export const CheckoutEntry = () => {
   };
 
   const handleGuestCheckout = () => {
-    /*
-     * Next:
-     * set checkoutMode = "guest"
-     * inside CheckoutContext.
-     */
+    setGuestCheckout();
+
     navigateWithTransition("/checkout/delivery", "forward");
   };
 

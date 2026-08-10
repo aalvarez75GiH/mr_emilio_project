@@ -7,9 +7,13 @@ import { useGeolocation } from "../geolocation/use-geolocation.hook";
 import {
   getClosestWarehouseRequest,
   getWarehouseByIdRequest,
+  getWarehousesByDistanceRequest,
 } from "./warehouse.requests";
 
-import { normalizeClosestWarehouseResponse } from "./warehouse.helpers";
+import {
+  normalizeClosestWarehouseResponse,
+  normalizeWarehousesByDistanceResponse,
+} from "./warehouse.helpers";
 
 const DEFAULT_WAREHOUSE_ID = "main-warehouse-cumming";
 
@@ -50,10 +54,6 @@ const normalizeDefaultWarehouseResponse = (warehouse) => {
         },
 
         localDelivery: {
-          /*
-           * Delivery eligibility cannot be determined until
-           * the customer's location is known.
-           */
           available: false,
 
           radiusMiles:
@@ -95,6 +95,8 @@ export const WarehouseProvider = ({ children }) => {
 
   const [resolvedCustomerContext, setResolvedCustomerContext] = useState(null);
 
+  const [warehousesByDistance, setWarehousesByDistance] = useState([]);
+
   const [warehouseResolutionSource, setWarehouseResolutionSource] =
     useState(null);
 
@@ -133,6 +135,8 @@ export const WarehouseProvider = ({ children }) => {
 
       setWarehouseResolutionSource(WAREHOUSE_RESOLUTION_SOURCES.DEFAULT);
 
+      setWarehousesByDistance([]);
+
       return normalizedResponse;
     } catch (requestError) {
       if (signal?.aborted || isCanceledRequest(requestError)) {
@@ -143,6 +147,7 @@ export const WarehouseProvider = ({ children }) => {
 
       setResolvedWarehouse(null);
       setResolvedCustomerContext(null);
+      setWarehousesByDistance([]);
       setWarehouseResolutionSource(null);
       setWarehouseError(requestError);
 
@@ -209,6 +214,44 @@ export const WarehouseProvider = ({ children }) => {
     []
   );
 
+  const resolveWarehousesByDistance = useCallback(
+    async (nextCoordinates, { signal } = {}) => {
+      if (!nextCoordinates) {
+        setWarehousesByDistance([]);
+
+        return [];
+      }
+
+      try {
+        const response = await getWarehousesByDistanceRequest(nextCoordinates, {
+          signal,
+        });
+
+        if (signal?.aborted) {
+          return [];
+        }
+
+        const normalizedWarehouses =
+          normalizeWarehousesByDistanceResponse(response);
+
+        setWarehousesByDistance(normalizedWarehouses);
+
+        return normalizedWarehouses;
+      } catch (requestError) {
+        if (signal?.aborted || isCanceledRequest(requestError)) {
+          return [];
+        }
+
+        console.error("Error resolving warehouses by distance:", requestError);
+
+        setWarehousesByDistance([]);
+
+        return [];
+      }
+    },
+    []
+  );
+
   useEffect(() => {
     const abortController = new AbortController();
 
@@ -219,11 +262,16 @@ export const WarehouseProvider = ({ children }) => {
             ? WAREHOUSE_RESOLUTION_SOURCES.STORED_LOCATION
             : WAREHOUSE_RESOLUTION_SOURCES.BROWSER_LOCATION;
 
-        await resolveClosestWarehouse(coordinates, {
-          signal: abortController.signal,
+        await Promise.all([
+          resolveClosestWarehouse(coordinates, {
+            signal: abortController.signal,
+            source: locationSource,
+          }),
 
-          source: locationSource,
-        });
+          resolveWarehousesByDistance(coordinates, {
+            signal: abortController.signal,
+          }),
+        ]);
 
         return;
       }
@@ -244,6 +292,7 @@ export const WarehouseProvider = ({ children }) => {
     location?.source,
     resolveClosestWarehouse,
     resolveDefaultWarehouse,
+    resolveWarehousesByDistance,
   ]);
 
   const warehouse = resolvedWarehouse;
@@ -267,9 +316,13 @@ export const WarehouseProvider = ({ children }) => {
           ? WAREHOUSE_RESOLUTION_SOURCES.STORED_LOCATION
           : WAREHOUSE_RESOLUTION_SOURCES.BROWSER_LOCATION;
 
-      return resolveClosestWarehouse(coordinates, {
-        source: locationSource,
-      });
+      return Promise.all([
+        resolveClosestWarehouse(coordinates, {
+          source: locationSource,
+        }),
+
+        resolveWarehousesByDistance(coordinates),
+      ]);
     }
 
     return resolveDefaultWarehouse();
@@ -279,12 +332,15 @@ export const WarehouseProvider = ({ children }) => {
     location?.source,
     resolveClosestWarehouse,
     resolveDefaultWarehouse,
+    resolveWarehousesByDistance,
   ]);
 
   const contextValue = useMemo(
     () => ({
       warehouse,
       customerContext,
+
+      warehousesByDistance,
 
       warehouseResolutionSource,
       isUsingDefaultWarehouse,
@@ -300,6 +356,7 @@ export const WarehouseProvider = ({ children }) => {
       resolveWarehouse: resolveClosestWarehouse,
 
       resolveClosestWarehouse,
+      resolveWarehousesByDistance,
       resolveDefaultWarehouse,
       reloadWarehouse,
 
@@ -310,6 +367,7 @@ export const WarehouseProvider = ({ children }) => {
     [
       warehouse,
       customerContext,
+      warehousesByDistance,
       warehouseResolutionSource,
       isUsingDefaultWarehouse,
       isWarehouseLoading,
@@ -318,6 +376,7 @@ export const WarehouseProvider = ({ children }) => {
       combinedWarehouseError,
       hasResolvedWarehouse,
       resolveClosestWarehouse,
+      resolveWarehousesByDistance,
       resolveDefaultWarehouse,
       reloadWarehouse,
       coordinates,

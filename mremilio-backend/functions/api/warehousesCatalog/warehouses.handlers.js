@@ -183,7 +183,7 @@ const calculateHaversineDistanceMiles = (
   return Number(distanceMiles.toFixed(2));
 };
 
-const findClosestWarehouse = (warehouses = [], customerCoordinates) => {
+const sortWarehousesByDistance = (warehouses = [], customerCoordinates) => {
   if (!Array.isArray(warehouses)) {
     throw createHandlerError("Warehouses must be provided as an array", 400);
   }
@@ -196,34 +196,83 @@ const findClosestWarehouse = (warehouses = [], customerCoordinates) => {
   );
 
   if (activeWarehouses.length === 0) {
-    return null;
+    return [];
   }
 
-  const warehousesWithDistance = activeWarehouses.map((warehouse) => {
-    const distanceMiles = calculateHaversineDistanceMiles(customerCoordinates, {
-      lat: warehouse.geo.lat,
-      lng: warehouse.geo.lng,
-    });
+  return activeWarehouses
+    .map((warehouse) => {
+      const distanceMiles = calculateHaversineDistanceMiles(
+        customerCoordinates,
+        {
+          lat: warehouse.geo.lat,
+          lng: warehouse.geo.lng,
+        }
+      );
 
-    return {
-      ...warehouse,
+      return {
+        ...warehouse,
 
-      distance: {
-        miles: distanceMiles,
-      },
-    };
-  });
-
-  return warehousesWithDistance.reduce((closestWarehouse, currentWarehouse) => {
-    if (!closestWarehouse) {
-      return currentWarehouse;
-    }
-
-    return currentWarehouse.distance.miles < closestWarehouse.distance.miles
-      ? currentWarehouse
-      : closestWarehouse;
-  }, null);
+        distance: {
+          miles: distanceMiles,
+        },
+      };
+    })
+    .sort(
+      (warehouseA, warehouseB) =>
+        warehouseA.distance.miles - warehouseB.distance.miles
+    );
 };
+
+const findClosestWarehouse = (warehouses = [], customerCoordinates) => {
+  const warehousesByDistance = sortWarehousesByDistance(
+    warehouses,
+    customerCoordinates
+  );
+
+  return warehousesByDistance[0] || null;
+};
+
+// const findClosestWarehouse = (warehouses = [], customerCoordinates) => {
+//   if (!Array.isArray(warehouses)) {
+//     throw createHandlerError("Warehouses must be provided as an array", 400);
+//   }
+
+//   const activeWarehouses = warehouses.filter(
+//     (warehouse) =>
+//       warehouse?.active === true &&
+//       Number.isFinite(Number(warehouse?.geo?.lat)) &&
+//       Number.isFinite(Number(warehouse?.geo?.lng))
+//   );
+
+//   if (activeWarehouses.length === 0) {
+//     return null;
+//   }
+
+//   const warehousesWithDistance = activeWarehouses.map((warehouse) => {
+//     const distanceMiles = calculateHaversineDistanceMiles(customerCoordinates, {
+//       lat: warehouse.geo.lat,
+//       lng: warehouse.geo.lng,
+//     });
+
+//     return {
+//       ...warehouse,
+
+//       distance: {
+//         miles: distanceMiles,
+//       },
+//     };
+//   });
+
+//   return warehousesWithDistance.reduce((closestWarehouse, currentWarehouse) => {
+//     if (!closestWarehouse) {
+//       return currentWarehouse;
+//     }
+
+//     return currentWarehouse.distance.miles < closestWarehouse.distance.miles
+//       ? currentWarehouse
+//       : closestWarehouse;
+//   }, null);
+// };
 
 const buildFulfillmentAvailability = ({ warehouse, distanceMiles }) => {
   if (!warehouse || typeof warehouse !== "object") {
@@ -491,6 +540,7 @@ module.exports = {
 
   validateCoordinates,
   calculateHaversineDistanceMiles,
+  sortWarehousesByDistance,
   findClosestWarehouse,
   buildFulfillmentAvailability,
 
@@ -501,3 +551,20 @@ module.exports = {
   normalizeInventoryEntry,
   normalizeWarehouseInventory,
 };
+// module.exports = {
+//   WAREHOUSE_PRICE_RULES,
+
+//   forwardGeocodeAddress,
+
+//   validateCoordinates,
+//   calculateHaversineDistanceMiles,
+//   findClosestWarehouse,
+//   buildFulfillmentAvailability,
+
+//   calculateRecommendedSellingPriceInCents,
+//   calculateMaximumSellingPriceInCents,
+//   validateWarehouseSellingPrice,
+
+//   normalizeInventoryEntry,
+//   normalizeWarehouseInventory,
+// };

@@ -15,6 +15,7 @@ const {
 const {
   forwardGeocodeAddress,
   findClosestWarehouse,
+  sortWarehousesByDistance,
   buildFulfillmentAvailability,
   normalizeWarehouseInventory,
   normalizeInventoryEntry,
@@ -352,6 +353,47 @@ const getActiveWarehouses = async () => {
     .get();
 
   return warehousesSnapshot.docs.map((document) => document.data());
+};
+
+const getWarehousesByDistance = async ({ lat, lng }) => {
+  const customerCoordinates = validateCoordinates(
+    {
+      lat,
+      lng,
+    },
+    "customerCoordinates"
+  );
+
+  const activeWarehouses = await getActiveWarehouses();
+
+  const warehousesByDistance = sortWarehousesByDistance(
+    activeWarehouses,
+    customerCoordinates
+  );
+
+  return warehousesByDistance.map((warehouse) => {
+    const distanceMiles = warehouse.distance.miles;
+
+    const fulfillmentAvailability = buildFulfillmentAvailability({
+      warehouse,
+      distanceMiles,
+    });
+
+    const { distance: _warehouseDistance, ...warehouseWithoutDistance } =
+      warehouse;
+
+    return {
+      warehouse: warehouseWithoutDistance,
+
+      customerContext: {
+        distance: {
+          miles: distanceMiles,
+        },
+
+        fulfillment: fulfillmentAvailability,
+      },
+    };
+  });
 };
 
 const getClosestWarehouse = async ({ lat, lng }) => {
@@ -727,6 +769,7 @@ module.exports = {
   getAllWarehouses,
   getActiveWarehouses,
   getClosestWarehouse,
+  getWarehousesByDistance,
 
   createWarehouse,
   updateWarehouseById,

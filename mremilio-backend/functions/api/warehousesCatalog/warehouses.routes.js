@@ -77,6 +77,32 @@ warehousesCatalogRouter.get("/closest", async (req, res) => {
 });
 
 /**
+ * GET /api/warehouses-catalog/by-distance
+ *
+ * Returns all active warehouses ordered from
+ * closest to farthest from the customer.
+ *
+ * Example:
+ * /api/warehouses-catalog/by-distance?lat=34.05&lng=-84.08
+ */
+warehousesCatalogRouter.get("/by-distance", async (req, res) => {
+  try {
+    const { lat, lng } = req.query;
+
+    const warehouses = await warehousesControllers.getWarehousesByDistance({
+      lat,
+      lng,
+    });
+
+    return res.status(200).json({
+      warehouses,
+    });
+  } catch (error) {
+    return sendErrorResponse(res, error);
+  }
+});
+
+/**
  * GET /api/warehouses-catalog/:id
  */
 warehousesCatalogRouter.get("/:id", async (req, res) => {

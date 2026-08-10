@@ -102,7 +102,6 @@ warehousesRouter.get("/geocoding", (req, res) => {
   })();
 });
 
-// Determine nearest warehose from device location
 // Determine nearest warehouse from device location
 warehousesRouter.get("/distanceMatrix", async (req, res) => {
   const { lat, lng } = url.parse(req.url, true).query;
@@ -235,94 +234,6 @@ warehousesRouter.get("/distanceMatrix", async (req, res) => {
     });
   }
 });
-
-// warehousesRouter.get("/distanceMatrix", (req, res) => {
-//   // console.log("PASA AL MENOS X AQUI");
-//   (async () => {
-//     const { lat, lng } = url.parse(req.url, true).query;
-//     const origin = {
-//       lat: lat,
-//       lng: lng,
-//     };
-//     let warehouses = [];
-//     try {
-//       await warehousesController.getAllWarehouses().then(async (data) => {
-//         // warehouses = arrayingWarehouses(data);
-//         warehouses = warehousesHandlers.arrayingWarehouses(data);
-//         console.log("ACTIVE WAREHOUSES:", warehouses);
-//         let available_warehouses = [];
-//         let most_optimum_warehouse_forCustomer = [];
-//         const warehouses_with_distance_from_google = await Promise.all(
-//           warehouses.map(async (warehouse, index) => {
-//             const { geometry } = warehouse;
-//             const { location } = geometry;
-//             const { lat: wLat, lng: wLng } = location;
-//             console.log(wLat, wLng);
-
-//             let customerDistanceToWarehouse;
-//             let customerDistanceToWarehouse_in_miles;
-//             let customer_distance_time;
-
-//             const dest = {
-//               lat: wLat,
-//               lng: wLng,
-//             };
-
-//             var config = {
-//               method: "get",
-//               url: `https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=${origin.lat}%2C${origin.lng}&destinations=${dest.lat}%2C${dest.lng}%7C${dest.lat}%2C${dest.lng}%7C${dest.lat}%2C${dest.lng}%7C${dest.lat}%2C${dest.lng}&key=${process.env.GOOGLE_KEY}`,
-//               headers: {},
-//             };
-
-//             await axios(config).then((responseFromGoogle) => {
-//               // console.log(responseFromGoogle);
-//               const distance_in_miles =
-//                 responseFromGoogle.data.rows[0].elements[0].distance.text;
-//               customerDistanceToWarehouse_in_miles = distance_in_miles;
-//               console.log(
-//                 "DISTANCE IN MILES:",
-//                 customerDistanceToWarehouse_in_miles
-//               );
-//               const distance_in_meters =
-//                 responseFromGoogle.data.rows[0].elements[0].distance.value;
-//               customerDistanceToWarehouse = distance_in_meters;
-//               console.log("DISTANCE IN METERS:", customerDistanceToWarehouse);
-//               const distance_in_time =
-//                 responseFromGoogle.data.rows[0].elements[0].duration.text;
-//               customer_distance_time = distance_in_time;
-//               console.log("DISTANCE IN Time:", customer_distance_time);
-//             });
-//             warehouse["customer_distance_to_warehouse"] =
-//               customerDistanceToWarehouse;
-//             warehouse["distance_in_miles"] =
-//               customerDistanceToWarehouse_in_miles;
-//             warehouse["distance_time"] = customer_distance_time;
-//             available_warehouses.push(warehouse);
-//             // console.log("AVAILABLE WAREHOUSES:", available_warehouses);
-//             return warehouse;
-//           })
-//         );
-//         const closest_warehouse = warehouses_with_distance_from_google.reduce(
-//           (previous, current) => {
-//             return previous.customer_distance_to_warehouse <
-//               current.customer_distance_to_warehouse
-//               ? previous
-//               : current;
-//           }
-//         );
-//         console.log("Most Closest Warehouse to customer:", closest_warehouse);
-//         most_optimum_warehouse_forCustomer.push(closest_warehouse);
-//         res.status(200).send(most_optimum_warehouse_forCustomer);
-//       });
-//     } catch (error) {
-//       console.log(error);
-//       return res.status(500).send({
-//         status: "Failed",
-//         msg: "Something went wrong saving Data...",
-//       });
-//     }
-//   })();
-// });
 
 // Get a warehouse by Id from Firesote
 warehousesRouter.get("/:id", validateID, (req, res) => {

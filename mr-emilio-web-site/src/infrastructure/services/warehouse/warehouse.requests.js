@@ -91,6 +91,27 @@ export const getClosestWarehouseRequest = async (
   return data;
 };
 
+export const getWarehousesByDistanceRequest = async (
+  coordinates,
+  { signal } = {}
+) => {
+  const { lat, lng } = validateCoordinates(coordinates);
+
+  const { data } = await apiClient.get(
+    `${WAREHOUSES_CATALOG_PATH}/by-distance`,
+    {
+      params: {
+        lat,
+        lng,
+      },
+
+      signal,
+    }
+  );
+
+  return data;
+};
+
 export const createWarehouseRequest = async (warehouse, { signal } = {}) => {
   const validatedWarehouse = validateObjectPayload(
     warehouse,

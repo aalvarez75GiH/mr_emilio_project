@@ -250,3 +250,17 @@ export const mergeProductsWithWarehouseInventory = (
         product.active === true && product.warehouseProductActive === true
     );
 };
+
+export const normalizeWarehousesByDistanceResponse = (response) => {
+  if (!isPlainObject(response)) {
+    return [];
+  }
+
+  if (!Array.isArray(response.warehouses)) {
+    return [];
+  }
+
+  return response.warehouses
+    .map((entry) => normalizeClosestWarehouseResponse(entry))
+    .filter(Boolean);
+};
