@@ -1,9 +1,12 @@
 import { FiChevronRight, FiLock, FiMapPin } from "react-icons/fi";
+
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { MainHeader } from "../../components/main_header/main_header.component";
 import { CheckoutBackHeader } from "../../components/layout/checkout_back_header/checkout_back_header.component";
+
+import { AddressAutocomplete } from "../../components/forms/address_autocomplete/address_autocomplete.component";
 
 import { useCheckout } from "../../infrastructure/services/checkout/use-checkout.hook";
 
@@ -11,6 +14,16 @@ import {
   FULFILLMENT_METHODS,
   buildDeliveryAddressString,
 } from "../../infrastructure/services/checkout/checkout.helpers";
+
+import { getLocalDeliveryQuoteRequest } from "../../infrastructure/services/warehouse/warehouse.requests";
+
+import {
+  isRequiredText,
+  isValidEmail,
+  isValidUSPhoneNumber,
+} from "../../utils/validation/validation.helpers";
+
+import { formatUSPhoneNumber } from "../../utils/validation/formatting.helpers";
 
 import storeIcon from "../../assets/checkout/icons/storeIcon.svg";
 
@@ -33,7 +46,6 @@ import {
   FormField,
   FormLabel,
   FormInput,
-  AddressGrid,
   FulfillmentSummary,
   FulfillmentSummaryIcon,
   FulfillmentSummaryContent,
@@ -45,16 +57,6 @@ import {
   DeliveryQuoteError,
   SecureMessage,
 } from "./customer_information.styles";
-
-import {
-  isRequiredText,
-  isValidEmail,
-  isValidUSPhoneNumber,
-} from "../../utils/validation/validation.helpers";
-
-import { getLocalDeliveryQuoteRequest } from "../../infrastructure/services/warehouse/warehouse.requests";
-
-import { formatUSPhoneNumber } from "../../utils/validation/formatting.helpers";
 
 const TRANSITION_DURATION_MS = 260;
 
@@ -72,6 +74,7 @@ export const CustomerInformation = () => {
     isExiting: false,
     direction: "forward",
   });
+
   const [isDeliveryQuoteLoading, setIsDeliveryQuoteLoading] = useState(false);
 
   const [deliveryQuoteError, setDeliveryQuoteError] = useState("");
@@ -103,6 +106,14 @@ export const CustomerInformation = () => {
     }
 
     if (isLocalDelivery) {
+      /*
+       * These values are populated only after
+       * the customer selects a Google Places
+       * autocomplete suggestion.
+       *
+       * Typing text alone will not make the
+       * Local Delivery form valid.
+       */
       return (
         isRequiredText(deliveryAddress.street) &&
         isRequiredText(deliveryAddress.city) &&
@@ -153,6 +164,66 @@ export const CustomerInformation = () => {
     });
   };
 
+  const handleAutocompleteInputChange = (value) => {
+    /*
+     * The customer has started changing the
+     * address after either typing or previously
+     * selecting a Google suggestion.
+     *
+     * Keep only what they are currently typing
+     * as the street search value and invalidate
+     * the structured address.
+     *
+     * This prevents an old city/state/ZIP from
+     * being submitted with a different street.
+     */
+    updateDeliveryAddress({
+      street: value,
+
+      city: "",
+      state: "",
+      postalCode: "",
+
+      formattedAddress: null,
+      placeId: null,
+      coordinates: null,
+    });
+
+    setDeliveryQuoteError("");
+  };
+
+  const handleAutocompleteAddressSelected = (selectedAddress) => {
+    if (!selectedAddress) {
+      return;
+    }
+
+    /*
+     * Preserve both the structured address
+     * required by the current checkout logic
+     * and the useful Google Places metadata.
+     *
+     * buildDeliveryAddressString() will continue
+     * using street/city/state/postalCode.
+     */
+    updateDeliveryAddress({
+      street: selectedAddress.street || "",
+
+      city: selectedAddress.city || "",
+
+      state: selectedAddress.state || "",
+
+      postalCode: selectedAddress.postalCode || "",
+
+      formattedAddress: selectedAddress.formattedAddress || null,
+
+      placeId: selectedAddress.placeId || null,
+
+      coordinates: selectedAddress.coordinates || null,
+    });
+
+    setDeliveryQuoteError("");
+  };
+
   const handleChangeStore = () => {
     navigateWithTransition("/checkout/delivery/pickup", "back");
   };
@@ -164,6 +235,12 @@ export const CustomerInformation = () => {
       return;
     }
 
+    /*
+     * PICKUP
+     *
+     * Store selection has already been resolved,
+     * so Pickup can continue directly to Payment.
+     */
     if (isPickup) {
       navigateWithTransition("/checkout/payment", "forward");
 
@@ -174,6 +251,18 @@ export const CustomerInformation = () => {
       return;
     }
 
+    /*
+     * LOCAL DELIVERY
+     *
+     * Google Places improves address entry,
+     * but our backend remains authoritative for:
+     *
+     * - delivery availability;
+     * - fulfilling store;
+     * - distance;
+     * - delivery radius;
+     * - $1.00 / mile delivery fee.
+     */
     setIsDeliveryQuoteLoading(true);
     setDeliveryQuoteError("");
 
@@ -187,19 +276,17 @@ export const CustomerInformation = () => {
       setLocalDeliveryQuote(quote);
 
       if (quote.available !== true) {
+        const isOutsideDeliveryRadius =
+          quote.reason === "OUTSIDE_DELIVERY_RADIUS";
+
         setDeliveryQuoteError(
-          "Local delivery is not currently available to this address."
+          isOutsideDeliveryRadius
+            ? "This address is outside our local delivery area. Please enter another address or choose Pickup."
+            : "Local delivery is not currently available to this address."
         );
 
         return;
       }
-      console.log("DELIVERY READY FOR PAYMENT:", {
-        available: quote.available,
-        store: quote.warehouse?.warehouse_name,
-        distanceMiles: quote.distance?.miles,
-        deliveryFee: quote.deliveryFee?.amount,
-        deliveryFeeInCents: quote.deliveryFee?.amountInCents,
-      });
 
       navigateWithTransition("/checkout/payment", "forward");
     } catch (error) {
@@ -212,6 +299,7 @@ export const CustomerInformation = () => {
       setIsDeliveryQuoteLoading(false);
     }
   };
+
   return (
     <CustomerInformationTransition
       $isExiting={transitionState.isExiting}
@@ -345,19 +433,15 @@ export const CustomerInformation = () => {
 
                 <FieldsGrid>
                   <FormField>
-                    <FormLabel htmlFor="checkout-street">
-                      Street address
+                    <FormLabel htmlFor="checkout-address-search">
+                      Address
                     </FormLabel>
 
-                    <FormInput
-                      id="checkout-street"
-                      type="text"
-                      autoComplete="address-line1"
-                      placeholder="123 Main Street"
+                    <AddressAutocomplete
                       value={deliveryAddress.street}
-                      onChange={(event) =>
-                        handleAddressFieldChange("street", event.target.value)
-                      }
+                      onInputChange={handleAutocompleteInputChange}
+                      onAddressSelected={handleAutocompleteAddressSelected}
+                      disabled={isDeliveryQuoteLoading}
                     />
                   </FormField>
 
@@ -372,66 +456,9 @@ export const CustomerInformation = () => {
                       autoComplete="address-line2"
                       placeholder="Apt 2B"
                       value={deliveryAddress.unit}
+                      disabled={isDeliveryQuoteLoading}
                       onChange={(event) =>
                         handleAddressFieldChange("unit", event.target.value)
-                      }
-                    />
-                  </FormField>
-
-                  <AddressGrid>
-                    <FormField>
-                      <FormLabel htmlFor="checkout-city">City</FormLabel>
-
-                      <FormInput
-                        id="checkout-city"
-                        type="text"
-                        autoComplete="address-level2"
-                        placeholder="Athens"
-                        value={deliveryAddress.city}
-                        onChange={(event) =>
-                          handleAddressFieldChange("city", event.target.value)
-                        }
-                      />
-                    </FormField>
-
-                    <FormField>
-                      <FormLabel htmlFor="checkout-state">State</FormLabel>
-
-                      <FormInput
-                        id="checkout-state"
-                        type="text"
-                        autoComplete="address-level1"
-                        placeholder="GA"
-                        maxLength={2}
-                        value={deliveryAddress.state}
-                        onChange={(event) =>
-                          handleAddressFieldChange(
-                            "state",
-                            event.target.value.toUpperCase()
-                          )
-                        }
-                      />
-                    </FormField>
-                  </AddressGrid>
-
-                  <FormField>
-                    <FormLabel htmlFor="checkout-postal-code">
-                      ZIP code
-                    </FormLabel>
-
-                    <FormInput
-                      id="checkout-postal-code"
-                      type="text"
-                      inputMode="numeric"
-                      autoComplete="postal-code"
-                      placeholder="30606"
-                      maxLength={10}
-                      value={deliveryAddress.postalCode}
-                      onChange={(event) =>
-                        handleAddressFieldChange(
-                          "postalCode",
-                          event.target.value
-                        )
                       }
                     />
                   </FormField>
@@ -490,11 +517,13 @@ export const CustomerInformation = () => {
                 </FulfillmentSummaryContent>
               </FulfillmentSummary>
             )}
+
             {deliveryQuoteError && (
               <DeliveryQuoteError role="alert">
                 {deliveryQuoteError}
               </DeliveryQuoteError>
             )}
+
             <CustomerInformationContinueButton
               type="submit"
               disabled={!formIsValid || isDeliveryQuoteLoading}
