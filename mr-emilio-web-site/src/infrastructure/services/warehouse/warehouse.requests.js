@@ -220,9 +220,11 @@ export const deleteWarehouseByIdRequest = async (
 };
 
 export const getLocalDeliveryQuoteRequest = async (
-  address,
+  { warehouseId, address },
   { signal } = {}
 ) => {
+  const normalizedWarehouseId = validateWarehouseId(warehouseId);
+
   if (typeof address !== "string" || !address.trim()) {
     throw new Error("A valid delivery address is required");
   }
@@ -230,6 +232,7 @@ export const getLocalDeliveryQuoteRequest = async (
   const { data } = await apiClient.post(
     `${WAREHOUSES_CATALOG_PATH}/local-delivery-quote`,
     {
+      warehouseId: normalizedWarehouseId,
       address: address.trim(),
     },
     {

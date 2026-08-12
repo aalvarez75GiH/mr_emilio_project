@@ -8,8 +8,6 @@ import { CheckoutBackHeader } from "../../components/layout/checkout_back_header
 
 import { AddressAutocomplete } from "../../components/forms/address_autocomplete/address_autocomplete.component";
 
-import { useCheckout } from "../../infrastructure/services/checkout/use-checkout.hook";
-
 import {
   FULFILLMENT_METHODS,
   buildDeliveryAddressString,
@@ -26,6 +24,9 @@ import {
 import { formatUSPhoneNumber } from "../../utils/validation/formatting.helpers";
 
 import storeIcon from "../../assets/checkout/icons/storeIcon.svg";
+
+import { useCheckout } from "../../infrastructure/services/checkout/use-checkout.hook";
+import { useWarehouse } from "../../infrastructure/services/warehouse/use-warehouse.hook";
 
 import {
   CustomerInformationTransition,
@@ -69,6 +70,8 @@ export const CustomerInformation = () => {
     updateDeliveryAddress,
     setLocalDeliveryQuote,
   } = useCheckout();
+
+  const { warehouse: originatingWarehouse } = useWarehouse();
 
   const [transitionState, setTransitionState] = useState({
     isExiting: false,
@@ -271,8 +274,19 @@ export const CustomerInformation = () => {
         checkout.delivery.address
       );
 
-      const quote = await getLocalDeliveryQuoteRequest(formattedAddress);
+      if (!originatingWarehouse?.id) {
+        setDeliveryQuoteError(
+          "We couldn't determine the store serving your order. Please return to the store selection and try again."
+        );
 
+        return;
+      }
+      //   const quote = await getLocalDeliveryQuoteRequest(formattedAddress);
+      const quote = await getLocalDeliveryQuoteRequest({
+        warehouseId: originatingWarehouse.id,
+
+        address: formattedAddress,
+      });
       setLocalDeliveryQuote(quote);
 
       if (quote.available !== true) {

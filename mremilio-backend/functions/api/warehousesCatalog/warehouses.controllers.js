@@ -23,6 +23,7 @@ const {
   validateWarehouseSellingPrice,
   validateCoordinates,
   calculateLocalDeliveryFeeInCents,
+  getDrivingRouteDistance,
 } = require("./warehouses.handlers");
 
 const createControllerError = (message, statusCode = 500, details = null) => {
@@ -765,14 +766,31 @@ const deleteWarehouseById = async (warehouseId) => {
     id: String(warehouseId),
   };
 };
+const getLocalDeliveryQuote = async ({ warehouseId, address }) => {
+  const normalizedWarehouseId = validateRequiredString(
+    warehouseId,
+    "warehouseId"
+  );
 
-const getLocalDeliveryQuote = async ({ address }) => {
   const normalizedAddress = validateRequiredString(address, "address");
 
-  /*
-   * Resolve the customer's checkout address.
+  /**
+   * The originating store owns the order.
    *
-   * This is intentionally separate from browser geolocation.
+   * Local Delivery must never reassign fulfillment
+   * based on the destination address.
+   */
+  const warehouse = await getWarehouseById(normalizedWarehouseId);
+
+  if (!warehouse) {
+    throw createControllerError(
+      `Warehouse "${normalizedWarehouseId}" was not found`,
+      404
+    );
+  }
+
+  /**
+   * Resolve the delivery destination.
    */
   const geo = await forwardGeocodeAddress(normalizedAddress);
 
@@ -784,105 +802,134 @@ const getLocalDeliveryQuote = async ({ address }) => {
     "deliveryAddressCoordinates"
   );
 
-  const activeWarehouses = await getActiveWarehouses();
+  /**
+   * If the originating store became inactive after
+   * the shopping session started, do not transfer
+   * the order to another store.
+   */
+  if (warehouse.active !== true) {
+    return {
+      available: false,
 
-  const warehousesByDistance = sortWarehousesByDistance(
-    activeWarehouses,
-    customerCoordinates
+      reason: "ORIGINATING_WAREHOUSE_INACTIVE",
+
+      address: {
+        input: normalizedAddress,
+
+        formattedAddress: geo.formatted_address,
+
+        coordinates: customerCoordinates,
+
+        placeId: geo.place_id || null,
+      },
+
+      warehouse,
+
+      distance: null,
+
+      deliveryFee: null,
+
+      fulfillment: {
+        localDelivery: {
+          available: false,
+
+          radiusMiles:
+            warehouse.fulfillment?.localDelivery?.radiusMiles ?? null,
+
+          estimatedTimeMinutes:
+            warehouse.fulfillment?.localDelivery?.estimatedTimeMinutes ?? null,
+
+          provider: warehouse.fulfillment?.localDelivery?.provider ?? null,
+
+          reason: "ORIGINATING_WAREHOUSE_INACTIVE",
+        },
+      },
+    };
+  }
+
+  /**
+   * Validate the originating store's coordinates.
+   */
+  const warehouseCoordinates = validateCoordinates(
+    {
+      lat: warehouse.geo?.lat,
+      lng: warehouse.geo?.lng,
+    },
+    "warehouseCoordinates"
   );
 
-  if (warehousesByDistance.length === 0) {
-    return {
-      available: false,
-
-      reason: "NO_ACTIVE_WAREHOUSES",
-
-      address: {
-        input: normalizedAddress,
-        formattedAddress: geo.formatted_address,
-        coordinates: customerCoordinates,
-        placeId: geo.place_id || null,
-      },
-
-      warehouse: null,
-      distance: null,
-      deliveryFee: null,
-    };
-  }
-
-  let nearestWarehouse = null;
-  let deliveryWarehouse = null;
-  let deliveryFulfillment = null;
-
-  for (const warehouse of warehousesByDistance) {
-    const distanceMiles = warehouse.distance.miles;
-
-    const fulfillmentAvailability = buildFulfillmentAvailability({
-      warehouse,
-      distanceMiles,
-    });
-
-    if (!nearestWarehouse) {
-      nearestWarehouse = {
-        warehouse,
-        fulfillment: fulfillmentAvailability,
-      };
-    }
-
-    if (fulfillmentAvailability.localDelivery.available === true) {
-      deliveryWarehouse = warehouse;
-      deliveryFulfillment = fulfillmentAvailability;
-
-      break;
-    }
-  }
-
-  /*
-   * No store can currently deliver to this address.
+  /**
+   * Driving distance is authoritative for
+   * Local Delivery eligibility and pricing.
    */
-  if (!deliveryWarehouse) {
-    const nearestDistance =
-      nearestWarehouse?.warehouse?.distance?.miles ?? null;
+  const drivingRoute = await getDrivingRouteDistance({
+    originCoordinates: warehouseCoordinates,
 
-    const { distance: _distance, ...nearestWarehouseWithoutDistance } =
-      nearestWarehouse?.warehouse || {};
+    destinationCoordinates: customerCoordinates,
+  });
 
+  const distanceMiles = drivingRoute.distanceMiles;
+
+  /**
+   * Evaluate THIS store's Local Delivery settings
+   * using actual driving mileage.
+   */
+  const fulfillmentAvailability = buildFulfillmentAvailability({
+    warehouse,
+    distanceMiles,
+  });
+
+  const localDelivery = fulfillmentAvailability.localDelivery;
+
+  /**
+   * This store cannot deliver to the destination.
+   *
+   * Do NOT attempt another store.
+   */
+  if (localDelivery.available !== true) {
     return {
       available: false,
 
-      reason:
-        nearestWarehouse?.fulfillment?.localDelivery?.reason ||
-        "LOCAL_DELIVERY_UNAVAILABLE",
+      reason: localDelivery.reason || "LOCAL_DELIVERY_UNAVAILABLE",
 
       address: {
         input: normalizedAddress,
+
         formattedAddress: geo.formatted_address,
+
         coordinates: customerCoordinates,
+
         placeId: geo.place_id || null,
       },
 
-      warehouse: nearestWarehouseWithoutDistance || null,
+      warehouse,
 
       distance: {
-        miles: nearestDistance,
+        miles: drivingRoute.distanceMiles,
+
+        meters: drivingRoute.distanceMeters,
+
+        duration: drivingRoute.duration,
+
+        source: drivingRoute.source,
       },
 
       deliveryFee: null,
+
+      fulfillment: {
+        localDelivery,
+      },
     };
   }
-
-  const distanceMiles = deliveryWarehouse.distance.miles;
 
   const deliveryFeeInCents = calculateLocalDeliveryFeeInCents(
     distanceMiles,
     LOCAL_DELIVERY_FEE_PER_MILE_IN_CENTS
   );
 
-  const { distance: _warehouseDistance, ...warehouseWithoutDistance } =
-    deliveryWarehouse;
-
   return {
     available: true,
+
     reason: null,
 
     address: {
@@ -895,10 +942,19 @@ const getLocalDeliveryQuote = async ({ address }) => {
       placeId: geo.place_id || null,
     },
 
-    warehouse: warehouseWithoutDistance,
+    /**
+     * Always the originating store.
+     */
+    warehouse,
 
     distance: {
-      miles: distanceMiles,
+      miles: drivingRoute.distanceMiles,
+
+      meters: drivingRoute.distanceMeters,
+
+      duration: drivingRoute.duration,
+
+      source: drivingRoute.source,
     },
 
     deliveryFee: {
@@ -912,10 +968,220 @@ const getLocalDeliveryQuote = async ({ address }) => {
     },
 
     fulfillment: {
-      localDelivery: deliveryFulfillment.localDelivery,
+      localDelivery,
     },
   };
 };
+// const getLocalDeliveryQuote = async ({ warehouseId, address }) => {
+//   const normalizedWarehouseId = validateRequiredString(
+//     warehouseId,
+//     "warehouseId"
+//   );
+
+//   const normalizedAddress = validateRequiredString(address, "address");
+
+//   /**
+//    * The originating warehouse/store owns the order.
+//    *
+//    * Local Delivery must NEVER search for another
+//    * warehouse based on the destination address.
+//    */
+//   const warehouse = await getWarehouseById(normalizedWarehouseId);
+
+//   if (!warehouse) {
+//     throw createControllerError(
+//       `Warehouse "${normalizedWarehouseId}" was not found`,
+//       404
+//     );
+//   }
+
+//   /**
+//    * Resolve the customer's DELIVERY destination.
+//    *
+//    * This is intentionally separate from:
+//    *
+//    * - browser geolocation;
+//    * - originating warehouse resolution;
+//    * - pickup-store selection.
+//    */
+//   const geo = await forwardGeocodeAddress(normalizedAddress);
+
+//   const customerCoordinates = validateCoordinates(
+//     {
+//       lat: geo.lat,
+//       lng: geo.lng,
+//     },
+//     "deliveryAddressCoordinates"
+//   );
+
+//   /**
+//    * A warehouse may have become inactive after
+//    * the customer's shopping session began.
+//    *
+//    * In that situation we do NOT transfer the sale
+//    * to another warehouse.
+//    */
+//   if (warehouse.active !== true) {
+//     return {
+//       available: false,
+
+//       reason: "ORIGINATING_WAREHOUSE_INACTIVE",
+
+//       address: {
+//         input: normalizedAddress,
+
+//         formattedAddress: geo.formatted_address,
+
+//         coordinates: customerCoordinates,
+
+//         placeId: geo.place_id || null,
+//       },
+
+//       warehouse,
+
+//       distance: null,
+
+//       deliveryFee: null,
+
+//       fulfillment: {
+//         localDelivery: {
+//           available: false,
+
+//           radiusMiles:
+//             warehouse.fulfillment?.localDelivery?.radiusMiles ?? null,
+
+//           estimatedTimeMinutes:
+//             warehouse.fulfillment?.localDelivery?.estimatedTimeMinutes ?? null,
+
+//           provider: warehouse.fulfillment?.localDelivery?.provider ?? null,
+
+//           reason: "ORIGINATING_WAREHOUSE_INACTIVE",
+//         },
+//       },
+//     };
+//   }
+
+//   /**
+//    * Reuse the existing distance helper, but pass
+//    * ONLY the originating warehouse.
+//    *
+//    * This prevents the delivery destination from
+//    * selecting a different fulfillment store.
+//    */
+//   const [warehouseWithDistance] = sortWarehousesByDistance(
+//     [warehouse],
+//     customerCoordinates
+//   );
+
+//   if (!warehouseWithDistance) {
+//     throw createControllerError(
+//       `Unable to calculate delivery distance for warehouse "${normalizedWarehouseId}"`,
+//       500
+//     );
+//   }
+
+//   const distanceMiles = warehouseWithDistance.distance.miles;
+
+//   /**
+//    * Determine Local Delivery availability using
+//    * THIS warehouse's own:
+//    *
+//    * - active state;
+//    * - status;
+//    * - localDelivery.enabled;
+//    * - radiusMiles.
+//    */
+//   const fulfillmentAvailability = buildFulfillmentAvailability({
+//     warehouse: warehouseWithDistance,
+//     distanceMiles,
+//   });
+
+//   const localDelivery = fulfillmentAvailability.localDelivery;
+
+//   const { distance: _warehouseDistance, ...warehouseWithoutDistance } =
+//     warehouseWithDistance;
+
+//   /**
+//    * The originating store cannot deliver to this
+//    * destination.
+//    *
+//    * IMPORTANT:
+//    * Do not attempt another warehouse.
+//    */
+//   if (localDelivery.available !== true) {
+//     return {
+//       available: false,
+
+//       reason: localDelivery.reason || "LOCAL_DELIVERY_UNAVAILABLE",
+
+//       address: {
+//         input: normalizedAddress,
+
+//         formattedAddress: geo.formatted_address,
+
+//         coordinates: customerCoordinates,
+
+//         placeId: geo.place_id || null,
+//       },
+
+//       warehouse: warehouseWithoutDistance,
+
+//       distance: {
+//         miles: distanceMiles,
+//       },
+
+//       deliveryFee: null,
+
+//       fulfillment: {
+//         localDelivery,
+//       },
+//     };
+//   }
+
+//   const deliveryFeeInCents = calculateLocalDeliveryFeeInCents(
+//     distanceMiles,
+//     LOCAL_DELIVERY_FEE_PER_MILE_IN_CENTS
+//   );
+
+//   return {
+//     available: true,
+
+//     reason: null,
+
+//     address: {
+//       input: normalizedAddress,
+
+//       formattedAddress: geo.formatted_address,
+
+//       coordinates: customerCoordinates,
+
+//       placeId: geo.place_id || null,
+//     },
+
+//     /**
+//      * This is ALWAYS the originating store.
+//      */
+//     warehouse: warehouseWithoutDistance,
+
+//     distance: {
+//       miles: distanceMiles,
+//     },
+
+//     deliveryFee: {
+//       amountInCents: deliveryFeeInCents,
+
+//       amount: deliveryFeeInCents / 100,
+
+//       pricePerMileInCents: LOCAL_DELIVERY_FEE_PER_MILE_IN_CENTS,
+
+//       pricePerMile: LOCAL_DELIVERY_FEE_PER_MILE_IN_CENTS / 100,
+//     },
+
+//     fulfillment: {
+//       localDelivery,
+//     },
+//   };
+// };
 
 module.exports = {
   getWarehouseById,

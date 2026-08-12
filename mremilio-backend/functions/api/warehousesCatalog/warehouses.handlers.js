@@ -4,6 +4,10 @@ const axios = require("axios");
 
 const GOOGLE_GEOCODING_URL =
   "https://maps.googleapis.com/maps/api/geocode/json";
+const GOOGLE_ROUTES_URL =
+  "https://routes.googleapis.com/directions/v2:computeRoutes";
+
+const METERS_PER_MILE = 1609.344;
 
 const EARTH_RADIUS_MILES = 3958.8;
 
@@ -181,6 +185,115 @@ const calculateHaversineDistanceMiles = (
   const distanceMiles = EARTH_RADIUS_MILES * angularDistance;
 
   return Number(distanceMiles.toFixed(2));
+};
+
+const getDrivingRouteDistance = async ({
+  originCoordinates,
+  destinationCoordinates,
+}) => {
+  const origin = validateCoordinates(originCoordinates, "originCoordinates");
+
+  const destination = validateCoordinates(
+    destinationCoordinates,
+    "destinationCoordinates"
+  );
+
+  const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY;
+
+  if (!googleMapsApiKey) {
+    throw createHandlerError(
+      "Missing GOOGLE_MAPS_API_KEY environment variable",
+      500
+    );
+  }
+
+  try {
+    const response = await axios.post(
+      GOOGLE_ROUTES_URL,
+      {
+        origin: {
+          location: {
+            latLng: {
+              latitude: origin.lat,
+              longitude: origin.lng,
+            },
+          },
+        },
+
+        destination: {
+          location: {
+            latLng: {
+              latitude: destination.lat,
+              longitude: destination.lng,
+            },
+          },
+        },
+
+        travelMode: "DRIVE",
+
+        routingPreference: "TRAFFIC_UNAWARE",
+
+        computeAlternativeRoutes: false,
+
+        units: "IMPERIAL",
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+
+          "X-Goog-Api-Key": googleMapsApiKey,
+
+          "X-Goog-FieldMask": "routes.distanceMeters,routes.duration",
+        },
+
+        timeout: 10000,
+      }
+    );
+
+    const route = response.data?.routes?.[0];
+
+    const distanceMeters = Number(route?.distanceMeters);
+
+    if (!Number.isFinite(distanceMeters) || distanceMeters < 0) {
+      throw createHandlerError(
+        "Google Routes did not return a valid driving distance",
+        502,
+        {
+          response: response.data || null,
+        }
+      );
+    }
+
+    const distanceMiles = Number((distanceMeters / METERS_PER_MILE).toFixed(2));
+
+    return {
+      distanceMeters,
+
+      distanceMiles,
+
+      duration: route?.duration || null,
+
+      travelMode: "DRIVE",
+
+      source: "google_routes",
+    };
+  } catch (error) {
+    if (error.statusCode) {
+      throw error;
+    }
+
+    if (error.code === "ECONNABORTED") {
+      throw createHandlerError("Google Routes request timed out", 504);
+    }
+
+    throw createHandlerError("Unable to calculate driving route", 502, {
+      message: error.message,
+
+      googleStatus: error.response?.status || null,
+
+      googleResponse: error.response?.data || null,
+    });
+  }
 };
 
 const sortWarehousesByDistance = (warehouses = [], customerCoordinates) => {
@@ -519,6 +632,7 @@ module.exports = {
 
   validateCoordinates,
   calculateHaversineDistanceMiles,
+  getDrivingRouteDistance,
   sortWarehousesByDistance,
   findClosestWarehouse,
   buildFulfillmentAvailability,

@@ -105,18 +105,25 @@ warehousesCatalogRouter.get("/by-distance", async (req, res) => {
 /**
  * POST /api/warehouses-catalog/local-delivery-quote
  *
- * Resolves a customer delivery address and determines:
+ * The originating warehouse/store is authoritative.
  *
- * - whether local delivery is available;
- * - which store will fulfill the delivery;
- * - customer distance from that store;
- * - delivery fee at $1.00 per mile.
+ * The delivery address DOES NOT select another warehouse.
+ * It is only used to determine whether the originating store
+ * can deliver to that address and to calculate the delivery fee.
+ *
+ * Body:
+ *
+ * {
+ *   "warehouseId": "west-side-store",
+ *   "address": "150 W Broad St, Athens, GA 30601"
+ * }
  */
 warehousesCatalogRouter.post("/local-delivery-quote", async (req, res) => {
   try {
-    const { address } = req.body;
+    const { warehouseId, address } = req.body;
 
     const quote = await warehousesControllers.getLocalDeliveryQuote({
+      warehouseId,
       address,
     });
 
