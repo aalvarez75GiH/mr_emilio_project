@@ -1,5 +1,7 @@
 import { useState } from "react";
+
 import {
+  FiAlertCircle,
   FiAward,
   FiChevronLeft,
   FiHeart,
@@ -7,14 +9,16 @@ import {
   FiMinus,
   FiPackage,
   FiPlus,
+  FiRefreshCw,
   FiShield,
   FiShoppingBag,
   FiTrash2,
   FiTruck,
 } from "react-icons/fi";
-import { BenefitIcon } from "../../assets/shop_products_carousel/product_card/icons";
 
 import { Link, useNavigate } from "react-router-dom";
+
+import { BenefitIcon } from "../../assets/shop_products_carousel/product_card/icons";
 
 import { useCart } from "../../infrastructure/services/cart/use-cart.hook";
 
@@ -27,6 +31,12 @@ import {
   CartTitle,
   CartSubtitle,
   ClearCartButton,
+  StoreChangeNotice,
+  StoreChangeNoticeIcon,
+  StoreChangeNoticeContent,
+  StoreChangeNoticeTitle,
+  StoreChangeNoticeMessage,
+  StoreChangeNoticeDismiss,
   CartLayout,
   CartItemsColumn,
   CartItemsList,
@@ -40,6 +50,11 @@ import {
   CartItemName,
   CartItemDescription,
   CartItemPrice,
+  CartItemAvailability,
+  CartItemAvailabilityIcon,
+  CartItemAvailabilityContent,
+  CartItemAvailabilityTitle,
+  CartItemAvailabilityMessage,
   CartItemControlsRow,
   QuantityControl,
   QuantityButton,
@@ -57,6 +72,7 @@ import {
   SummaryTotalLabel,
   SummaryTotalValue,
   ShippingMessage,
+  CheckoutValidationMessage,
   CheckoutButton,
   ContinueShoppingButton,
   SecurePanel,
@@ -84,14 +100,16 @@ import {
   TrustBenefitTitle,
   TrustBenefitMessage,
 } from "./cart.styles";
+
 import { MainHeader } from "../../components/main_header/main_header.component";
+
 import { CheckoutBackHeader } from "../../components/layout/checkout_back_header/checkout_back_header.component";
 
 const formatCurrency = (amount) =>
   new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-  }).format(amount);
+  }).format(Number(amount || 0));
 
 const trustBenefits = [
   {
@@ -120,18 +138,58 @@ const trustBenefits = [
   },
 ];
 
+const getAvailabilityCopy = ({ item, warehouseName }) => {
+  const storeName = warehouseName || "your current store";
+
+  switch (item.availabilityStatus) {
+    case "not_offered":
+      return {
+        title: "Not available at this store",
+        message: `${item.name} is not currently offered by ${storeName}.`,
+      };
+
+    case "sold_out":
+      return {
+        title: "Sold out at this store",
+        message: `${item.name} is currently sold out at ${storeName}.`,
+      };
+
+    case "insufficient_stock":
+      return {
+        title: "Not enough stock",
+        message: `Only ${item.availableStock} ${
+          Number(item.availableStock) === 1 ? "unit is" : "units are"
+        } available at ${storeName}.`,
+      };
+
+    default:
+      return null;
+  }
+};
+
 export const Cart = () => {
   const {
     cartItems,
     cartQuantity,
     cartSubtotal,
+
+    currentWarehouse,
+    storeChangeNotice,
+
+    cartIsValidForCheckout,
+    isCartValidationPending,
+    hasCartValidationIssues,
+
     increaseCartItemQuantity,
     decreaseCartItemQuantity,
     removeProductFromCart,
     clearCart,
+
+    dismissStoreChangeNotice,
   } = useCart();
 
   const navigate = useNavigate();
+
   const [isExiting, setIsExiting] = useState(false);
 
   const handleBackToShopping = (event) => {
@@ -145,6 +203,10 @@ export const Cart = () => {
   };
 
   const handleProceedToCheckout = () => {
+    if (!cartIsValidForCheckout || isCartValidationPending) {
+      return;
+    }
+
     setIsExiting(true);
 
     window.setTimeout(() => {
@@ -157,11 +219,13 @@ export const Cart = () => {
       <>
         <CartScreenTransition $isExiting={isExiting}>
           <MainHeader />
+
           <CheckoutBackHeader
             label="Continue shopping"
             ariaLabel="Return to shopping"
             onBack={handleBackToShopping}
           />
+
           <CartPage>
             <CartPageContainer>
               <EmptyCart>
@@ -190,6 +254,7 @@ export const Cart = () => {
     <>
       <CartScreenTransition $isExiting={isExiting}>
         <MainHeader />
+
         <CheckoutBackHeader
           label="Continue shopping"
           ariaLabel="Return to shopping"
@@ -215,6 +280,69 @@ export const Cart = () => {
               </ClearCartButton>
             </CartHeader>
 
+            {storeChangeNotice && hasCartValidationIssues && (
+              <StoreChangeNotice>
+                <StoreChangeNoticeIcon aria-hidden="true">
+                  <FiRefreshCw />
+                </StoreChangeNoticeIcon>
+
+                <StoreChangeNoticeContent>
+                  <StoreChangeNoticeTitle>
+                    Your store has changed
+                  </StoreChangeNoticeTitle>
+
+                  <StoreChangeNoticeMessage>
+                    Your saved cart has been rechecked against{" "}
+                    <strong>
+                      {storeChangeNotice.currentWarehouseName ||
+                        "your current store"}
+                    </strong>
+                    . Availability and prices may be different from your
+                    previous shopping session.
+                  </StoreChangeNoticeMessage>
+                </StoreChangeNoticeContent>
+
+                <StoreChangeNoticeDismiss
+                  type="button"
+                  onClick={dismissStoreChangeNotice}
+                  aria-label="Dismiss store change notice"
+                >
+                  ×
+                </StoreChangeNoticeDismiss>
+              </StoreChangeNotice>
+            )}
+            {/* {storeChangeNotice && (
+              <StoreChangeNotice>
+                <StoreChangeNoticeIcon aria-hidden="true">
+                  <FiRefreshCw />
+                </StoreChangeNoticeIcon>
+
+                <StoreChangeNoticeContent>
+                  <StoreChangeNoticeTitle>
+                    Your store has changed
+                  </StoreChangeNoticeTitle>
+
+                  <StoreChangeNoticeMessage>
+                    Your saved cart has been rechecked against{" "}
+                    <strong>
+                      {storeChangeNotice.currentWarehouseName ||
+                        "your current store"}
+                    </strong>
+                    . Availability and prices may be different from your
+                    previous shopping session.
+                  </StoreChangeNoticeMessage>
+                </StoreChangeNoticeContent>
+
+                <StoreChangeNoticeDismiss
+                  type="button"
+                  onClick={dismissStoreChangeNotice}
+                  aria-label="Dismiss store change notice"
+                >
+                  ×
+                </StoreChangeNoticeDismiss>
+              </StoreChangeNotice>
+            )} */}
+
             <CartLayout>
               <CartItemsColumn>
                 <CartItemsList>
@@ -222,11 +350,22 @@ export const Cart = () => {
                     const lineTotal =
                       Number(item.price || 0) * Number(item.quantity || 0);
 
+                    const itemIsAvailable =
+                      item.isAvailableAtWarehouse === true;
+
                     const hasReachedStockLimit =
-                      item.quantity >= item.availableStock;
+                      !itemIsAvailable || item.quantity >= item.availableStock;
+
+                    const availabilityCopy = getAvailabilityCopy({
+                      item,
+                      warehouseName: currentWarehouse?.warehouse_name,
+                    });
 
                     return (
-                      <CartItem key={item.key}>
+                      <CartItem
+                        key={item.key}
+                        $hasAvailabilityIssue={!itemIsAvailable}
+                      >
                         <CartItemImageColumn>
                           <CartItemImageContainer>
                             <CartItemImage
@@ -253,6 +392,7 @@ export const Cart = () => {
                           >
                             <FiTrash2 />
                           </RemoveItemButton>
+
                           <CartItemHeading>
                             <div>
                               <CartItemName>{item.name}</CartItemName>
@@ -269,6 +409,43 @@ export const Cart = () => {
                               </CartItemPrice>
                             </div>
                           </CartItemHeading>
+
+                          {availabilityCopy && (
+                            <CartItemAvailability role="status">
+                              <CartItemAvailabilityIcon aria-hidden="true">
+                                <FiAlertCircle />
+                              </CartItemAvailabilityIcon>
+
+                              <CartItemAvailabilityContent>
+                                <CartItemAvailabilityTitle>
+                                  {availabilityCopy.title}
+                                </CartItemAvailabilityTitle>
+
+                                <CartItemAvailabilityMessage>
+                                  {availabilityCopy.message}
+                                </CartItemAvailabilityMessage>
+                              </CartItemAvailabilityContent>
+                            </CartItemAvailability>
+                          )}
+
+                          {item.priceChanged && (
+                            <CartItemAvailability>
+                              <CartItemAvailabilityIcon aria-hidden="true">
+                                <FiRefreshCw />
+                              </CartItemAvailabilityIcon>
+
+                              <CartItemAvailabilityContent>
+                                <CartItemAvailabilityTitle>
+                                  Price updated
+                                </CartItemAvailabilityTitle>
+
+                                <CartItemAvailabilityMessage>
+                                  This store&apos;s current price is{" "}
+                                  {formatCurrency(item.price)}.
+                                </CartItemAvailabilityMessage>
+                              </CartItemAvailabilityContent>
+                            </CartItemAvailability>
+                          )}
 
                           {item.benefits?.length > 0 && (
                             <CartItemBenefits>
@@ -325,6 +502,7 @@ export const Cart = () => {
                     );
                   })}
                 </CartItemsList>
+
                 <SecurePanel>
                   <SecureIcon aria-hidden="true">
                     <FiShield />
@@ -355,9 +533,9 @@ export const Cart = () => {
                   </SummaryRow>
 
                   <SummaryRow>
-                    <SummaryLabel>Shipping</SummaryLabel>
+                    <SummaryLabel>Fulfillment</SummaryLabel>
 
-                    <SummaryValue>Calculated at checkout</SummaryValue>
+                    <SummaryValue>Selected at checkout</SummaryValue>
                   </SummaryRow>
 
                   <SummaryDivider />
@@ -371,20 +549,39 @@ export const Cart = () => {
                   </SummaryTotalRow>
 
                   <ShippingMessage>
-                    Delivery and pickup options will be confirmed during
-                    checkout based on your selected store.
+                    Pickup or Local Delivery will be confirmed during checkout
+                    for{" "}
+                    <strong>
+                      {currentWarehouse?.warehouse_name || "your current store"}
+                    </strong>
+                    .
                   </ShippingMessage>
+
+                  {!cartIsValidForCheckout && !isCartValidationPending && (
+                    <CheckoutValidationMessage>
+                      <FiAlertCircle aria-hidden="true" />
+
+                      <span>
+                        Some items in your cart need attention before you can
+                        continue to checkout.
+                      </span>
+                    </CheckoutValidationMessage>
+                  )}
+
                   <CheckoutButton
                     type="button"
+                    disabled={
+                      !cartIsValidForCheckout || isCartValidationPending
+                    }
                     onClick={handleProceedToCheckout}
                   >
                     <FiLock />
-                    Proceed to Checkout
+
+                    {isCartValidationPending
+                      ? "Checking cart..."
+                      : "Proceed to Checkout"}
                   </CheckoutButton>
-                  {/* <CheckoutButton type="button">
-                    <FiLock />
-                    Proceed to Checkout
-                  </CheckoutButton> */}
+
                   <ContinueShoppingButton
                     as={Link}
                     to="/"
@@ -394,6 +591,7 @@ export const Cart = () => {
                     Continue Shopping
                   </ContinueShoppingButton>
                 </OrderSummary>
+
                 <PaymentPanel>
                   <PaymentPanelTitle>We accept</PaymentPanelTitle>
 
@@ -403,14 +601,6 @@ export const Cart = () => {
                     <PaymentMethod $variant="mastercard">
                       <span />
                       <span />
-                    </PaymentMethod>
-
-                    <PaymentMethod $variant="amex">AMEX</PaymentMethod>
-
-                    <PaymentMethod $variant="apple">Pay</PaymentMethod>
-
-                    <PaymentMethod $variant="google">
-                      <strong>G</strong> Pay
                     </PaymentMethod>
                   </PaymentMethods>
                 </PaymentPanel>
