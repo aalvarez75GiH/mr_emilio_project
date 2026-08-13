@@ -1,4 +1,4 @@
-import { FiAlertCircle, FiCheckCircle, FiX } from "react-icons/fi";
+import { FiAlertCircle, FiCheckCircle, FiX, FiXCircle } from "react-icons/fi";
 
 import {
   SnackbarContainer,
@@ -21,26 +21,30 @@ export const Snackbar = ({
   }
 
   const isSuccess = type === "success";
+  const isError = type === "error";
+
+  const Icon = isSuccess ? FiCheckCircle : isError ? FiXCircle : FiAlertCircle;
 
   return (
     <SnackbarContainer
       $type={type}
-      role="status"
-      aria-live="polite"
+      role={isError ? "alert" : "status"}
+      aria-live={isError ? "assertive" : "polite"}
       aria-atomic="true"
     >
       <SnackbarIcon $type={type} aria-hidden="true">
-        {isSuccess ? <FiCheckCircle /> : <FiAlertCircle />}
+        <Icon />
       </SnackbarIcon>
 
       <SnackbarContent>
-        {title && <SnackbarTitle>{title}</SnackbarTitle>}
+        {title && <SnackbarTitle $type={type}>{title}</SnackbarTitle>}
 
-        {message && <SnackbarMessage>{message}</SnackbarMessage>}
+        {message && <SnackbarMessage $type={type}>{message}</SnackbarMessage>}
       </SnackbarContent>
 
       <SnackbarCloseButton
         type="button"
+        $type={type}
         aria-label="Dismiss notification"
         onClick={onClose}
       >

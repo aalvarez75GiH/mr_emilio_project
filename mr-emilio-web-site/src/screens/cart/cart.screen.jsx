@@ -311,37 +311,6 @@ export const Cart = () => {
                 </StoreChangeNoticeDismiss>
               </StoreChangeNotice>
             )}
-            {/* {storeChangeNotice && (
-              <StoreChangeNotice>
-                <StoreChangeNoticeIcon aria-hidden="true">
-                  <FiRefreshCw />
-                </StoreChangeNoticeIcon>
-
-                <StoreChangeNoticeContent>
-                  <StoreChangeNoticeTitle>
-                    Your store has changed
-                  </StoreChangeNoticeTitle>
-
-                  <StoreChangeNoticeMessage>
-                    Your saved cart has been rechecked against{" "}
-                    <strong>
-                      {storeChangeNotice.currentWarehouseName ||
-                        "your current store"}
-                    </strong>
-                    . Availability and prices may be different from your
-                    previous shopping session.
-                  </StoreChangeNoticeMessage>
-                </StoreChangeNoticeContent>
-
-                <StoreChangeNoticeDismiss
-                  type="button"
-                  onClick={dismissStoreChangeNotice}
-                  aria-label="Dismiss store change notice"
-                >
-                  ×
-                </StoreChangeNoticeDismiss>
-              </StoreChangeNotice>
-            )} */}
 
             <CartLayout>
               <CartItemsColumn>

@@ -930,56 +930,6 @@ export const PaymentProviderBadge = styled.span`
   font-weight: ${({ theme }) => theme.fontWeights.bold};
 `;
 
-export const StripePlaceholder = styled.div`
-  display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
-  gap: 12px;
-
-  margin-top: 16px;
-  padding: 16px;
-
-  border: 1px dashed ${({ theme }) => theme.colors.border.light};
-  border-radius: 10px;
-
-  background: ${({ theme }) => theme.colors.background.softBlue};
-`;
-
-export const StripePlaceholderIcon = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 42px;
-  height: 42px;
-
-  border-radius: 50%;
-
-  background: ${({ theme }) => theme.colors.background.primary};
-  color: ${({ theme }) => theme.colors.brand.primary};
-`;
-
-export const StripePlaceholderContent = styled.div`
-  min-width: 0;
-  text-align: left;
-`;
-
-export const StripePlaceholderTitle = styled.strong`
-  display: block;
-
-  color: ${({ theme }) => theme.colors.text.primary};
-
-  font-size: 0.82rem;
-`;
-
-export const StripePlaceholderText = styled.p`
-  margin: 4px 0 0;
-
-  color: ${({ theme }) => theme.colors.text.secondary};
-
-  font-size: 0.7rem;
-  line-height: 1.45;
-`;
-
 export const ContinueButton = styled.button`
   display: inline-flex;
   align-items: center;

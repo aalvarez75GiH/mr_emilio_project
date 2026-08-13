@@ -23,8 +23,7 @@
     "firebase-admin": "^10.0.2",
     "firebase-functions": "^4.2.1",
     "nanoid": "^2.1.9",
-    "stripe": "^10.7.0",
-    "stripe-client": "^1.1.5",
+    "stripe": "^22.5.0",
     "uuid": "^8.3.2",
     "uuid-validate": "^0.0.3"
   },

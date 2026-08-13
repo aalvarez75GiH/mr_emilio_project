@@ -209,6 +209,24 @@ export const CheckoutProvider = ({ children }) => {
     }));
   }, []);
 
+  const setPaymentPreparation = useCallback(
+    ({ confirmationTokenId, paymentMethodType = null }) => {
+      setCheckout((currentCheckout) => ({
+        ...currentCheckout,
+
+        payment: {
+          ...currentCheckout.payment,
+
+          confirmationTokenId: confirmationTokenId || null,
+
+          paymentMethodType: paymentMethodType || null,
+
+          preparedAt: confirmationTokenId ? new Date().toISOString() : null,
+        },
+      }));
+    },
+    []
+  );
   const resetCheckout = useCallback(() => {
     setCheckout(createInitialCheckoutState());
   }, []);
@@ -228,7 +246,7 @@ export const CheckoutProvider = ({ children }) => {
       setLocalDeliveryQuote,
 
       updateCustomer,
-
+      setPaymentPreparation,
       resetCheckout,
     }),
     [
@@ -241,6 +259,7 @@ export const CheckoutProvider = ({ children }) => {
       setDeliveryDistance,
       setLocalDeliveryQuote,
       updateCustomer,
+      setPaymentPreparation,
       resetCheckout,
     ]
   );

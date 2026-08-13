@@ -1,15 +1,28 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import { FiChevronRight, FiCreditCard, FiLock, FiMapPin } from "react-icons/fi";
 
-import { useMemo, useState } from "react";
+import { Elements } from "@stripe/react-stripe-js";
+
 import { useNavigate } from "react-router-dom";
 
-import { MainHeader } from "../../components/main_header/main_header.component";
-import { CheckoutBackHeader } from "../../components/layout/checkout_back_header/checkout_back_header.component";
+import { stripePromise } from "../../infrastructure/stripe/stripe.client";
+
+import { getStripeCustomerError } from "../../infrastructure/stripe/stripe.errors";
 
 import { useCart } from "../../infrastructure/services/cart/use-cart.hook";
+
 import { useCheckout } from "../../infrastructure/services/checkout/use-checkout.hook";
 
 import { FULFILLMENT_METHODS } from "../../infrastructure/services/checkout/checkout.helpers";
+
+import { MainHeader } from "../../components/main_header/main_header.component";
+
+import { CheckoutBackHeader } from "../../components/layout/checkout_back_header/checkout_back_header.component";
+
+import { Snackbar } from "../../components/layout/snackbar/snackbar.component";
+
+import { StripePaymentForm } from "../../components/forms/stripe_payment_form/stripe_payment_form.component";
 
 import storeIcon from "../../assets/checkout/icons/storeIcon.svg";
 
@@ -68,16 +81,13 @@ import {
   PaymentMethodDescription,
   PaymentProviderBadges,
   PaymentProviderBadge,
-  StripePlaceholder,
-  StripePlaceholderIcon,
-  StripePlaceholderContent,
-  StripePlaceholderTitle,
-  StripePlaceholderText,
   ContinueButton,
   SecureMessage,
 } from "./payment.styles";
 
 const TRANSITION_DURATION_MS = 260;
+
+const SNACKBAR_DURATION_MS = 4200;
 
 const PAYMENT_METHODS = Object.freeze({
   CARD: "card",
@@ -94,7 +104,7 @@ export const Payment = () => {
 
   const { cartItems, cartQuantity, cartSubtotal } = useCart();
 
-  const { checkout } = useCheckout();
+  const { checkout, setPaymentPreparation } = useCheckout();
 
   const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHODS.CARD);
 
@@ -102,6 +112,21 @@ export const Payment = () => {
     isExiting: false,
     direction: "forward",
   });
+
+  const [isPaymentPreparing, setIsPaymentPreparing] = useState(false);
+
+  const [isStripeReady, setIsStripeReady] = useState(false);
+
+  const [snackbar, setSnackbar] = useState({
+    isOpen: false,
+    type: "error",
+    title: "",
+    message: "",
+  });
+
+  const stripePaymentFormRef = useRef(null);
+
+  const snackbarTimeoutRef = useRef(null);
 
   const isPickup = checkout.fulfillmentMethod === FULFILLMENT_METHODS.PICKUP;
 
@@ -116,8 +141,10 @@ export const Payment = () => {
     ? Number(checkout.delivery?.deliveryFee || 0)
     : 0;
 
-  /*
-   * Stripe Tax will replace this value when we integrate it.
+  /**
+   * Stripe Tax will replace this
+   * provisional value in the next
+   * checkout integration step.
    */
   const tax = Number(checkout.pricing?.tax || 0);
 
@@ -125,6 +152,124 @@ export const Payment = () => {
     () => Number(cartSubtotal || 0) + deliveryFee + tax,
     [cartSubtotal, deliveryFee, tax]
   );
+
+  /**
+   * Stripe uses the smallest currency
+   * unit.
+   *
+   * Example:
+   * $26.98 → 2698
+   */
+  const stripeAmountInCents = useMemo(
+    () => Math.max(50, Math.round(Number(currentTotal || 0) * 100)),
+    [currentTotal]
+  );
+
+  /**
+   * Deferred Payment Element.
+   *
+   * We intentionally DO NOT create a
+   * PaymentIntent on this screen.
+   *
+   * PaymentIntent creation + confirmation
+   * will happen later from Place Order.
+   */
+  const stripeElementsOptions = useMemo(
+    () => ({
+      mode: "payment",
+
+      amount: stripeAmountInCents,
+
+      currency: "usd",
+
+      locale: "en",
+
+      paymentMethodCreation: "manual",
+
+      paymentMethodTypes: ["card"],
+
+      appearance: {
+        theme: "stripe",
+
+        variables: {
+          borderRadius: "10px",
+        },
+      },
+    }),
+    [stripeAmountInCents]
+  );
+  //   const stripeElementsOptions = useMemo(
+  //     () => ({
+  //       mode: "payment",
+
+  //       amount: stripeAmountInCents,
+
+  //       currency: "usd",
+
+  //       locale: "en",
+
+  //       paymentMethodCreation: "manual",
+
+  //       appearance: {
+  //         theme: "stripe",
+
+  //         variables: {
+  //           borderRadius: "10px",
+  //         },
+  //       },
+  //     }),
+  //     [stripeAmountInCents]
+  //   );
+
+  const closeSnackbar = useCallback(() => {
+    if (snackbarTimeoutRef.current) {
+      window.clearTimeout(snackbarTimeoutRef.current);
+
+      snackbarTimeoutRef.current = null;
+    }
+
+    setSnackbar((currentSnackbar) => ({
+      ...currentSnackbar,
+
+      isOpen: false,
+    }));
+  }, []);
+
+  const showPaymentError = useCallback((error) => {
+    const customerError = getStripeCustomerError(error);
+
+    if (snackbarTimeoutRef.current) {
+      window.clearTimeout(snackbarTimeoutRef.current);
+    }
+
+    setSnackbar({
+      isOpen: true,
+
+      type: "error",
+
+      title: customerError.title,
+
+      message: customerError.message,
+    });
+
+    snackbarTimeoutRef.current = window.setTimeout(() => {
+      setSnackbar((currentSnackbar) => ({
+        ...currentSnackbar,
+
+        isOpen: false,
+      }));
+
+      snackbarTimeoutRef.current = null;
+    }, SNACKBAR_DURATION_MS);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (snackbarTimeoutRef.current) {
+        window.clearTimeout(snackbarTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const navigateWithTransition = (path, direction) => {
     setTransitionState({
@@ -138,24 +283,126 @@ export const Payment = () => {
   };
 
   const handleBack = () => {
+    if (isPaymentPreparing) {
+      return;
+    }
+
     navigateWithTransition("/checkout/information", "back");
   };
 
-  const handleContinue = () => {
-    /*
-     * Stripe payment confirmation needs to happen
-     * before we allow the customer into Review.
-     *
-     * For now this screen stops here intentionally.
-     */
-    console.log("PAYMENT CHECKOUT STATE:", {
-      paymentMethod,
-      cartSubtotal,
-      deliveryFee,
-      tax,
-      currentTotal,
-      checkout,
-    });
+  /**
+   * PAYMENT → REVIEW
+   *
+   * Important:
+   *
+   * This does NOT create a PaymentIntent.
+   * This does NOT charge the customer.
+   *
+   * It only:
+   *
+   * 1. validates Stripe Elements;
+   * 2. creates a ConfirmationToken;
+   * 3. stores the token id in CheckoutContext;
+   * 4. navigates to Review.
+   */
+  const handleContinue = async () => {
+    if (isPaymentPreparing) {
+      return;
+    }
+
+    if (!isStripeReady) {
+      showPaymentError({
+        code: "stripe_not_ready",
+
+        message: "The secure payment form is still loading. Please try again.",
+      });
+
+      return;
+    }
+
+    if (!stripePaymentFormRef.current) {
+      showPaymentError({
+        code: "stripe_form_unavailable",
+
+        message: "The secure payment form is unavailable. Please try again.",
+      });
+
+      return;
+    }
+
+    setIsPaymentPreparing(true);
+
+    closeSnackbar();
+
+    try {
+      /**
+       * Inside this function:
+       *
+       * elements.submit()
+       *        ↓
+       * Stripe validates payment data
+       *        ↓
+       * stripe.createConfirmationToken()
+       *
+       * Still NO charge.
+       */
+      const result = await stripePaymentFormRef.current.prepareForReview();
+
+      if (!result?.ok) {
+        showPaymentError(result?.error);
+
+        return;
+      }
+
+      const confirmationToken = result.confirmationToken;
+
+      if (!confirmationToken?.id) {
+        showPaymentError({
+          code: "confirmation_token_missing",
+
+          message:
+            "We couldn't prepare your payment information. Please try again.",
+        });
+
+        return;
+      }
+
+      /**
+       * Keep only checkout-relevant
+       * Stripe state.
+       *
+       * We never store raw card details.
+       */
+      setPaymentPreparation({
+        confirmationTokenId: confirmationToken.id,
+
+        paymentMethodType:
+          confirmationToken?.payment_method_preview?.type || null,
+      });
+
+      console.log("PAYMENT READY FOR REVIEW:", {
+        confirmationTokenId: confirmationToken.id,
+
+        paymentMethodType:
+          confirmationToken?.payment_method_preview?.type || null,
+
+        cartSubtotal,
+
+        deliveryFee,
+
+        provisionalTax: tax,
+
+        provisionalTotal: currentTotal,
+      });
+
+      navigateWithTransition("/checkout/review", "forward");
+    } catch (error) {
+      console.error("Unable to prepare Stripe payment:", error);
+
+      showPaymentError(error);
+    } finally {
+      setIsPaymentPreparing(false);
+    }
   };
 
   return (
@@ -245,22 +492,24 @@ export const Payment = () => {
                   </PaymentMethod>
                 </PaymentMethods>
 
-                <StripePlaceholder>
-                  <StripePlaceholderIcon>
-                    <FiLock />
-                  </StripePlaceholderIcon>
+                <Elements
+                  stripe={stripePromise}
+                  options={stripeElementsOptions}
+                >
+                  <StripePaymentForm
+                    ref={stripePaymentFormRef}
+                    billingDetails={{
+                      firstName: checkout.customer?.firstName,
 
-                  <StripePlaceholderContent>
-                    <StripePlaceholderTitle>
-                      Secure card payment
-                    </StripePlaceholderTitle>
+                      lastName: checkout.customer?.lastName,
 
-                    <StripePlaceholderText>
-                      Stripe&apos;s secure payment form will appear here. Card
-                      details will not be stored by Mr. Emilio.
-                    </StripePlaceholderText>
-                  </StripePlaceholderContent>
-                </StripePlaceholder>
+                      email: checkout.customer?.email,
+
+                      phone: checkout.customer?.phone,
+                    }}
+                    onReadyChange={setIsStripeReady}
+                  />
+                </Elements>
               </PaymentSection>
 
               <PaymentSection>
@@ -437,9 +686,16 @@ export const Payment = () => {
                   payment is submitted.
                 </TaxMessage>
 
-                <ContinueButton type="button" onClick={handleContinue}>
-                  Continue to Review
-                  <FiChevronRight />
+                <ContinueButton
+                  type="button"
+                  disabled={isPaymentPreparing || !isStripeReady}
+                  onClick={handleContinue}
+                >
+                  {isPaymentPreparing
+                    ? "Checking payment..."
+                    : "Continue to Review"}
+
+                  {!isPaymentPreparing && <FiChevronRight />}
                 </ContinueButton>
 
                 <SecureMessage>
@@ -451,6 +707,14 @@ export const Payment = () => {
           </PaymentLayout>
         </PaymentContainer>
       </PaymentPage>
+
+      <Snackbar
+        isOpen={snackbar.isOpen}
+        type={snackbar.type}
+        title={snackbar.title}
+        message={snackbar.message}
+        onClose={closeSnackbar}
+      />
     </PaymentTransition>
   );
 };
