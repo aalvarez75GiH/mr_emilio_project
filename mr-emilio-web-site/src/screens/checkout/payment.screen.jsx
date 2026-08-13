@@ -113,10 +113,18 @@ export const Payment = () => {
     direction: "forward",
   });
 
+  /**
+   * Stripe lifecycle state.
+   */
+  const [isPaymentElementReady, setIsPaymentElementReady] = useState(false);
+
+  const [isPaymentComplete, setIsPaymentComplete] = useState(false);
+
   const [isPaymentPreparing, setIsPaymentPreparing] = useState(false);
 
-  const [isStripeReady, setIsStripeReady] = useState(false);
-
+  /**
+   * Snackbar state.
+   */
   const [snackbar, setSnackbar] = useState({
     isOpen: false,
     type: "error",
@@ -154,11 +162,10 @@ export const Payment = () => {
   );
 
   /**
-   * Stripe uses the smallest currency
-   * unit.
+   * Stripe uses cents for USD.
    *
    * Example:
-   * $26.98 → 2698
+   * $17.77 → 1777
    */
   const stripeAmountInCents = useMemo(
     () => Math.max(50, Math.round(Number(currentTotal || 0) * 100)),
@@ -166,13 +173,15 @@ export const Payment = () => {
   );
 
   /**
-   * Deferred Payment Element.
+   * Deferred Stripe Elements setup.
    *
-   * We intentionally DO NOT create a
-   * PaymentIntent on this screen.
+   * IMPORTANT:
    *
-   * PaymentIntent creation + confirmation
-   * will happen later from Place Order.
+   * We do NOT create a PaymentIntent
+   * on this screen.
+   *
+   * We are explicitly restricting the
+   * integration to card payments for now.
    */
   const stripeElementsOptions = useMemo(
     () => ({
@@ -198,28 +207,6 @@ export const Payment = () => {
     }),
     [stripeAmountInCents]
   );
-  //   const stripeElementsOptions = useMemo(
-  //     () => ({
-  //       mode: "payment",
-
-  //       amount: stripeAmountInCents,
-
-  //       currency: "usd",
-
-  //       locale: "en",
-
-  //       paymentMethodCreation: "manual",
-
-  //       appearance: {
-  //         theme: "stripe",
-
-  //         variables: {
-  //           borderRadius: "10px",
-  //         },
-  //       },
-  //     }),
-  //     [stripeAmountInCents]
-  //   );
 
   const closeSnackbar = useCallback(() => {
     if (snackbarTimeoutRef.current) {
@@ -293,30 +280,29 @@ export const Payment = () => {
   /**
    * PAYMENT → REVIEW
    *
-   * Important:
+   * The button can only be clicked after
+   * Stripe reports that the Payment Element
+   * is complete.
    *
-   * This does NOT create a PaymentIntent.
-   * This does NOT charge the customer.
+   * We still call elements.submit() inside
+   * StripePaymentForm as a final validation.
    *
-   * It only:
-   *
-   * 1. validates Stripe Elements;
-   * 2. creates a ConfirmationToken;
-   * 3. stores the token id in CheckoutContext;
-   * 4. navigates to Review.
+   * This DOES NOT charge the card.
+   * This DOES NOT create a PaymentIntent.
    */
   const handleContinue = async () => {
     if (isPaymentPreparing) {
       return;
     }
 
-    if (!isStripeReady) {
-      showPaymentError({
-        code: "stripe_not_ready",
-
-        message: "The secure payment form is still loading. Please try again.",
-      });
-
+    /**
+     * Normally impossible because the
+     * button is disabled until Stripe
+     * reports ready + complete.
+     *
+     * Still keep this defensive guard.
+     */
+    if (!isPaymentElementReady || !isPaymentComplete) {
       return;
     }
 
@@ -336,15 +322,13 @@ export const Payment = () => {
 
     try {
       /**
-       * Inside this function:
+       * StripePaymentForm does:
        *
        * elements.submit()
        *        ↓
-       * Stripe validates payment data
-       *        ↓
-       * stripe.createConfirmationToken()
+       * createConfirmationToken()
        *
-       * Still NO charge.
+       * Still no charge.
        */
       const result = await stripePaymentFormRef.current.prepareForReview();
 
@@ -368,23 +352,24 @@ export const Payment = () => {
       }
 
       /**
-       * Keep only checkout-relevant
-       * Stripe state.
+       * Store only Stripe checkout
+       * identifiers.
        *
-       * We never store raw card details.
+       * Raw card information never enters
+       * our application state.
        */
       setPaymentPreparation({
         confirmationTokenId: confirmationToken.id,
 
         paymentMethodType:
-          confirmationToken?.payment_method_preview?.type || null,
+          confirmationToken?.payment_method_preview?.type || "card",
       });
 
       console.log("PAYMENT READY FOR REVIEW:", {
         confirmationTokenId: confirmationToken.id,
 
         paymentMethodType:
-          confirmationToken?.payment_method_preview?.type || null,
+          confirmationToken?.payment_method_preview?.type || "card",
 
         cartSubtotal,
 
@@ -507,7 +492,8 @@ export const Payment = () => {
 
                       phone: checkout.customer?.phone,
                     }}
-                    onReadyChange={setIsStripeReady}
+                    onReadyChange={setIsPaymentElementReady}
+                    onCompleteChange={setIsPaymentComplete}
                   />
                 </Elements>
               </PaymentSection>
@@ -544,7 +530,9 @@ export const Payment = () => {
                           <FulfillmentHoursValue>
                             {selectedPickupWarehouse.warehouse_information
                               ?.opening_time || "—"}
+
                             {" – "}
+
                             {selectedPickupWarehouse.warehouse_information
                               ?.closing_time || "—"}
                           </FulfillmentHoursValue>
@@ -688,7 +676,11 @@ export const Payment = () => {
 
                 <ContinueButton
                   type="button"
-                  disabled={isPaymentPreparing || !isStripeReady}
+                  disabled={
+                    !isPaymentElementReady ||
+                    !isPaymentComplete ||
+                    isPaymentPreparing
+                  }
                   onClick={handleContinue}
                 >
                   {isPaymentPreparing

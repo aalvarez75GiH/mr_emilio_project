@@ -9,7 +9,7 @@ import {
 import { StripePaymentFormContainer } from "./stripe_payment_form.styles";
 
 export const StripePaymentForm = forwardRef(
-  ({ billingDetails, onReadyChange }, ref) => {
+  ({ billingDetails, onReadyChange, onCompleteChange }, ref) => {
     const stripe = useStripe();
     const elements = useElements();
 
@@ -23,12 +23,20 @@ export const StripePaymentForm = forwardRef(
 
               error: {
                 code: "stripe_not_ready",
+
                 message:
                   "The secure payment form is still loading. Please try again.",
               },
             };
           }
 
+          /**
+           * Stripe performs final client-side
+           * validation before creating the
+           * ConfirmationToken.
+           *
+           * This still does NOT charge the card.
+           */
           const { error: submitError } = await elements.submit();
 
           if (submitError) {
@@ -43,6 +51,14 @@ export const StripePaymentForm = forwardRef(
             .join(" ")
             .trim();
 
+          /**
+           * Create a ConfirmationToken containing
+           * the payment information collected by
+           * Stripe Elements.
+           *
+           * No PaymentIntent exists yet.
+           * No payment is submitted yet.
+           */
           const { error, confirmationToken } =
             await stripe.createConfirmationToken({
               elements,
@@ -104,58 +120,26 @@ export const StripePaymentForm = forwardRef(
           onReady={() => {
             onReadyChange?.(true);
           }}
-          onLoadError={() => {
+          onChange={(event) => {
+            /**
+             * Stripe tells us whether every
+             * required field is currently complete.
+             *
+             * We use this to enable/disable
+             * Continue to Review.
+             */
+            onCompleteChange?.(event.complete === true);
+          }}
+          onLoadError={(event) => {
+            console.error("STRIPE PAYMENT ELEMENT LOAD ERROR:", event);
+
             onReadyChange?.(false);
+            onCompleteChange?.(false);
           }}
         />
-        {/* <PaymentElement
-          options={{
-            layout: "tabs",
-          }}
-          onReady={() => {
-            onReadyChange?.(true);
-          }}
-          onLoadError={() => {
-            onReadyChange?.(false);
-          }}
-        /> */}
       </StripePaymentFormContainer>
     );
   }
 );
 
 StripePaymentForm.displayName = "StripePaymentForm";
-// import { PaymentElement } from "@stripe/react-stripe-js";
-
-// import { StripePaymentFormContainer } from "./stripe_payment_form.styles";
-
-// export const StripePaymentForm = () => {
-//   const handleReady = () => {
-//     console.log("STRIPE PAYMENT ELEMENT READY");
-//   };
-
-//   const handleLoadError = (event) => {
-//     console.error("STRIPE PAYMENT ELEMENT LOAD ERROR:", event);
-//   };
-
-//   const handleChange = (event) => {
-//     console.log("STRIPE PAYMENT ELEMENT CHANGE:", {
-//       complete: event.complete,
-//       empty: event.empty,
-//       value: event.value,
-//     });
-//   };
-
-//   return (
-//     <StripePaymentFormContainer>
-//       <PaymentElement
-//         options={{
-//           layout: "tabs",
-//         }}
-//         onReady={handleReady}
-//         onLoadError={handleLoadError}
-//         onChange={handleChange}
-//       />
-//     </StripePaymentFormContainer>
-//   );
-// };

@@ -23,61 +23,123 @@ export const CartProvider = ({ children }) => {
   const { warehouse, isWarehouseLoading, hasResolvedWarehouse } =
     useWarehouse();
 
+  /**
+   * cartState is the mutable cart state owned
+   * by the customer.
+   *
+   * We do NOT synchronize warehouse changes
+   * into it with a setState call inside an effect.
+   *
+   * Instead, the cart presented to the application
+   * is derived from cartState + current warehouse.
+   */
   const [cartState, setCartState] = useState(() => readStoredCart());
 
-  const [storeChangeNotice, setStoreChangeNotice] = useState(null);
-
-  const cartItems = cartState.items;
+  /**
+   * Used only when the customer manually dismisses
+   * the store-change notification.
+   *
+   * Example value:
+   * "west-side-store->athens-store"
+   */
+  const [dismissedStoreChangeKey, setDismissedStoreChangeKey] = useState(null);
 
   const currentWarehouseId = warehouse?.id || null;
 
+  const storedWarehouseId = cartState.warehouseId || null;
+
   /**
-   * WarehouseProvider is the authoritative
-   * store resolver.
-   *
-   * Whenever its resolved warehouse changes,
-   * the persisted cart must be revalidated
-   * against that store.
+   * Detect whether the persisted cart came from
+   * another store.
    */
-  useEffect(() => {
+  const warehouseChanged =
+    Boolean(storedWarehouseId) &&
+    Boolean(currentWarehouseId) &&
+    storedWarehouseId !== currentWarehouseId;
+
+  const storeChangeKey = warehouseChanged
+    ? `${storedWarehouseId}->${currentWarehouseId}`
+    : null;
+
+  /**
+   * Reconcile the cart against the currently
+   * authoritative warehouse.
+   *
+   * This is derived data rather than another
+   * setState operation.
+   *
+   * Examples:
+   *
+   * West Side cart + Athens warehouse:
+   *
+   * - refresh stock
+   * - refresh price
+   * - identify sold-out products
+   * - identify products not offered
+   * - identify insufficient quantity
+   * - update item warehouse IDs/keys
+   */
+  const cartItems = useMemo(() => {
     if (!warehouse?.id) {
-      return;
+      return cartState.items;
     }
 
-    setCartState((currentCartState) => {
-      const previousWarehouseId = currentCartState.warehouseId;
+    return revalidateCartForWarehouse(cartState.items, warehouse);
+  }, [cartState.items, warehouse]);
 
-      const warehouseChanged =
-        Boolean(previousWarehouseId) && previousWarehouseId !== warehouse.id;
+  /**
+   * The effective cart represents what should be
+   * persisted after reconciliation.
+   *
+   * localStorage is an external system, so keeping
+   * this synchronization inside an effect is correct.
+   *
+   * Notice that the effect does NOT call setState.
+   */
+  const effectiveCartState = useMemo(
+    () => ({
+      ...cartState,
 
-      const nextItems = revalidateCartForWarehouse(
-        currentCartState.items,
-        warehouse
-      );
+      warehouseId: currentWarehouseId || cartState.warehouseId || null,
 
-      if (warehouseChanged) {
-        setStoreChangeNotice({
-          previousWarehouseId,
-
-          currentWarehouseId: warehouse.id,
-
-          currentWarehouseName: warehouse.warehouse_name || "",
-        });
-      }
-
-      return {
-        ...currentCartState,
-
-        warehouseId: warehouse.id,
-
-        items: nextItems,
-      };
-    });
-  }, [warehouse]);
+      items: cartItems,
+    }),
+    [cartState, currentWarehouseId, cartItems]
+  );
 
   useEffect(() => {
-    persistCart(cartState);
-  }, [cartState]);
+    persistCart(effectiveCartState);
+  }, [effectiveCartState]);
+
+  /**
+   * Whenever a new store-change relationship occurs,
+   * allow its notice to appear even if an older one
+   * had previously been dismissed.
+   */
+  const storeChangeNotice = useMemo(() => {
+    if (
+      !warehouseChanged ||
+      !storeChangeKey ||
+      dismissedStoreChangeKey === storeChangeKey
+    ) {
+      return null;
+    }
+
+    return {
+      previousWarehouseId: storedWarehouseId,
+
+      currentWarehouseId,
+
+      currentWarehouseName: warehouse?.warehouse_name || "",
+    };
+  }, [
+    warehouseChanged,
+    storeChangeKey,
+    dismissedStoreChangeKey,
+    storedWarehouseId,
+    currentWarehouseId,
+    warehouse,
+  ]);
 
   const addProductToCart = useCallback(
     (product) => {
@@ -142,15 +204,15 @@ export const CartProvider = ({ children }) => {
           availabilityStatus: CART_ITEM_AVAILABILITY.AVAILABLE,
         };
 
-        setCartState((currentCartState) => ({
-          ...currentCartState,
+        setCartState({
+          ...effectiveCartState,
 
           warehouseId: productWarehouseId,
 
-          items: currentCartState.items.map((item) =>
+          items: cartItems.map((item) =>
             item.key === itemKey ? updatedItem : item
           ),
-        }));
+        });
 
         return {
           ok: true,
@@ -167,13 +229,13 @@ export const CartProvider = ({ children }) => {
         warehouseId: productWarehouseId,
       });
 
-      setCartState((currentCartState) => ({
-        ...currentCartState,
+      setCartState({
+        ...effectiveCartState,
 
         warehouseId: productWarehouseId,
 
-        items: [...currentCartState.items, newItem],
-      }));
+        items: [...cartItems, newItem],
+      });
 
       return {
         ok: true,
@@ -183,7 +245,7 @@ export const CartProvider = ({ children }) => {
         item: newItem,
       };
     },
-    [cartItems, currentWarehouseId]
+    [cartItems, currentWarehouseId, effectiveCartState]
   );
 
   const increaseCartItemQuantity = useCallback(
@@ -226,13 +288,15 @@ export const CartProvider = ({ children }) => {
         quantity: existingItem.quantity + 1,
       };
 
-      setCartState((currentCartState) => ({
-        ...currentCartState,
+      setCartState({
+        ...effectiveCartState,
 
-        items: currentCartState.items.map((item) =>
+        warehouseId: currentWarehouseId,
+
+        items: cartItems.map((item) =>
           item.key === itemKey ? updatedItem : item
         ),
-      }));
+      });
 
       return {
         ok: true,
@@ -242,7 +306,7 @@ export const CartProvider = ({ children }) => {
         item: updatedItem,
       };
     },
-    [cartItems]
+    [cartItems, currentWarehouseId, effectiveCartState]
   );
 
   const decreaseCartItemQuantity = useCallback(
@@ -258,11 +322,15 @@ export const CartProvider = ({ children }) => {
       }
 
       if (existingItem.quantity <= 1) {
-        setCartState((currentCartState) => ({
-          ...currentCartState,
+        const nextItems = cartItems.filter((item) => item.key !== itemKey);
 
-          items: currentCartState.items.filter((item) => item.key !== itemKey),
-        }));
+        setCartState({
+          ...effectiveCartState,
+
+          warehouseId: currentWarehouseId,
+
+          items: nextItems,
+        });
 
         return {
           ok: true,
@@ -291,13 +359,15 @@ export const CartProvider = ({ children }) => {
           : existingItem.availabilityStatus,
       };
 
-      setCartState((currentCartState) => ({
-        ...currentCartState,
+      setCartState({
+        ...effectiveCartState,
 
-        items: currentCartState.items.map((item) =>
+        warehouseId: currentWarehouseId,
+
+        items: cartItems.map((item) =>
           item.key === itemKey ? updatedItem : item
         ),
-      }));
+      });
 
       return {
         ok: true,
@@ -307,7 +377,7 @@ export const CartProvider = ({ children }) => {
         item: updatedItem,
       };
     },
-    [cartItems]
+    [cartItems, currentWarehouseId, effectiveCartState]
   );
 
   const removeProductFromCart = useCallback(
@@ -322,11 +392,15 @@ export const CartProvider = ({ children }) => {
         };
       }
 
-      setCartState((currentCartState) => ({
-        ...currentCartState,
+      const nextItems = cartItems.filter((item) => item.key !== itemKey);
 
-        items: currentCartState.items.filter((item) => item.key !== itemKey),
-      }));
+      setCartState({
+        ...effectiveCartState,
+
+        warehouseId: currentWarehouseId,
+
+        items: nextItems,
+      });
 
       return {
         ok: true,
@@ -336,7 +410,7 @@ export const CartProvider = ({ children }) => {
         item: existingItem,
       };
     },
-    [cartItems]
+    [cartItems, currentWarehouseId, effectiveCartState]
   );
 
   const clearCart = useCallback(() => {
@@ -348,14 +422,18 @@ export const CartProvider = ({ children }) => {
       items: [],
     });
 
-    setStoreChangeNotice(null);
+    setDismissedStoreChangeKey(null);
 
     clearStoredCart();
   }, [currentWarehouseId]);
 
   const dismissStoreChangeNotice = useCallback(() => {
-    setStoreChangeNotice(null);
-  }, []);
+    if (!storeChangeKey) {
+      return;
+    }
+
+    setDismissedStoreChangeKey(storeChangeKey);
+  }, [storeChangeKey]);
 
   const cartQuantity = useMemo(() => getCartQuantity(cartItems), [cartItems]);
 
@@ -368,15 +446,23 @@ export const CartProvider = ({ children }) => {
 
   const hasCartValidationIssues = cartValidationIssues.length > 0;
 
-  const hasUnavailableItems = cartItems.some(
-    (item) =>
-      item.availabilityStatus === CART_ITEM_AVAILABILITY.NOT_OFFERED ||
-      item.availabilityStatus === CART_ITEM_AVAILABILITY.SOLD_OUT
+  const hasUnavailableItems = useMemo(
+    () =>
+      cartItems.some(
+        (item) =>
+          item.availabilityStatus === CART_ITEM_AVAILABILITY.NOT_OFFERED ||
+          item.availabilityStatus === CART_ITEM_AVAILABILITY.SOLD_OUT
+      ),
+    [cartItems]
   );
 
-  const hasInsufficientStockItems = cartItems.some(
-    (item) =>
-      item.availabilityStatus === CART_ITEM_AVAILABILITY.INSUFFICIENT_STOCK
+  const hasInsufficientStockItems = useMemo(
+    () =>
+      cartItems.some(
+        (item) =>
+          item.availabilityStatus === CART_ITEM_AVAILABILITY.INSUFFICIENT_STOCK
+      ),
+    [cartItems]
   );
 
   const cartIsValidForCheckout =
@@ -392,7 +478,12 @@ export const CartProvider = ({ children }) => {
 
       cartSubtotal,
 
-      cartWarehouseId: cartState.warehouseId,
+      /**
+       * Once reconciled, the effective
+       * cart belongs to the authoritative
+       * current warehouse.
+       */
+      cartWarehouseId: effectiveCartState.warehouseId,
 
       currentWarehouseId,
 
@@ -428,7 +519,7 @@ export const CartProvider = ({ children }) => {
       cartItems,
       cartQuantity,
       cartSubtotal,
-      cartState.warehouseId,
+      effectiveCartState.warehouseId,
       currentWarehouseId,
       warehouse,
       storeChangeNotice,

@@ -954,9 +954,14 @@ export const ContinueButton = styled.button`
   cursor: pointer;
 
   transition: transform 180ms ease;
-
-  &:hover {
+  &:hover:not(:disabled) {
     transform: translateY(-2px);
+  }
+
+  &:disabled {
+    opacity: 0.48;
+    cursor: not-allowed;
+    transform: none;
   }
 `;
 
