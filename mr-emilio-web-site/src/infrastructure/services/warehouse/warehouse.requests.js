@@ -112,6 +112,27 @@ export const getWarehousesByDistanceRequest = async (
   return data;
 };
 
+export const getPickupWarehousesByDrivingDistanceRequest = async (
+  coordinates,
+  { signal } = {}
+) => {
+  const { lat, lng } = validateCoordinates(coordinates);
+
+  const { data } = await apiClient.get(
+    `${WAREHOUSES_CATALOG_PATH}/pickup-by-driving-distance`,
+    {
+      params: {
+        lat,
+        lng,
+      },
+
+      signal,
+    }
+  );
+
+  return data;
+};
+
 export const createWarehouseRequest = async (warehouse, { signal } = {}) => {
   const validatedWarehouse = validateObjectPayload(
     warehouse,

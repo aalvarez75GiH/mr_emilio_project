@@ -89,6 +89,7 @@ export const normalizeClosestWarehouseResponse = (response) => {
   }
 
   const distanceMiles = Number(customerContext.distance?.miles);
+  const distanceMeters = Number(customerContext.distance?.meters);
 
   const pickup = customerContext.fulfillment?.pickup || {};
 
@@ -107,6 +108,18 @@ export const normalizeClosestWarehouseResponse = (response) => {
     customerContext: {
       distance: {
         miles: Number.isFinite(distanceMiles) ? distanceMiles : null,
+
+        meters: Number.isFinite(distanceMeters) ? distanceMeters : null,
+
+        duration:
+          typeof customerContext.distance?.duration === "string"
+            ? customerContext.distance.duration
+            : null,
+
+        source:
+          typeof customerContext.distance?.source === "string"
+            ? customerContext.distance.source
+            : null,
       },
 
       fulfillment: {
@@ -148,7 +161,6 @@ export const normalizeClosestWarehouseResponse = (response) => {
           provider: isPlainObject(localDelivery.provider)
             ? {
                 type: localDelivery.provider.type || null,
-
                 name: localDelivery.provider.name || null,
               }
             : null,
@@ -167,10 +179,10 @@ export const normalizeClosestWarehouseResponse = (response) => {
             ? Number(pickupDistanceWarning.distanceMiles)
             : null,
 
-          deliveryRadiusMiles: Number.isFinite(
-            Number(pickupDistanceWarning.deliveryRadiusMiles)
+          thresholdMiles: Number.isFinite(
+            Number(pickupDistanceWarning.thresholdMiles)
           )
-            ? Number(pickupDistanceWarning.deliveryRadiusMiles)
+            ? Number(pickupDistanceWarning.thresholdMiles)
             : null,
 
           messageKey: pickupDistanceWarning.messageKey || null,
@@ -179,6 +191,114 @@ export const normalizeClosestWarehouseResponse = (response) => {
     },
   };
 };
+// export const normalizeClosestWarehouseResponse = (response) => {
+//   if (!isPlainObject(response)) {
+//     return null;
+//   }
+
+//   const warehouse = isPlainObject(response.warehouse)
+//     ? response.warehouse
+//     : null;
+
+//   const customerContext = isPlainObject(response.customerContext)
+//     ? response.customerContext
+//     : {};
+
+//   if (!warehouse) {
+//     return null;
+//   }
+
+//   const distanceMiles = Number(customerContext.distance?.miles);
+
+//   const pickup = customerContext.fulfillment?.pickup || {};
+
+//   const localDelivery = customerContext.fulfillment?.localDelivery || {};
+
+//   const pickupDistanceWarning =
+//     customerContext.fulfillment?.pickupDistanceWarning || {};
+
+//   return {
+//     warehouse: {
+//       ...warehouse,
+
+//       inventory: normalizeWarehouseInventory(warehouse.inventory),
+//     },
+
+//     customerContext: {
+//       distance: {
+//         miles: Number.isFinite(distanceMiles) ? distanceMiles : null,
+//       },
+
+//       fulfillment: {
+//         pickup: {
+//           available: pickup.available === true,
+
+//           preparationTimeMinutes: Number.isInteger(
+//             Number(pickup.preparationTimeMinutes)
+//           )
+//             ? Number(pickup.preparationTimeMinutes)
+//             : null,
+//         },
+
+//         localDelivery: {
+//           available: localDelivery.available === true,
+
+//           radiusMiles: Number.isFinite(Number(localDelivery.radiusMiles))
+//             ? Number(localDelivery.radiusMiles)
+//             : null,
+
+//           estimatedTimeMinutes: isPlainObject(
+//             localDelivery.estimatedTimeMinutes
+//           )
+//             ? {
+//                 minimum: Number.isInteger(
+//                   Number(localDelivery.estimatedTimeMinutes.minimum)
+//                 )
+//                   ? Number(localDelivery.estimatedTimeMinutes.minimum)
+//                   : null,
+
+//                 maximum: Number.isInteger(
+//                   Number(localDelivery.estimatedTimeMinutes.maximum)
+//                 )
+//                   ? Number(localDelivery.estimatedTimeMinutes.maximum)
+//                   : null,
+//               }
+//             : null,
+
+//           provider: isPlainObject(localDelivery.provider)
+//             ? {
+//                 type: localDelivery.provider.type || null,
+
+//                 name: localDelivery.provider.name || null,
+//               }
+//             : null,
+
+//           reason: localDelivery.reason || null,
+//         },
+
+//         pickupDistanceWarning: {
+//           shouldDisplay: pickupDistanceWarning.shouldDisplay === true,
+
+//           reason: pickupDistanceWarning.reason || null,
+
+//           distanceMiles: Number.isFinite(
+//             Number(pickupDistanceWarning.distanceMiles)
+//           )
+//             ? Number(pickupDistanceWarning.distanceMiles)
+//             : null,
+
+//           deliveryRadiusMiles: Number.isFinite(
+//             Number(pickupDistanceWarning.deliveryRadiusMiles)
+//           )
+//             ? Number(pickupDistanceWarning.deliveryRadiusMiles)
+//             : null,
+
+//           messageKey: pickupDistanceWarning.messageKey || null,
+//         },
+//       },
+//     },
+//   };
+// };
 
 export const mergeProductWithWarehouseInventory = (
   product,
@@ -263,4 +383,10 @@ export const normalizeWarehousesByDistanceResponse = (response) => {
   return response.warehouses
     .map((entry) => normalizeClosestWarehouseResponse(entry))
     .filter(Boolean);
+};
+
+export const normalizePickupWarehousesByDrivingDistanceResponse = (
+  response
+) => {
+  return normalizeWarehousesByDistanceResponse(response);
 };

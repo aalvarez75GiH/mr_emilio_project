@@ -8,12 +8,23 @@ import {
   getClosestWarehouseRequest,
   getWarehouseByIdRequest,
   getWarehousesByDistanceRequest,
+  getPickupWarehousesByDrivingDistanceRequest,
 } from "./warehouse.requests";
+// import {
+//   getClosestWarehouseRequest,
+//   getWarehouseByIdRequest,
+//   getWarehousesByDistanceRequest,
+// } from "./warehouse.requests";
 
 import {
   normalizeClosestWarehouseResponse,
   normalizeWarehousesByDistanceResponse,
+  normalizePickupWarehousesByDrivingDistanceResponse,
 } from "./warehouse.helpers";
+// import {
+//   normalizeClosestWarehouseResponse,
+//   normalizeWarehousesByDistanceResponse,
+// } from "./warehouse.helpers";
 
 const DEFAULT_WAREHOUSE_ID = "main-warehouse-cumming";
 
@@ -96,6 +107,16 @@ export const WarehouseProvider = ({ children }) => {
   const [resolvedCustomerContext, setResolvedCustomerContext] = useState(null);
 
   const [warehousesByDistance, setWarehousesByDistance] = useState([]);
+
+  const [
+    pickupWarehousesByDrivingDistance,
+    setPickupWarehousesByDrivingDistance,
+  ] = useState([]);
+
+  const [isPickupWarehousesLoading, setIsPickupWarehousesLoading] =
+    useState(false);
+
+  const [pickupWarehousesError, setPickupWarehousesError] = useState(null);
 
   const [warehouseResolutionSource, setWarehouseResolutionSource] =
     useState(null);
@@ -252,6 +273,58 @@ export const WarehouseProvider = ({ children }) => {
     []
   );
 
+  const resolvePickupWarehousesByDrivingDistance = useCallback(
+    async (nextCoordinates, { signal } = {}) => {
+      if (!nextCoordinates) {
+        setPickupWarehousesByDrivingDistance([]);
+
+        return [];
+      }
+
+      setIsPickupWarehousesLoading(true);
+      setPickupWarehousesError(null);
+
+      try {
+        const response = await getPickupWarehousesByDrivingDistanceRequest(
+          nextCoordinates,
+          {
+            signal,
+          }
+        );
+
+        if (signal?.aborted) {
+          return [];
+        }
+
+        const normalizedWarehouses =
+          normalizePickupWarehousesByDrivingDistanceResponse(response);
+
+        setPickupWarehousesByDrivingDistance(normalizedWarehouses);
+
+        return normalizedWarehouses;
+      } catch (requestError) {
+        if (signal?.aborted || isCanceledRequest(requestError)) {
+          return [];
+        }
+
+        console.error(
+          "Error resolving pickup warehouses by driving distance:",
+          requestError
+        );
+
+        setPickupWarehousesByDrivingDistance([]);
+        setPickupWarehousesError(requestError);
+
+        return [];
+      } finally {
+        if (!signal?.aborted) {
+          setIsPickupWarehousesLoading(false);
+        }
+      }
+    },
+    []
+  );
+
   useEffect(() => {
     const abortController = new AbortController();
 
@@ -342,6 +415,10 @@ export const WarehouseProvider = ({ children }) => {
 
       warehousesByDistance,
 
+      pickupWarehousesByDrivingDistance,
+      isPickupWarehousesLoading,
+      pickupWarehousesError,
+
       warehouseResolutionSource,
       isUsingDefaultWarehouse,
 
@@ -357,6 +434,7 @@ export const WarehouseProvider = ({ children }) => {
 
       resolveClosestWarehouse,
       resolveWarehousesByDistance,
+      resolvePickupWarehousesByDrivingDistance,
       resolveDefaultWarehouse,
       reloadWarehouse,
 
@@ -367,18 +445,30 @@ export const WarehouseProvider = ({ children }) => {
     [
       warehouse,
       customerContext,
+
       warehousesByDistance,
+
+      pickupWarehousesByDrivingDistance,
+      isPickupWarehousesLoading,
+      pickupWarehousesError,
+
       warehouseResolutionSource,
       isUsingDefaultWarehouse,
+
       isWarehouseLoading,
       warehouseError,
+
       isResolvingLocationOrWarehouse,
       combinedWarehouseError,
+
       hasResolvedWarehouse,
+
       resolveClosestWarehouse,
       resolveWarehousesByDistance,
+      resolvePickupWarehousesByDrivingDistance,
       resolveDefaultWarehouse,
       reloadWarehouse,
+
       coordinates,
     ]
   );

@@ -133,6 +133,31 @@ const validateFulfillment = (fulfillment) => {
     );
   }
 
+  const distanceWarning = pickup.distanceWarning;
+
+  if (!isPlainObject(distanceWarning)) {
+    throw createControllerError(
+      '"fulfillment.pickup.distanceWarning" must be an object',
+      400
+    );
+  }
+
+  if (typeof distanceWarning.enabled !== "boolean") {
+    throw createControllerError(
+      '"fulfillment.pickup.distanceWarning.enabled" must be a boolean',
+      400
+    );
+  }
+
+  const thresholdMiles = Number(distanceWarning.thresholdMiles);
+
+  if (!Number.isFinite(thresholdMiles) || thresholdMiles <= 0) {
+    throw createControllerError(
+      '"fulfillment.pickup.distanceWarning.thresholdMiles" must be a positive number',
+      400
+    );
+  }
+
   const localDelivery = fulfillment.localDelivery;
 
   if (!isPlainObject(localDelivery)) {
@@ -182,6 +207,82 @@ const validateFulfillment = (fulfillment) => {
     "fulfillment.localDelivery.provider.name"
   );
 };
+// const validateFulfillment = (fulfillment) => {
+//   if (!isPlainObject(fulfillment)) {
+//     throw createControllerError('"fulfillment" must be an object', 400);
+//   }
+
+//   const pickup = fulfillment.pickup;
+
+//   if (!isPlainObject(pickup)) {
+//     throw createControllerError('"fulfillment.pickup" must be an object', 400);
+//   }
+
+//   if (typeof pickup.enabled !== "boolean") {
+//     throw createControllerError(
+//       '"fulfillment.pickup.enabled" must be a boolean',
+//       400
+//     );
+//   }
+
+//   const pickupPreparationTime = Number(pickup.preparationTimeMinutes);
+
+//   if (!Number.isInteger(pickupPreparationTime) || pickupPreparationTime < 0) {
+//     throw createControllerError(
+//       '"fulfillment.pickup.preparationTimeMinutes" must be a non-negative integer',
+//       400
+//     );
+//   }
+
+//   const localDelivery = fulfillment.localDelivery;
+
+//   if (!isPlainObject(localDelivery)) {
+//     throw createControllerError(
+//       '"fulfillment.localDelivery" must be an object',
+//       400
+//     );
+//   }
+
+//   if (typeof localDelivery.enabled !== "boolean") {
+//     throw createControllerError(
+//       '"fulfillment.localDelivery.enabled" must be a boolean',
+//       400
+//     );
+//   }
+
+//   const radiusMiles = Number(localDelivery.radiusMiles);
+
+//   if (!Number.isFinite(radiusMiles) || radiusMiles <= 0) {
+//     throw createControllerError(
+//       '"fulfillment.localDelivery.radiusMiles" must be a positive number',
+//       400
+//     );
+//   }
+
+//   validateEstimatedDeliveryTime(localDelivery.estimatedTimeMinutes);
+
+//   if (!isPlainObject(localDelivery.provider)) {
+//     throw createControllerError(
+//       '"fulfillment.localDelivery.provider" must be an object',
+//       400
+//     );
+//   }
+
+//   if (!DELIVERY_PROVIDER_TYPE_VALUES.includes(localDelivery.provider.type)) {
+//     throw createControllerError(
+//       `Invalid delivery provider type: "${localDelivery.provider.type}"`,
+//       400,
+//       {
+//         allowedValues: DELIVERY_PROVIDER_TYPE_VALUES,
+//       }
+//     );
+//   }
+
+//   validateRequiredString(
+//     localDelivery.provider.name,
+//     "fulfillment.localDelivery.provider.name"
+//   );
+// };
 
 const validateWarehousePayload = (warehouse) => {
   if (!isPlainObject(warehouse)) {
@@ -296,6 +397,14 @@ const buildWarehousePayload = ({
         preparationTimeMinutes: Number(
           warehouse.fulfillment.pickup.preparationTimeMinutes
         ),
+
+        distanceWarning: {
+          enabled: warehouse.fulfillment.pickup.distanceWarning.enabled,
+
+          thresholdMiles: Number(
+            warehouse.fulfillment.pickup.distanceWarning.thresholdMiles
+          ),
+        },
       },
 
       localDelivery: {
@@ -327,6 +436,85 @@ const buildWarehousePayload = ({
     updatedAt: now,
   };
 };
+// const buildWarehousePayload = ({
+//   warehouse,
+//   warehouseId,
+//   geo,
+//   normalizedInventory,
+//   createdAt,
+// }) => {
+//   const now = getTimestamp();
+
+//   return {
+//     id: warehouseId,
+
+//     warehouse_name: warehouse.warehouse_name.trim(),
+
+//     active: warehouse.active,
+
+//     status: warehouse.status || WAREHOUSE_STATUS.OPEN,
+
+//     physical_address: warehouse.physical_address.trim(),
+
+//     geo,
+
+//     warehouse_information: {
+//       phone: warehouse.warehouse_information?.phone || "",
+
+//       email: warehouse.warehouse_information?.email || "",
+
+//       opening_time: warehouse.warehouse_information?.opening_time || "",
+
+//       closing_time: warehouse.warehouse_information?.closing_time || "",
+
+//       representative: {
+//         name: warehouse.warehouse_information?.representative?.name || "",
+
+//         phone_number:
+//           warehouse.warehouse_information?.representative?.phone_number || "",
+
+//         email: warehouse.warehouse_information?.representative?.email || "",
+//       },
+//     },
+
+//     fulfillment: {
+//       pickup: {
+//         enabled: warehouse.fulfillment.pickup.enabled,
+
+//         preparationTimeMinutes: Number(
+//           warehouse.fulfillment.pickup.preparationTimeMinutes
+//         ),
+//       },
+
+//       localDelivery: {
+//         enabled: warehouse.fulfillment.localDelivery.enabled,
+
+//         radiusMiles: Number(warehouse.fulfillment.localDelivery.radiusMiles),
+
+//         estimatedTimeMinutes: {
+//           minimum: Number(
+//             warehouse.fulfillment.localDelivery.estimatedTimeMinutes.minimum
+//           ),
+
+//           maximum: Number(
+//             warehouse.fulfillment.localDelivery.estimatedTimeMinutes.maximum
+//           ),
+//         },
+
+//         provider: {
+//           type: warehouse.fulfillment.localDelivery.provider.type,
+
+//           name: warehouse.fulfillment.localDelivery.provider.name.trim(),
+//         },
+//       },
+//     },
+
+//     inventory: normalizedInventory,
+
+//     createdAt: createdAt || now,
+//     updatedAt: now,
+//   };
+// };
 
 const getWarehouseById = async (warehouseId) => {
   if (!warehouseId) {
@@ -397,6 +585,77 @@ const getWarehousesByDistance = async ({ lat, lng }) => {
       },
     };
   });
+};
+
+const getPickupWarehousesByDrivingDistance = async ({ lat, lng }) => {
+  const customerCoordinates = validateCoordinates(
+    {
+      lat,
+      lng,
+    },
+    "customerCoordinates"
+  );
+
+  const activeWarehouses = await getActiveWarehouses();
+
+  if (activeWarehouses.length === 0) {
+    return [];
+  }
+
+  const warehousesWithDrivingDistance = await Promise.all(
+    activeWarehouses.map(async (warehouse) => {
+      const warehouseCoordinates = validateCoordinates(
+        {
+          lat: warehouse.geo?.lat,
+          lng: warehouse.geo?.lng,
+        },
+        `warehouseCoordinates.${warehouse.id}`
+      );
+
+      /**
+       * For pickup guidance, driving distance is authoritative.
+       *
+       * Haversine distance may still be used elsewhere for inexpensive
+       * geographic sorting, but customer-facing pickup distance and the
+       * pickup distance warning should reflect the actual driving route.
+       */
+      const drivingRoute = await getDrivingRouteDistance({
+        originCoordinates: customerCoordinates,
+        destinationCoordinates: warehouseCoordinates,
+      });
+
+      const fulfillmentAvailability = buildFulfillmentAvailability({
+        warehouse,
+        distanceMiles: drivingRoute.distanceMiles,
+      });
+
+      return {
+        warehouse,
+
+        customerContext: {
+          distance: {
+            miles: drivingRoute.distanceMiles,
+            meters: drivingRoute.distanceMeters,
+            duration: drivingRoute.duration,
+            source: drivingRoute.source,
+          },
+
+          fulfillment: {
+            pickup: fulfillmentAvailability.pickup,
+
+            pickupDistanceWarning:
+              fulfillmentAvailability.pickupDistanceWarning,
+          },
+        },
+      };
+    })
+  );
+
+  return warehousesWithDrivingDistance.sort(
+    (warehouseA, warehouseB) =>
+      warehouseA.customerContext.distance.miles -
+      warehouseB.customerContext.distance.miles
+  );
 };
 
 const getClosestWarehouse = async ({ lat, lng }) => {
@@ -528,6 +787,12 @@ const updateWarehouseById = async (warehouseId, updates) => {
         ...existingWarehouse.fulfillment?.pickup,
 
         ...(updates.fulfillment?.pickup || {}),
+
+        distanceWarning: {
+          ...existingWarehouse.fulfillment?.pickup?.distanceWarning,
+
+          ...(updates.fulfillment?.pickup?.distanceWarning || {}),
+        },
       },
 
       localDelivery: {
@@ -972,216 +1237,6 @@ const getLocalDeliveryQuote = async ({ warehouseId, address }) => {
     },
   };
 };
-// const getLocalDeliveryQuote = async ({ warehouseId, address }) => {
-//   const normalizedWarehouseId = validateRequiredString(
-//     warehouseId,
-//     "warehouseId"
-//   );
-
-//   const normalizedAddress = validateRequiredString(address, "address");
-
-//   /**
-//    * The originating warehouse/store owns the order.
-//    *
-//    * Local Delivery must NEVER search for another
-//    * warehouse based on the destination address.
-//    */
-//   const warehouse = await getWarehouseById(normalizedWarehouseId);
-
-//   if (!warehouse) {
-//     throw createControllerError(
-//       `Warehouse "${normalizedWarehouseId}" was not found`,
-//       404
-//     );
-//   }
-
-//   /**
-//    * Resolve the customer's DELIVERY destination.
-//    *
-//    * This is intentionally separate from:
-//    *
-//    * - browser geolocation;
-//    * - originating warehouse resolution;
-//    * - pickup-store selection.
-//    */
-//   const geo = await forwardGeocodeAddress(normalizedAddress);
-
-//   const customerCoordinates = validateCoordinates(
-//     {
-//       lat: geo.lat,
-//       lng: geo.lng,
-//     },
-//     "deliveryAddressCoordinates"
-//   );
-
-//   /**
-//    * A warehouse may have become inactive after
-//    * the customer's shopping session began.
-//    *
-//    * In that situation we do NOT transfer the sale
-//    * to another warehouse.
-//    */
-//   if (warehouse.active !== true) {
-//     return {
-//       available: false,
-
-//       reason: "ORIGINATING_WAREHOUSE_INACTIVE",
-
-//       address: {
-//         input: normalizedAddress,
-
-//         formattedAddress: geo.formatted_address,
-
-//         coordinates: customerCoordinates,
-
-//         placeId: geo.place_id || null,
-//       },
-
-//       warehouse,
-
-//       distance: null,
-
-//       deliveryFee: null,
-
-//       fulfillment: {
-//         localDelivery: {
-//           available: false,
-
-//           radiusMiles:
-//             warehouse.fulfillment?.localDelivery?.radiusMiles ?? null,
-
-//           estimatedTimeMinutes:
-//             warehouse.fulfillment?.localDelivery?.estimatedTimeMinutes ?? null,
-
-//           provider: warehouse.fulfillment?.localDelivery?.provider ?? null,
-
-//           reason: "ORIGINATING_WAREHOUSE_INACTIVE",
-//         },
-//       },
-//     };
-//   }
-
-//   /**
-//    * Reuse the existing distance helper, but pass
-//    * ONLY the originating warehouse.
-//    *
-//    * This prevents the delivery destination from
-//    * selecting a different fulfillment store.
-//    */
-//   const [warehouseWithDistance] = sortWarehousesByDistance(
-//     [warehouse],
-//     customerCoordinates
-//   );
-
-//   if (!warehouseWithDistance) {
-//     throw createControllerError(
-//       `Unable to calculate delivery distance for warehouse "${normalizedWarehouseId}"`,
-//       500
-//     );
-//   }
-
-//   const distanceMiles = warehouseWithDistance.distance.miles;
-
-//   /**
-//    * Determine Local Delivery availability using
-//    * THIS warehouse's own:
-//    *
-//    * - active state;
-//    * - status;
-//    * - localDelivery.enabled;
-//    * - radiusMiles.
-//    */
-//   const fulfillmentAvailability = buildFulfillmentAvailability({
-//     warehouse: warehouseWithDistance,
-//     distanceMiles,
-//   });
-
-//   const localDelivery = fulfillmentAvailability.localDelivery;
-
-//   const { distance: _warehouseDistance, ...warehouseWithoutDistance } =
-//     warehouseWithDistance;
-
-//   /**
-//    * The originating store cannot deliver to this
-//    * destination.
-//    *
-//    * IMPORTANT:
-//    * Do not attempt another warehouse.
-//    */
-//   if (localDelivery.available !== true) {
-//     return {
-//       available: false,
-
-//       reason: localDelivery.reason || "LOCAL_DELIVERY_UNAVAILABLE",
-
-//       address: {
-//         input: normalizedAddress,
-
-//         formattedAddress: geo.formatted_address,
-
-//         coordinates: customerCoordinates,
-
-//         placeId: geo.place_id || null,
-//       },
-
-//       warehouse: warehouseWithoutDistance,
-
-//       distance: {
-//         miles: distanceMiles,
-//       },
-
-//       deliveryFee: null,
-
-//       fulfillment: {
-//         localDelivery,
-//       },
-//     };
-//   }
-
-//   const deliveryFeeInCents = calculateLocalDeliveryFeeInCents(
-//     distanceMiles,
-//     LOCAL_DELIVERY_FEE_PER_MILE_IN_CENTS
-//   );
-
-//   return {
-//     available: true,
-
-//     reason: null,
-
-//     address: {
-//       input: normalizedAddress,
-
-//       formattedAddress: geo.formatted_address,
-
-//       coordinates: customerCoordinates,
-
-//       placeId: geo.place_id || null,
-//     },
-
-//     /**
-//      * This is ALWAYS the originating store.
-//      */
-//     warehouse: warehouseWithoutDistance,
-
-//     distance: {
-//       miles: distanceMiles,
-//     },
-
-//     deliveryFee: {
-//       amountInCents: deliveryFeeInCents,
-
-//       amount: deliveryFeeInCents / 100,
-
-//       pricePerMileInCents: LOCAL_DELIVERY_FEE_PER_MILE_IN_CENTS,
-
-//       pricePerMile: LOCAL_DELIVERY_FEE_PER_MILE_IN_CENTS / 100,
-//     },
-
-//     fulfillment: {
-//       localDelivery,
-//     },
-//   };
-// };
 
 module.exports = {
   getWarehouseById,
@@ -1189,6 +1244,7 @@ module.exports = {
   getActiveWarehouses,
   getClosestWarehouse,
   getWarehousesByDistance,
+  getPickupWarehousesByDrivingDistance,
 
   createWarehouse,
   updateWarehouseById,

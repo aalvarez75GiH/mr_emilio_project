@@ -1,32 +1,42 @@
 require("dotenv").config();
 
-console.log("GOOGLE MAPS KEY:", process.env.GOOGLE_MAPS_API_KEY);
-
 const warehousesControllers = require("../api/warehousesCatalog/warehouses.controllers");
 
 const warehousesCatalogData = require("../api/warehousesCatalog/warehouses.data");
 
 const seedWarehousesCatalog = async () => {
   console.log("Starting warehousesCatalog seed...");
+  console.log("");
 
   let createdCount = 0;
-  let skippedCount = 0;
+  let updatedCount = 0;
   let failedCount = 0;
 
   for (const warehouse of warehousesCatalogData) {
     try {
-      await warehousesControllers.createWarehouse(warehouse);
+      const existingWarehouse = await warehousesControllers.getWarehouseById(
+        warehouse.id
+      );
 
-      console.log(`CREATED: ${warehouse.id}`);
-      createdCount += 1;
-    } catch (error) {
-      if (error.statusCode === 409) {
-        console.log(`SKIPPED: ${warehouse.id} already exists`);
+      if (existingWarehouse) {
+        await warehousesControllers.updateWarehouseById(
+          warehouse.id,
+          warehouse
+        );
 
-        skippedCount += 1;
+        console.log(`UPDATED: ${warehouse.id}`);
+
+        updatedCount += 1;
+
         continue;
       }
 
+      await warehousesControllers.createWarehouse(warehouse);
+
+      console.log(`CREATED: ${warehouse.id}`);
+
+      createdCount += 1;
+    } catch (error) {
       console.error(
         `FAILED: ${warehouse?.id || "unknown-warehouse"}`,
         error.message
@@ -43,13 +53,17 @@ const seedWarehousesCatalog = async () => {
   console.log("");
   console.log("Warehouses catalog seed completed.");
   console.log(`Created: ${createdCount}`);
-  console.log(`Skipped: ${skippedCount}`);
+  console.log(`Updated: ${updatedCount}`);
   console.log(`Failed: ${failedCount}`);
+
+  if (failedCount > 0) {
+    process.exitCode = 1;
+  }
 };
 
 seedWarehousesCatalog()
   .then(() => {
-    process.exit(0);
+    process.exit();
   })
   .catch((error) => {
     console.error("WAREHOUSES SEED ERROR:", error);

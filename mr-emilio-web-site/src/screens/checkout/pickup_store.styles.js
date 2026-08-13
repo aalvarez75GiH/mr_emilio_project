@@ -550,6 +550,210 @@ export const StoreMetaItem = styled.span`
   }
 `;
 
+export const StoreDistanceWarning = styled.div`
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+
+  width: 100%;
+
+  margin-top: 13px;
+  padding: 11px 12px;
+
+  border: 1px solid rgba(180, 120, 0, 0.24);
+  border-radius: 9px;
+
+  background: rgba(255, 248, 230, 0.92);
+
+  text-align: left;
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
+    grid-template-columns: 32px minmax(0, 1fr);
+
+    gap: 11px;
+
+    padding: 12px 13px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    grid-template-columns: 30px minmax(0, 1fr);
+
+    gap: 10px;
+
+    padding: 11px 12px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    grid-template-columns: 30px minmax(0, 1fr);
+
+    gap: 10px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    padding: 10px 11px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    grid-template-columns: 28px minmax(0, 1fr);
+
+    gap: 9px;
+
+    margin-top: 12px;
+    padding: 10px;
+
+    border-radius: 8px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    grid-template-columns: 26px minmax(0, 1fr);
+
+    gap: 8px;
+
+    padding: 9px;
+  }
+`;
+
+export const StoreDistanceWarningIcon = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 30px;
+  height: 30px;
+
+  border-radius: 50%;
+
+  background: rgba(180, 120, 0, 0.12);
+  color: #9a6800;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
+    width: 32px;
+    height: 32px;
+
+    svg {
+      width: 17px;
+      height: 17px;
+    }
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    width: 30px;
+    height: 30px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    width: 30px;
+    height: 30px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    width: 30px;
+    height: 30px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    width: 28px;
+    height: 28px;
+
+    svg {
+      width: 15px;
+      height: 15px;
+    }
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    width: 26px;
+    height: 26px;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+`;
+
+export const StoreDistanceWarningContent = styled.div`
+  min-width: 0;
+
+  text-align: left;
+`;
+
+export const StoreDistanceWarningTitle = styled.strong`
+  display: block;
+
+  color: #795200;
+
+  font-size: 0.76rem;
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  line-height: 1.3;
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
+    font-size: 0.78rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    font-size: 0.76rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    font-size: 0.75rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    font-size: 0.74rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    font-size: 0.72rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    font-size: 0.7rem;
+  }
+`;
+
+export const StoreDistanceWarningText = styled.span`
+  display: block;
+
+  margin-top: 3px;
+
+  color: #765f2c;
+
+  font-size: 0.7rem;
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  line-height: 1.4;
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
+    font-size: 0.72rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    font-size: 0.7rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    font-size: 0.7rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    font-size: 0.69rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    font-size: 0.68rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    font-size: 0.66rem;
+  }
+`;
+
 export const StoreHours = styled.div`
   display: grid;
   grid-template-columns: 34px minmax(0, 1fr);

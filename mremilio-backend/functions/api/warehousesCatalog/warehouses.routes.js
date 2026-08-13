@@ -103,6 +103,37 @@ warehousesCatalogRouter.get("/by-distance", async (req, res) => {
 });
 
 /**
+ * GET /api/warehouses-catalog/pickup-by-driving-distance
+ *
+ * Returns all active warehouses ordered from closest to farthest
+ * using actual Google Routes driving distance.
+ *
+ * Pickup remains available when the customer exceeds the configured
+ * pickup warning threshold. The response only marks that the UI
+ * should display an advisory warning.
+ *
+ * Example:
+ * /api/warehouses-catalog/pickup-by-driving-distance?lat=33.95&lng=-83.41
+ */
+warehousesCatalogRouter.get("/pickup-by-driving-distance", async (req, res) => {
+  try {
+    const { lat, lng } = req.query;
+
+    const warehouses =
+      await warehousesControllers.getPickupWarehousesByDrivingDistance({
+        lat,
+        lng,
+      });
+
+    return res.status(200).json({
+      warehouses,
+    });
+  } catch (error) {
+    return sendErrorResponse(res, error);
+  }
+});
+
+/**
  * POST /api/warehouses-catalog/local-delivery-quote
  *
  * The originating warehouse/store is authoritative.

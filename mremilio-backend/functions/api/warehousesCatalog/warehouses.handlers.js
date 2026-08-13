@@ -198,6 +198,26 @@ const getDrivingRouteDistance = async ({
     "destinationCoordinates"
   );
 
+  /**
+   * Google Routes may omit distanceMeters when the origin and
+   * destination are effectively the same location.
+   *
+   * Avoid an unnecessary API request when the coordinates are
+   * already identical.
+   */
+  const coordinatesAreEqual =
+    origin.lat === destination.lat && origin.lng === destination.lng;
+
+  if (coordinatesAreEqual) {
+    return {
+      distanceMeters: 0,
+      distanceMiles: 0,
+      duration: "0s",
+      travelMode: "DRIVE",
+      source: "same_coordinates",
+    };
+  }
+
   const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY;
 
   if (!googleMapsApiKey) {
@@ -252,7 +272,30 @@ const getDrivingRouteDistance = async ({
 
     const route = response.data?.routes?.[0];
 
-    const distanceMeters = Number(route?.distanceMeters);
+    if (!route) {
+      throw createHandlerError("Google Routes did not return a route", 502, {
+        response: response.data || null,
+      });
+    }
+
+    /**
+     * Google may return a valid zero-distance route with duration "0s"
+     * while omitting distanceMeters entirely.
+     */
+    const hasZeroDurationRoute =
+      route.duration === "0s" && route.distanceMeters === undefined;
+
+    if (hasZeroDurationRoute) {
+      return {
+        distanceMeters: 0,
+        distanceMiles: 0,
+        duration: route.duration,
+        travelMode: "DRIVE",
+        source: "google_routes",
+      };
+    }
+
+    const distanceMeters = Number(route.distanceMeters);
 
     if (!Number.isFinite(distanceMeters) || distanceMeters < 0) {
       throw createHandlerError(
@@ -268,13 +311,9 @@ const getDrivingRouteDistance = async ({
 
     return {
       distanceMeters,
-
       distanceMiles,
-
-      duration: route?.duration || null,
-
+      duration: route.duration || null,
       travelMode: "DRIVE",
-
       source: "google_routes",
     };
   } catch (error) {
@@ -295,6 +334,114 @@ const getDrivingRouteDistance = async ({
     });
   }
 };
+// const getDrivingRouteDistance = async ({
+//   originCoordinates,
+//   destinationCoordinates,
+// }) => {
+//   const origin = validateCoordinates(originCoordinates, "originCoordinates");
+
+//   const destination = validateCoordinates(
+//     destinationCoordinates,
+//     "destinationCoordinates"
+//   );
+
+//   const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY;
+
+//   if (!googleMapsApiKey) {
+//     throw createHandlerError(
+//       "Missing GOOGLE_MAPS_API_KEY environment variable",
+//       500
+//     );
+//   }
+
+//   try {
+//     const response = await axios.post(
+//       GOOGLE_ROUTES_URL,
+//       {
+//         origin: {
+//           location: {
+//             latLng: {
+//               latitude: origin.lat,
+//               longitude: origin.lng,
+//             },
+//           },
+//         },
+
+//         destination: {
+//           location: {
+//             latLng: {
+//               latitude: destination.lat,
+//               longitude: destination.lng,
+//             },
+//           },
+//         },
+
+//         travelMode: "DRIVE",
+
+//         routingPreference: "TRAFFIC_UNAWARE",
+
+//         computeAlternativeRoutes: false,
+
+//         units: "IMPERIAL",
+//       },
+//       {
+//         headers: {
+//           "Content-Type": "application/json",
+
+//           "X-Goog-Api-Key": googleMapsApiKey,
+
+//           "X-Goog-FieldMask": "routes.distanceMeters,routes.duration",
+//         },
+
+//         timeout: 10000,
+//       }
+//     );
+
+//     const route = response.data?.routes?.[0];
+
+//     const distanceMeters = Number(route?.distanceMeters);
+
+//     if (!Number.isFinite(distanceMeters) || distanceMeters < 0) {
+//       throw createHandlerError(
+//         "Google Routes did not return a valid driving distance",
+//         502,
+//         {
+//           response: response.data || null,
+//         }
+//       );
+//     }
+
+//     const distanceMiles = Number((distanceMeters / METERS_PER_MILE).toFixed(2));
+
+//     return {
+//       distanceMeters,
+
+//       distanceMiles,
+
+//       duration: route?.duration || null,
+
+//       travelMode: "DRIVE",
+
+//       source: "google_routes",
+//     };
+//   } catch (error) {
+//     if (error.statusCode) {
+//       throw error;
+//     }
+
+//     if (error.code === "ECONNABORTED") {
+//       throw createHandlerError("Google Routes request timed out", 504);
+//     }
+
+//     throw createHandlerError("Unable to calculate driving route", 502, {
+//       message: error.message,
+
+//       googleStatus: error.response?.status || null,
+
+//       googleResponse: error.response?.data || null,
+//     });
+//   }
+// };
 
 const sortWarehousesByDistance = (warehouses = [], customerCoordinates) => {
   if (!Array.isArray(warehouses)) {
@@ -344,7 +491,6 @@ const findClosestWarehouse = (warehouses = [], customerCoordinates) => {
 
   return warehousesByDistance[0] || null;
 };
-
 const buildFulfillmentAvailability = ({ warehouse, distanceMiles }) => {
   if (!warehouse || typeof warehouse !== "object") {
     throw createHandlerError(
@@ -353,7 +499,12 @@ const buildFulfillmentAvailability = ({ warehouse, distanceMiles }) => {
     );
   }
 
-  if (!Number.isFinite(distanceMiles) || distanceMiles < 0) {
+  const normalizedDistanceMiles = Number(distanceMiles);
+
+  if (
+    !Number.isFinite(normalizedDistanceMiles) ||
+    normalizedDistanceMiles < 0
+  ) {
     throw createHandlerError("A valid non-negative distance is required", 400);
   }
 
@@ -362,17 +513,49 @@ const buildFulfillmentAvailability = ({ warehouse, distanceMiles }) => {
 
   const pickupConfiguration = warehouse.fulfillment?.pickup || {};
 
+  const pickupDistanceWarningConfiguration =
+    pickupConfiguration.distanceWarning || {};
+
   const deliveryConfiguration = warehouse.fulfillment?.localDelivery || {};
 
+  /*
+   * PICKUP
+   *
+   * Pickup availability is independent from customer distance.
+   * Distance may produce an advisory warning, but it must never
+   * make an otherwise operational pickup store unavailable.
+   */
   const pickupAvailable =
     warehouseIsOperational && pickupConfiguration.enabled === true;
 
+  const pickupDistanceWarningEnabled =
+    pickupDistanceWarningConfiguration.enabled === true;
+
+  const pickupDistanceWarningThresholdMiles = Number(
+    pickupDistanceWarningConfiguration.thresholdMiles
+  );
+
+  const hasValidPickupDistanceWarningThreshold =
+    Number.isFinite(pickupDistanceWarningThresholdMiles) &&
+    pickupDistanceWarningThresholdMiles > 0;
+
+  const isOutsideRecommendedPickupDistance =
+    pickupAvailable &&
+    pickupDistanceWarningEnabled &&
+    hasValidPickupDistanceWarningThreshold &&
+    normalizedDistanceMiles > pickupDistanceWarningThresholdMiles;
+
+  /*
+   * LOCAL DELIVERY
+   *
+   * Unlike Pickup, radiusMiles is a hard eligibility rule.
+   */
   const deliveryRadiusMiles = Number(deliveryConfiguration.radiusMiles ?? 0);
 
   const isInsideDeliveryRadius =
     Number.isFinite(deliveryRadiusMiles) &&
     deliveryRadiusMiles > 0 &&
-    distanceMiles <= deliveryRadiusMiles;
+    normalizedDistanceMiles <= deliveryRadiusMiles;
 
   const localDeliveryAvailable =
     warehouseIsOperational &&
@@ -382,7 +565,7 @@ const buildFulfillmentAvailability = ({ warehouse, distanceMiles }) => {
   const isOutsideDeliveryRadius =
     deliveryConfiguration.enabled === true &&
     deliveryRadiusMiles > 0 &&
-    distanceMiles > deliveryRadiusMiles;
+    normalizedDistanceMiles > deliveryRadiusMiles;
 
   return {
     pickup: {
@@ -390,6 +573,24 @@ const buildFulfillmentAvailability = ({ warehouse, distanceMiles }) => {
 
       preparationTimeMinutes:
         pickupConfiguration.preparationTimeMinutes ?? null,
+    },
+
+    pickupDistanceWarning: {
+      shouldDisplay: isOutsideRecommendedPickupDistance,
+
+      reason: isOutsideRecommendedPickupDistance
+        ? "OUTSIDE_RECOMMENDED_PICKUP_DISTANCE"
+        : null,
+
+      distanceMiles: normalizedDistanceMiles,
+
+      thresholdMiles: hasValidPickupDistanceWarningThreshold
+        ? pickupDistanceWarningThresholdMiles
+        : null,
+
+      messageKey: isOutsideRecommendedPickupDistance
+        ? "warehouses.pickupDistanceWarning"
+        : null,
     },
 
     localDelivery: {
@@ -410,24 +611,6 @@ const buildFulfillmentAvailability = ({ warehouse, distanceMiles }) => {
         : isOutsideDeliveryRadius
         ? "OUTSIDE_DELIVERY_RADIUS"
         : "LOCAL_DELIVERY_UNAVAILABLE",
-    },
-
-    pickupDistanceWarning: {
-      shouldDisplay: pickupAvailable && isOutsideDeliveryRadius,
-
-      reason:
-        pickupAvailable && isOutsideDeliveryRadius
-          ? "CLOSEST_WAREHOUSE_OUTSIDE_DELIVERY_RADIUS"
-          : null,
-
-      distanceMiles,
-
-      deliveryRadiusMiles: deliveryRadiusMiles > 0 ? deliveryRadiusMiles : null,
-
-      messageKey:
-        pickupAvailable && isOutsideDeliveryRadius
-          ? "warehouses.pickupDistanceWarning"
-          : null,
     },
   };
 };

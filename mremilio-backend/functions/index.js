@@ -9,7 +9,7 @@ const warehousesRouter = require("./api/warehouses/warehouses.routes");
 
 const warehousesCatalogRouter = require("./api/warehousesCatalog/warehouses.routes");
 
-const paymentsRouter = require("./api/payments/payments.routes");
+// const paymentsRouter = require("./api/payments/payments.routes");
 
 const companyRouter = require("./api/company/company.routes");
 
@@ -51,7 +51,7 @@ app.use("/api/products", productsRouter);
 
 app.use("/api/warehouses", warehousesRouter);
 
-app.use("/api/payments", paymentsRouter);
+// app.use("/api/payments", paymentsRouter);
 
 app.use("/api/company", companyRouter);
 
