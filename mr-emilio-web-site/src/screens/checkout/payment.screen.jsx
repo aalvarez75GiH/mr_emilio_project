@@ -105,6 +105,10 @@ export const Payment = () => {
   const { cartItems, cartQuantity, cartSubtotal } = useCart();
 
   const { checkout, setPaymentPreparation } = useCheckout();
+  console.log(
+    "Checkout state in Payment screen:",
+    JSON.stringify(checkout, null, 2)
+  );
 
   const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHODS.CARD);
 

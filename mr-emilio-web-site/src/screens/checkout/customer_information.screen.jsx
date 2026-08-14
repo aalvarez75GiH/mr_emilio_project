@@ -1,4 +1,9 @@
-import { FiChevronRight, FiLock, FiMapPin } from "react-icons/fi";
+import {
+  FiAlertTriangle,
+  FiChevronRight,
+  FiLock,
+  FiMapPin,
+} from "react-icons/fi";
 
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -53,6 +58,11 @@ import {
   FulfillmentSummaryEyebrow,
   FulfillmentSummaryTitle,
   FulfillmentSummaryText,
+  PickupDistanceWarning,
+  PickupDistanceWarningIcon,
+  PickupDistanceWarningContent,
+  PickupDistanceWarningTitle,
+  PickupDistanceWarningText,
   FulfillmentSummaryAction,
   CustomerInformationContinueButton,
   DeliveryQuoteError,
@@ -92,6 +102,18 @@ export const CustomerInformation = () => {
   const deliveryAddress = checkout.delivery.address;
 
   const selectedWarehouse = checkout.pickup.selectedWarehouse;
+
+  const pickupCustomerContext = checkout.pickup.customerContext;
+
+  const pickupDistanceMiles = Number(pickupCustomerContext?.distance?.miles);
+
+  const pickupDistanceWarning =
+    pickupCustomerContext?.fulfillment?.pickupDistanceWarning;
+
+  const shouldShowPickupDistanceWarning =
+    pickupDistanceWarning?.shouldDisplay === true;
+
+  const hasValidPickupDistance = Number.isFinite(pickupDistanceMiles);
 
   const formIsValid = useMemo(() => {
     const customerIsValid =
@@ -322,7 +344,7 @@ export const CustomerInformation = () => {
       <MainHeader />
 
       <CheckoutBackHeader
-        label={isPickup ? "Store" : "Delivery"}
+        label={isPickup ? "Stores" : "Delivery type"}
         ariaLabel={
           isPickup ? "Return to store selection" : "Return to delivery options"
         }
@@ -479,7 +501,6 @@ export const CustomerInformation = () => {
                 </FieldsGrid>
               </FormSection>
             )}
-
             {isPickup && selectedWarehouse && (
               <FulfillmentSummary>
                 <FulfillmentSummaryIcon aria-hidden="true">
@@ -498,6 +519,32 @@ export const CustomerInformation = () => {
                   <FulfillmentSummaryText>
                     {selectedWarehouse.physical_address}
                   </FulfillmentSummaryText>
+
+                  {hasValidPickupDistance && (
+                    <FulfillmentSummaryText>
+                      {pickupDistanceMiles.toFixed(1)} miles away
+                    </FulfillmentSummaryText>
+                  )}
+
+                  {shouldShowPickupDistanceWarning && (
+                    <PickupDistanceWarning role="note">
+                      <PickupDistanceWarningIcon aria-hidden="true">
+                        <FiAlertTriangle />
+                      </PickupDistanceWarningIcon>
+
+                      <PickupDistanceWarningContent>
+                        <PickupDistanceWarningTitle>
+                          This store is farther away
+                        </PickupDistanceWarningTitle>
+
+                        <PickupDistanceWarningText>
+                          Take into consideration that this store is{" "}
+                          {pickupDistanceMiles.toFixed(1)} miles away! You can
+                          still choose this store, up to you.
+                        </PickupDistanceWarningText>
+                      </PickupDistanceWarningContent>
+                    </PickupDistanceWarning>
+                  )}
 
                   <FulfillmentSummaryAction
                     type="button"

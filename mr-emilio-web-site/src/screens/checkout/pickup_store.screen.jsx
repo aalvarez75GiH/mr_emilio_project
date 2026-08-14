@@ -168,6 +168,8 @@ export const PickupStore = () => {
 
   const selectedWarehouseId = checkout.pickup.selectedWarehouseId;
 
+  console.log("warehouse", warehouse);
+
   const navigateWithTransition = (path, direction) => {
     setTransitionState({
       isExiting: true,
@@ -186,18 +188,7 @@ export const PickupStore = () => {
   const handleStoreSelection = (storeEntry) => {
     selectFulfillmentMethod(FULFILLMENT_METHODS.PICKUP);
 
-    /**
-     * For now this preserves the existing checkout contract.
-     *
-     * The next checkout change will also persist:
-     *
-     * storeEntry.customerContext.distance
-     * storeEntry.customerContext.fulfillment.pickupDistanceWarning
-     *
-     * so Customer Information can display the warning without
-     * making another Google Routes request.
-     */
-    selectPickupWarehouse(storeEntry.warehouse);
+    selectPickupWarehouse(storeEntry);
   };
 
   const handleContinue = () => {
@@ -219,7 +210,7 @@ export const PickupStore = () => {
       <MainHeader />
 
       <CheckoutBackHeader
-        label="Delivery"
+        label="Delivery type"
         ariaLabel="Return to delivery options"
         onBack={handleBack}
       />
@@ -263,13 +254,6 @@ export const PickupStore = () => {
 
                 const shouldShowDistanceWarning =
                   pickupDistanceWarning?.shouldDisplay === true;
-                const warningThresholdMiles = Number(
-                  pickupDistanceWarning?.thresholdMiles
-                );
-
-                const hasValidWarningThreshold = Number.isFinite(
-                  warningThresholdMiles
-                );
 
                 const openingTime = store.warehouse_information?.opening_time;
 
@@ -336,7 +320,7 @@ export const PickupStore = () => {
 
                               {isClosest && (
                                 <StoreRecommendedBadge>
-                                  Recommended
+                                  Closest to you
                                 </StoreRecommendedBadge>
                               )}
                             </StoreInformation>
@@ -368,12 +352,10 @@ export const PickupStore = () => {
                                 </StoreDistanceWarningTitle>
 
                                 <StoreDistanceWarningText>
-                                  This location is outside the recommended
-                                  {hasValidWarningThreshold
-                                    ? ` ${warningThresholdMiles}-mile`
-                                    : ""}{" "}
-                                  pickup distance. You can still choose this
-                                  store.
+                                  Take into consideration that this store is{" "}
+                                  {normalizedDistanceMiles.toFixed(1)} miles
+                                  away! You can still choose this store, up to
+                                  you.
                                 </StoreDistanceWarningText>
                               </StoreDistanceWarningContent>
                             </StoreDistanceWarning>

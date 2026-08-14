@@ -91,7 +91,7 @@ export const DeliveryOptions = () => {
       <MainHeader />
 
       <CheckoutBackHeader
-        label="Checkout"
+        label="Account"
         ariaLabel="Return to checkout options"
         onBack={handleBack}
       />

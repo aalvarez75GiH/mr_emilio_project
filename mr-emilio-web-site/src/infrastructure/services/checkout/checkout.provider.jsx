@@ -96,10 +96,38 @@ export const CheckoutProvider = ({ children }) => {
     }));
   }, []);
 
-  const selectPickupWarehouse = useCallback((warehouse) => {
-    if (!warehouse) {
+  const selectPickupWarehouse = useCallback((storeEntry) => {
+    if (!storeEntry || typeof storeEntry !== "object") {
       return;
     }
+
+    const warehouse = storeEntry.warehouse;
+
+    if (!warehouse || typeof warehouse !== "object") {
+      return;
+    }
+
+    const customerContext =
+      storeEntry.customerContext &&
+      typeof storeEntry.customerContext === "object"
+        ? storeEntry.customerContext
+        : {};
+
+    const distance = customerContext.distance || {};
+
+    const pickup = customerContext.fulfillment?.pickup || {};
+
+    const pickupDistanceWarning =
+      customerContext.fulfillment?.pickupDistanceWarning || {};
+
+    const distanceMiles = Number(distance.miles);
+    const distanceMeters = Number(distance.meters);
+
+    const preparationTimeMinutes = Number(pickup.preparationTimeMinutes);
+
+    const warningDistanceMiles = Number(pickupDistanceWarning.distanceMiles);
+
+    const warningThresholdMiles = Number(pickupDistanceWarning.thresholdMiles);
 
     setCheckout((currentCheckout) => ({
       ...currentCheckout,
@@ -112,6 +140,46 @@ export const CheckoutProvider = ({ children }) => {
           null,
 
         selectedWarehouse: warehouse,
+
+        customerContext: {
+          distance: {
+            miles: Number.isFinite(distanceMiles) ? distanceMiles : null,
+
+            meters: Number.isFinite(distanceMeters) ? distanceMeters : null,
+
+            duration:
+              typeof distance.duration === "string" ? distance.duration : null,
+
+            source:
+              typeof distance.source === "string" ? distance.source : null,
+          },
+
+          fulfillment: {
+            pickup: {
+              available: pickup.available === true,
+
+              preparationTimeMinutes: Number.isInteger(preparationTimeMinutes)
+                ? preparationTimeMinutes
+                : null,
+            },
+
+            pickupDistanceWarning: {
+              shouldDisplay: pickupDistanceWarning.shouldDisplay === true,
+
+              reason: pickupDistanceWarning.reason || null,
+
+              distanceMiles: Number.isFinite(warningDistanceMiles)
+                ? warningDistanceMiles
+                : null,
+
+              thresholdMiles: Number.isFinite(warningThresholdMiles)
+                ? warningThresholdMiles
+                : null,
+
+              messageKey: pickupDistanceWarning.messageKey || null,
+            },
+          },
+        },
       },
     }));
   }, []);

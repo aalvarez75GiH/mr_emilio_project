@@ -35,6 +35,30 @@ export const createInitialCheckoutState = () => ({
   pickup: {
     selectedWarehouseId: null,
     selectedWarehouse: null,
+
+    customerContext: {
+      distance: {
+        miles: null,
+        meters: null,
+        duration: null,
+        source: null,
+      },
+
+      fulfillment: {
+        pickup: {
+          available: null,
+          preparationTimeMinutes: null,
+        },
+
+        pickupDistanceWarning: {
+          shouldDisplay: false,
+          reason: null,
+          distanceMiles: null,
+          thresholdMiles: null,
+          messageKey: null,
+        },
+      },
+    },
   },
 
   delivery: {

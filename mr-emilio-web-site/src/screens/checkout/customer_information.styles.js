@@ -520,6 +520,203 @@ export const FulfillmentSummaryText = styled.p`
   }
 `;
 
+export const PickupDistanceWarning = styled.div`
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: start;
+  gap: 9px;
+
+  width: 100%;
+
+  margin-top: 12px;
+  padding: 10px 11px;
+
+  border: 1px solid rgba(180, 120, 0, 0.24);
+  border-radius: 9px;
+
+  background: rgba(255, 248, 230, 0.92);
+
+  text-align: left;
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
+    grid-template-columns: 30px minmax(0, 1fr);
+
+    gap: 10px;
+
+    padding: 11px 12px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    grid-template-columns: 28px minmax(0, 1fr);
+
+    gap: 9px;
+
+    padding: 10px 11px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    grid-template-columns: 28px minmax(0, 1fr);
+
+    gap: 9px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    padding: 10px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    grid-template-columns: 27px minmax(0, 1fr);
+
+    gap: 8px;
+
+    margin-top: 11px;
+    padding: 9px 10px;
+
+    border-radius: 8px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    grid-template-columns: 26px minmax(0, 1fr);
+
+    padding: 9px;
+  }
+`;
+
+export const PickupDistanceWarningIcon = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 28px;
+  height: 28px;
+
+  border-radius: 50%;
+
+  background: rgba(180, 120, 0, 0.12);
+  color: #9a6800;
+
+  svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
+    width: 30px;
+    height: 30px;
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    width: 28px;
+    height: 28px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    width: 28px;
+    height: 28px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    width: 28px;
+    height: 28px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    width: 27px;
+    height: 27px;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    width: 26px;
+    height: 26px;
+  }
+`;
+
+export const PickupDistanceWarningContent = styled.div`
+  min-width: 0;
+
+  text-align: left;
+`;
+
+export const PickupDistanceWarningTitle = styled.strong`
+  display: block;
+
+  color: #795200;
+
+  font-size: 0.74rem;
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  line-height: 1.3;
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
+    font-size: 0.76rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    font-size: 0.74rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    font-size: 0.73rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    font-size: 0.72rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    font-size: 0.7rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    font-size: 0.69rem;
+  }
+`;
+
+export const PickupDistanceWarningText = styled.span`
+  display: block;
+
+  margin-top: 3px;
+
+  color: #765f2c;
+
+  font-size: 0.69rem;
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  line-height: 1.4;
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
+    font-size: 0.71rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    font-size: 0.69rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    font-size: 0.69rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    font-size: 0.68rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    font-size: 0.67rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    font-size: 0.66rem;
+  }
+`;
+
 export const FulfillmentSummaryAction = styled.button`
   margin-top: 10px;
   padding: 0;
