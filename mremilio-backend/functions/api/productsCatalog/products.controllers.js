@@ -14,6 +14,8 @@ const {
 
 const PRODUCTS_COLLECTION = "productsCatalog";
 
+const STRIPE_TAX_BEHAVIORS = Object.freeze(["exclusive", "inclusive"]);
+
 const createControllerError = (message, statusCode = 500) => {
   const error = new Error(message);
   error.statusCode = statusCode;
@@ -58,6 +60,30 @@ const validateSize = (size) => {
   if (!size.unit || typeof size.unit !== "string") {
     throw createControllerError(
       '"size.unit" is required and must be a string',
+      400
+    );
+  }
+};
+
+const validateTax = (tax) => {
+  if (!tax || typeof tax !== "object" || Array.isArray(tax)) {
+    throw createControllerError('"tax" must be an object', 400);
+  }
+
+  if (
+    !tax.stripeTaxCode ||
+    typeof tax.stripeTaxCode !== "string" ||
+    !tax.stripeTaxCode.trim()
+  ) {
+    throw createControllerError(
+      '"tax.stripeTaxCode" is required and must be a non-empty string',
+      400
+    );
+  }
+
+  if (!STRIPE_TAX_BEHAVIORS.includes(tax.behavior)) {
+    throw createControllerError(
+      `"tax.behavior" must be one of: ${STRIPE_TAX_BEHAVIORS.join(", ")}`,
       400
     );
   }
@@ -220,6 +246,8 @@ const validateProduct = (product) => {
       400
     );
   }
+
+  validateTax(product.tax);
 
   validateImage(product.image);
   validatePresentation(product.presentation);

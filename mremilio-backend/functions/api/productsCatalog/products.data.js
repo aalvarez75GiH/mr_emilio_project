@@ -23,6 +23,10 @@ const productsCatalogData = [
     stockUnit: "package",
 
     manufacturerPriceInCents: 1299,
+    tax: {
+      stripeTaxCode: "txcd_40040000",
+      behavior: "exclusive",
+    },
 
     image: {
       url: "",
@@ -94,6 +98,10 @@ const productsCatalogData = [
     stockUnit: "unit",
 
     manufacturerPriceInCents: 549,
+    tax: {
+      stripeTaxCode: "txcd_40040000",
+      behavior: "exclusive",
+    },
 
     image: {
       url: "",
@@ -164,6 +172,10 @@ const productsCatalogData = [
     stockUnit: "unit",
 
     manufacturerPriceInCents: 899,
+    tax: {
+      stripeTaxCode: "txcd_40040000",
+      behavior: "exclusive",
+    },
 
     image: {
       url: "",
@@ -234,6 +246,10 @@ const productsCatalogData = [
     stockUnit: "unit",
 
     manufacturerPriceInCents: 2899,
+    tax: {
+      stripeTaxCode: "txcd_40040000",
+      behavior: "exclusive",
+    },
 
     image: {
       url: "",
@@ -305,6 +321,10 @@ const productsCatalogData = [
     stockUnit: "unit",
 
     manufacturerPriceInCents: 899,
+    tax: {
+      stripeTaxCode: "txcd_40040000",
+      behavior: "exclusive",
+    },
 
     image: {
       url: "",
@@ -376,6 +396,10 @@ const productsCatalogData = [
     stockUnit: "unit",
 
     manufacturerPriceInCents: 2899,
+    tax: {
+      stripeTaxCode: "txcd_40040000",
+      behavior: "exclusive",
+    },
 
     image: {
       url: "",
@@ -447,6 +471,10 @@ const productsCatalogData = [
     stockUnit: "unit",
 
     manufacturerPriceInCents: 649,
+    tax: {
+      stripeTaxCode: "txcd_40040000",
+      behavior: "exclusive",
+    },
 
     image: {
       url: "",
@@ -518,6 +546,10 @@ const productsCatalogData = [
     stockUnit: "unit",
 
     manufacturerPriceInCents: 499,
+    tax: {
+      stripeTaxCode: "txcd_40040000",
+      behavior: "exclusive",
+    },
 
     image: {
       url: "",

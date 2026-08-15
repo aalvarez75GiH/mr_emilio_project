@@ -295,10 +295,88 @@ export const CheckoutProvider = ({ children }) => {
     },
     []
   );
+
+  const setReviewPreparation = useCallback((reviewResponse) => {
+    if (
+      !reviewResponse ||
+      typeof reviewResponse !== "object" ||
+      Array.isArray(reviewResponse)
+    ) {
+      return;
+    }
+
+    setCheckout((currentCheckout) => ({
+      ...currentCheckout,
+
+      review: {
+        status: reviewResponse.status || null,
+
+        currency: reviewResponse.currency || "usd",
+
+        items: Array.isArray(reviewResponse.items) ? reviewResponse.items : [],
+
+        fulfillment: reviewResponse.fulfillment || null,
+
+        pricing: {
+          subtotalInCents: Number.isInteger(
+            Number(reviewResponse.pricing?.subtotalInCents)
+          )
+            ? Number(reviewResponse.pricing.subtotalInCents)
+            : 0,
+
+          deliveryFeeInCents: Number.isInteger(
+            Number(reviewResponse.pricing?.deliveryFeeInCents)
+          )
+            ? Number(reviewResponse.pricing.deliveryFeeInCents)
+            : 0,
+
+          taxInCents: Number.isInteger(
+            Number(reviewResponse.pricing?.taxInCents)
+          )
+            ? Number(reviewResponse.pricing.taxInCents)
+            : 0,
+
+          amountBeforeTaxInCents: Number.isInteger(
+            Number(reviewResponse.pricing?.amountBeforeTaxInCents)
+          )
+            ? Number(reviewResponse.pricing.amountBeforeTaxInCents)
+            : 0,
+
+          totalInCents: Number.isInteger(
+            Number(reviewResponse.pricing?.totalInCents)
+          )
+            ? Number(reviewResponse.pricing.totalInCents)
+            : 0,
+        },
+
+        tax: {
+          calculated: reviewResponse.tax?.calculated === true,
+
+          calculationId: reviewResponse.tax?.calculationId || null,
+
+          expiresAt: reviewResponse.tax?.expiresAt ?? null,
+        },
+
+        preparedAt: new Date().toISOString(),
+      },
+    }));
+  }, []);
+
+  const setCompletedOrder = useCallback((order) => {
+    if (!order || typeof order !== "object" || Array.isArray(order)) {
+      return;
+    }
+
+    setCheckout((currentCheckout) => ({
+      ...currentCheckout,
+
+      completedOrder: order,
+    }));
+  }, []);
+
   const resetCheckout = useCallback(() => {
     setCheckout(createInitialCheckoutState());
   }, []);
-
   const value = useMemo(
     () => ({
       checkout,
@@ -314,7 +392,11 @@ export const CheckoutProvider = ({ children }) => {
       setLocalDeliveryQuote,
 
       updateCustomer,
+
       setPaymentPreparation,
+      setReviewPreparation,
+      setCompletedOrder,
+
       resetCheckout,
     }),
     [
@@ -328,6 +410,8 @@ export const CheckoutProvider = ({ children }) => {
       setLocalDeliveryQuote,
       updateCustomer,
       setPaymentPreparation,
+      setReviewPreparation,
+      setCompletedOrder,
       resetCheckout,
     ]
   );

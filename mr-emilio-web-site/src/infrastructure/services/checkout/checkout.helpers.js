@@ -92,8 +92,38 @@ export const createInitialCheckoutState = () => ({
     tax: 0,
     total: 0,
   },
+  payment: {
+    confirmationTokenId: null,
+    paymentMethodType: null,
+    preparedAt: null,
+  },
+  review: {
+    status: null,
 
-  payment: null,
+    currency: "usd",
+
+    items: [],
+
+    fulfillment: null,
+
+    pricing: {
+      subtotalInCents: 0,
+      deliveryFeeInCents: 0,
+      taxInCents: 0,
+      amountBeforeTaxInCents: 0,
+      totalInCents: 0,
+    },
+
+    tax: {
+      calculated: false,
+      calculationId: null,
+      expiresAt: null,
+    },
+
+    preparedAt: null,
+  },
+
+  completedOrder: null,
 });
 
 export const buildDeliveryAddressString = (address = {}) => {

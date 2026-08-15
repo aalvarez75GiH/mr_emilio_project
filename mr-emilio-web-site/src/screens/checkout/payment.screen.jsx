@@ -26,6 +26,8 @@ import { StripePaymentForm } from "../../components/forms/stripe_payment_form/st
 
 import storeIcon from "../../assets/checkout/icons/storeIcon.svg";
 
+import { prepareReviewRequest } from "../../infrastructure/services/checkout/checkout.requests";
+
 import {
   PaymentTransition,
   PaymentPage,
@@ -104,7 +106,8 @@ export const Payment = () => {
 
   const { cartItems, cartQuantity, cartSubtotal } = useCart();
 
-  const { checkout, setPaymentPreparation } = useCheckout();
+  const { checkout, setPaymentPreparation, setReviewPreparation } =
+    useCheckout();
   console.log(
     "Checkout state in Payment screen:",
     JSON.stringify(checkout, null, 2)
@@ -281,6 +284,61 @@ export const Payment = () => {
     navigateWithTransition("/checkout/information", "back");
   };
 
+  const buildPrepareReviewPayload = (confirmationTokenId) => {
+    const cartItemsPayload = cartItems.map((item) => ({
+      productId: item.id || item.productId,
+      quantity: Number(item.quantity),
+    }));
+
+    const basePayload = {
+      cartItems: cartItemsPayload,
+
+      fulfillmentMethod: checkout.fulfillmentMethod,
+
+      confirmationTokenId,
+    };
+
+    if (isPickup) {
+      return {
+        ...basePayload,
+
+        pickup: {
+          warehouseId: checkout.pickup?.selectedWarehouseId || null,
+        },
+      };
+    }
+
+    if (isLocalDelivery) {
+      return {
+        ...basePayload,
+
+        delivery: {
+          warehouseId: checkout.delivery?.fulfillingWarehouseId || null,
+
+          address: {
+            street: checkout.delivery?.address?.street || "",
+
+            unit: checkout.delivery?.address?.unit || "",
+
+            city: checkout.delivery?.address?.city || "",
+
+            state: checkout.delivery?.address?.state || "",
+
+            postalCode: checkout.delivery?.address?.postalCode || "",
+
+            country: checkout.delivery?.address?.country || "US",
+
+            formattedAddress:
+              checkout.delivery?.resolvedAddress ||
+              checkout.delivery?.address?.formattedAddress ||
+              null,
+          },
+        },
+      };
+    }
+
+    return basePayload;
+  };
   /**
    * PAYMENT → REVIEW
    *
@@ -362,29 +420,57 @@ export const Payment = () => {
        * Raw card information never enters
        * our application state.
        */
+      const confirmationTokenId = confirmationToken.id;
+
+      const paymentMethodType =
+        confirmationToken?.payment_method_preview?.type || "card";
+
       setPaymentPreparation({
-        confirmationTokenId: confirmationToken.id,
-
-        paymentMethodType:
-          confirmationToken?.payment_method_preview?.type || "card",
+        confirmationTokenId,
+        paymentMethodType,
       });
 
-      console.log("PAYMENT READY FOR REVIEW:", {
-        confirmationTokenId: confirmationToken.id,
+      const prepareReviewPayload =
+        buildPrepareReviewPayload(confirmationTokenId);
 
-        paymentMethodType:
-          confirmationToken?.payment_method_preview?.type || "card",
+      const reviewResponse = await prepareReviewRequest(prepareReviewPayload);
 
-        cartSubtotal,
+      if (reviewResponse?.status !== "ready_for_review") {
+        showPaymentError({
+          code: "review_preparation_failed",
+          message:
+            "We couldn't prepare your final order total. Please try again.",
+        });
 
-        deliveryFee,
+        return;
+      }
 
-        provisionalTax: tax,
-
-        provisionalTotal: currentTotal,
-      });
+      setReviewPreparation(reviewResponse);
 
       navigateWithTransition("/checkout/review", "forward");
+      //   setPaymentPreparation({
+      //     confirmationTokenId: confirmationToken.id,
+
+      //     paymentMethodType:
+      //       confirmationToken?.payment_method_preview?.type || "card",
+      //   });
+
+      //   console.log("PAYMENT READY FOR REVIEW:", {
+      //     confirmationTokenId: confirmationToken.id,
+
+      //     paymentMethodType:
+      //       confirmationToken?.payment_method_preview?.type || "card",
+
+      //     cartSubtotal,
+
+      //     deliveryFee,
+
+      //     provisionalTax: tax,
+
+      //     provisionalTotal: currentTotal,
+      //   });
+
+      //   navigateWithTransition("/checkout/review", "forward");
     } catch (error) {
       console.error("Unable to prepare Stripe payment:", error);
 

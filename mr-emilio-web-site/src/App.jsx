@@ -7,6 +7,8 @@ import { DeliveryOptions } from "./screens/checkout/delivery_options.screen";
 import { PickupStore } from "./screens/checkout/pickup_store.screen";
 import { CustomerInformation } from "./screens/checkout/customer_information.screen";
 import { Payment } from "./screens/checkout/payment.screen";
+import { Review } from "./screens/checkout/review.screen";
+import { OrderConfirmation } from "./screens/checkout/order_confirmation.screen";
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
       <Route path="/checkout/delivery/pickup" element={<PickupStore />} />
       <Route path="/checkout/information" element={<CustomerInformation />} />
       <Route path="/checkout/payment" element={<Payment />} />
+      <Route path="/checkout/review" element={<Review />} />
+      <Route path="/checkout/confirmation" element={<OrderConfirmation />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

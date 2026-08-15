@@ -1,14 +1,15 @@
-const firebaseController = require("../fb");
+/* eslint-disable */
+
+const productsCatalogControllers = require("../api/productsCatalog/products.controllers");
 
 const productsCatalogData = require("../api/productsCatalog/products.data");
 
-const PRODUCTS_COLLECTION = "productsCatalog";
-
 const seedProductsCatalog = async () => {
   console.log("Starting productsCatalog seed...");
+  console.log("");
 
   let createdCount = 0;
-  let skippedCount = 0;
+  let updatedCount = 0;
   let failedCount = 0;
 
   for (const product of productsCatalogData) {
@@ -19,35 +20,34 @@ const seedProductsCatalog = async () => {
 
       const productId = String(product.id);
 
-      const productRef = firebaseController.db
-        .collection(PRODUCTS_COLLECTION)
-        .doc(productId);
+      const existingProduct = await productsCatalogControllers.getProductById(
+        productId
+      );
 
-      const existingProduct = await productRef.get();
+      if (existingProduct) {
+        await productsCatalogControllers.updateProductById(productId, product);
 
-      if (existingProduct.exists) {
-        console.log(`SKIPPED: ${productId} already exists`);
-        skippedCount += 1;
+        console.log(`UPDATED: ${productId}`);
+
+        updatedCount += 1;
+
         continue;
       }
 
-      const now = new Date().toISOString();
-
-      const payload = {
-        ...product,
-        createdAt: product.createdAt || now,
-        updatedAt: now,
-      };
-
-      await productRef.set(payload);
+      await productsCatalogControllers.createProduct(product);
 
       console.log(`CREATED: ${productId}`);
+
       createdCount += 1;
     } catch (error) {
       console.error(
         `FAILED: ${product?.id || "unknown-product"}`,
         error.message
       );
+
+      if (error.details) {
+        console.error("DETAILS:", JSON.stringify(error.details, null, 2));
+      }
 
       failedCount += 1;
     }
@@ -56,15 +56,20 @@ const seedProductsCatalog = async () => {
   console.log("");
   console.log("Products catalog seed completed.");
   console.log(`Created: ${createdCount}`);
-  console.log(`Skipped: ${skippedCount}`);
+  console.log(`Updated: ${updatedCount}`);
   console.log(`Failed: ${failedCount}`);
+
+  if (failedCount > 0) {
+    process.exitCode = 1;
+  }
 };
 
 seedProductsCatalog()
   .then(() => {
-    process.exit(0);
+    process.exit();
   })
   .catch((error) => {
-    console.error("SEED ERROR:", error);
+    console.error("PRODUCTS CATALOG SEED ERROR:", error);
+
     process.exit(1);
   });
