@@ -15,6 +15,8 @@ import { CheckoutBackHeader } from "../../components/layout/checkout_back_header
 
 import { useCheckout } from "../../infrastructure/services/checkout/use-checkout.hook";
 
+import { useCart } from "../../infrastructure/services/cart/use-cart.hook";
+
 import { FULFILLMENT_METHODS } from "../../infrastructure/services/checkout/checkout.helpers";
 
 import storeIcon from "../../assets/checkout/icons/storeIcon.svg";
@@ -94,6 +96,8 @@ export const Review = () => {
   const navigate = useNavigate();
 
   const { checkout, setCompletedOrder } = useCheckout();
+
+  const { clearCart } = useCart();
 
   const [transitionState, setTransitionState] = useState({
     isExiting: false,
@@ -281,11 +285,12 @@ export const Review = () => {
       setCompletedOrder(response.order);
 
       /**
-       * We will create this screen next.
+       * The order now exists in ordersCatalog,
+       * Stripe payment succeeded, and inventory was committed.
        *
-       * Once the route exists this becomes the final
-       * successful checkout transition.
+       * The purchased cart is no longer active.
        */
+      clearCart();
       navigateWithTransition("/checkout/confirmation", "forward");
     } catch (error) {
       console.error("Unable to place order:", error);

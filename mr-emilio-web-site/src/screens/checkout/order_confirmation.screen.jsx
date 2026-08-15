@@ -61,6 +61,7 @@ import {
   PaymentDetails,
   PaymentAmountGroup,
   SupportLink,
+  BackHomeButton,
   SupportIcon,
 } from "./order_confirmation.styles";
 
@@ -99,7 +100,7 @@ const formatSize = (size) => {
 export const OrderConfirmation = () => {
   const navigate = useNavigate();
 
-  const { checkout } = useCheckout();
+  const { checkout, resetCheckout } = useCheckout();
 
   const order = checkout.completedOrder;
 
@@ -107,6 +108,12 @@ export const OrderConfirmation = () => {
 
   const isLocalDelivery =
     order?.fulfillment?.method === FULFILLMENT_METHODS.LOCAL_DELIVERY;
+
+  const handleBackHome = () => {
+    resetCheckout();
+
+    navigate("/");
+  };
 
   const handleContinueShopping = () => {
     navigate("/");
@@ -346,29 +353,6 @@ export const OrderConfirmation = () => {
               </PaymentRow>
             </ConfirmationSectionContent>
           </ConfirmationSection>
-          {/* <ConfirmationSection>
-            <ConfirmationSectionIcon aria-hidden="true">
-              <FiCreditCard />
-            </ConfirmationSectionIcon>
-
-            <ConfirmationSectionContent>
-              <ConfirmationEyebrow>Payment</ConfirmationEyebrow>
-
-              <PaymentRow>
-                <div>
-                  <ConfirmationSectionTitle>
-                    Card ending in •••• 4242
-                  </ConfirmationSectionTitle>
-
-                  <ConfirmationText>
-                    {formatCurrencyFromCents(order.pricing?.totalInCents)}
-                  </ConfirmationText>
-                </div>
-
-                <PaymentStatusBadge>Paid</PaymentStatusBadge>
-              </PaymentRow>
-            </ConfirmationSectionContent>
-          </ConfirmationSection> */}
 
           <NextStepsCard>
             <ConfirmationSectionIcon aria-hidden="true">
@@ -402,13 +386,9 @@ export const OrderConfirmation = () => {
 
             <span>Need help? (706) 612-4602</span>
           </SupportLink>
-          {/* 
-          <ContinueShoppingButton
-            type="button"
-            onClick={handleContinueShopping}
-          >
-            Continue Shopping
-          </ContinueShoppingButton> */}
+          <BackHomeButton type="button" onClick={handleBackHome}>
+            Back to Home
+          </BackHomeButton>
         </ConfirmationCard>
       </ConfirmationContainer>
     </ConfirmationPage>

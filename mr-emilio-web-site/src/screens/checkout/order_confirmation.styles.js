@@ -182,39 +182,6 @@ export const ConfirmationBannerImage = styled.img`
     width: 100%;
   }
 `;
-// export const ConfirmationBannerImage = styled.img`
-//   display: block;
-
-//   width: 100%;
-//   height: 205px;
-
-//   object-fit: cover;
-//   object-position: center;
-
-//   @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
-//     height: 220px;
-//   }
-
-//   @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
-//     height: 200px;
-//   }
-
-//   @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
-//     height: 190px;
-//   }
-
-//   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
-//     height: 180px;
-//   }
-
-//   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-//     height: 175px;
-//   }
-
-//   @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
-//     height: 155px;
-//   }
-// `;
 
 export const ConfirmationSuccessIcon = styled.div`
   position: relative;
@@ -764,14 +731,6 @@ export const PaymentAmountGroup = styled.div`
     }
   }
 `;
-// export const PaymentRow = styled.div`
-//   display: flex;
-//   align-items: center;
-//   justify-content: space-between;
-//   gap: 14px;
-
-//   width: 100%;
-// `;
 
 export const PaymentStatusBadge = styled.span`
   display: inline-flex;
@@ -918,6 +877,72 @@ export const SupportLink = styled.a`
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
     font-size: 0.71rem;
+  }
+`;
+
+export const BackHomeButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  min-height: 48px;
+
+  margin-top: 18px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: ${({ theme }) => theme.colors.brand.primary};
+  color: #ffffff;
+
+  font-family: ${({ theme }) => theme.fonts.body};
+  font-size: 0.84rem;
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+
+  cursor: pointer;
+
+  transition: transform 180ms ease, opacity 180ms ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.brand.primary};
+    outline-offset: 3px;
+  }
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
+    min-height: 50px;
+
+    font-size: 0.86rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    min-height: 48px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    min-height: 48px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    min-height: 47px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    min-height: 46px;
+
+    margin-top: 17px;
+
+    font-size: 0.82rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    min-height: 45px;
+
+    font-size: 0.8rem;
   }
 `;
 
