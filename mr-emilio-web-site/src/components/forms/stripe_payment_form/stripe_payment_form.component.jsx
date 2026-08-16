@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle } from "react";
+import { forwardRef, useImperativeHandle, useRef } from "react";
 
 import {
   PaymentElement,
@@ -12,6 +12,9 @@ export const StripePaymentForm = forwardRef(
   ({ billingDetails, onReadyChange, onCompleteChange }, ref) => {
     const stripe = useStripe();
     const elements = useElements();
+
+    const paymentElementRef = useRef(null);
+    const wasCompleteRef = useRef(false);
 
     useImperativeHandle(
       ref,
@@ -117,21 +120,34 @@ export const StripePaymentForm = forwardRef(
               googlePay: "never",
             },
           }}
-          onReady={() => {
+          onReady={(paymentElement) => {
+            paymentElementRef.current = paymentElement;
+
             onReadyChange?.(true);
           }}
           onChange={(event) => {
+            const isComplete = event.complete === true;
+
+            onCompleteChange?.(isComplete);
+
             /**
-             * Stripe tells us whether every
-             * required field is currently complete.
+             * Dismiss the mobile keyboard only when
+             * Stripe transitions from incomplete → complete.
              *
-             * We use this to enable/disable
-             * Continue to Review.
+             * This avoids repeatedly blurring the form
+             * on every Stripe change event.
              */
-            onCompleteChange?.(event.complete === true);
+            if (isComplete && !wasCompleteRef.current) {
+              paymentElementRef.current?.blur();
+            }
+
+            wasCompleteRef.current = isComplete;
           }}
           onLoadError={(event) => {
             console.error("STRIPE PAYMENT ELEMENT LOAD ERROR:", event);
+
+            paymentElementRef.current = null;
+            wasCompleteRef.current = false;
 
             onReadyChange?.(false);
             onCompleteChange?.(false);

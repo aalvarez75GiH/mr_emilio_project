@@ -503,6 +503,8 @@ const placeOrder = async (checkoutPayload) => {
 
       payment_method_types: ["card"],
 
+      expand: ["latest_charge"],
+
       hooks: {
         inputs: {
           tax: {
@@ -523,6 +525,37 @@ const placeOrder = async (checkoutPayload) => {
         fulfillmentMethod: review.fulfillment?.method || "",
       },
     });
+    // paymentIntent = await stripeClient.paymentIntents.create({
+    //   amount: totalInCents,
+
+    //   currency: CHECKOUT_CURRENCY,
+
+    //   confirmation_token: confirmationTokenId,
+
+    //   confirm: true,
+
+    //   payment_method_types: ["card"],
+
+    //   hooks: {
+    //     inputs: {
+    //       tax: {
+    //         calculation: taxCalculationId,
+    //       },
+    //     },
+    //   },
+
+    //   metadata: {
+    //     source: "mr_emilio_website",
+
+    //     orderId: pendingOrder.id,
+
+    //     orderNumber: pendingOrder.orderNumber,
+
+    //     warehouseId: review.fulfillment?.warehouseId || "",
+
+    //     fulfillmentMethod: review.fulfillment?.method || "",
+    //   },
+    // });
   } catch (error) {
     console.error("STRIPE PLACE ORDER ERROR:", {
       orderId: pendingOrder.id,
@@ -611,10 +644,25 @@ const placeOrder = async (checkoutPayload) => {
     };
   }
 
+  const latestCharge =
+    paymentIntent.latest_charge &&
+    typeof paymentIntent.latest_charge === "object"
+      ? paymentIntent.latest_charge
+      : null;
+
   const latestChargeId =
     typeof paymentIntent.latest_charge === "string"
       ? paymentIntent.latest_charge
-      : paymentIntent.latest_charge?.id || null;
+      : latestCharge?.id || null;
+
+  const cardDetails = latestCharge?.payment_method_details?.card || null;
+
+  const paymentCard = cardDetails?.last4
+    ? {
+        brand: cardDetails.brand || null,
+        last4: cardDetails.last4,
+      }
+    : null;
 
   /**
    * Stripe has successfully charged the customer.
@@ -698,6 +746,8 @@ const placeOrder = async (checkoutPayload) => {
     paymentIntentId: paymentIntent.id,
 
     latestChargeId,
+
+    card: paymentCard,
   });
 
   if (!confirmedOrder) {
@@ -745,6 +795,8 @@ const placeOrder = async (checkoutPayload) => {
       currency: paymentIntent.currency,
 
       latestChargeId,
+
+      card: paymentCard,
     },
   };
 };

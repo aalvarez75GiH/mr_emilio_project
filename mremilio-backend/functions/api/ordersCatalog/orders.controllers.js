@@ -122,6 +122,7 @@ const markOrderAsPaid = async ({
   orderId,
   paymentIntentId,
   latestChargeId,
+  card,
 }) => {
   const orderRef = firebaseController.db
     .collection(ORDERS_COLLECTION)
@@ -147,6 +148,13 @@ const markOrderAsPaid = async ({
         paymentIntentId: paymentIntentId || null,
 
         latestChargeId: latestChargeId || null,
+
+        card: card
+          ? {
+              brand: card.brand || null,
+              last4: card.last4 || null,
+            }
+          : null,
 
         paidAt: now,
 

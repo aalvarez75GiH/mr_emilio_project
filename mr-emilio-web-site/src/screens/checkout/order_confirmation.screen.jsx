@@ -340,7 +340,13 @@ export const OrderConfirmation = () => {
 
               <PaymentRow>
                 <PaymentDetails>
-                  <ConfirmationText>Card ending in 4242</ConfirmationText>
+                  <ConfirmationText>
+                    {order.payment?.card?.last4
+                      ? `${order.payment.card.brand || "Card"} ending in ${
+                          order.payment.card.last4
+                        }`
+                      : "Card payment"}
+                  </ConfirmationText>
                 </PaymentDetails>
 
                 <PaymentAmountGroup>

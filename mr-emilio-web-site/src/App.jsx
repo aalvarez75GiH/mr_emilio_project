@@ -1,5 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
+import ScrollToTop from "./components/common/scroll_to_top/scroll_to_top.component";
+
 import { HomeScreen } from "./screens/home/home.screen";
 import { Cart } from "./screens/cart/cart.screen";
 import { CheckoutEntry } from "./screens/checkout/checkout_entry.screen";
@@ -12,19 +14,21 @@ import { OrderConfirmation } from "./screens/checkout/order_confirmation.screen"
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<HomeScreen />} />
-
-      <Route path="/cart" element={<Cart />} />
-      <Route path="/checkout" element={<CheckoutEntry />} />
-      <Route path="/checkout/delivery" element={<DeliveryOptions />} />
-      <Route path="/checkout/delivery/pickup" element={<PickupStore />} />
-      <Route path="/checkout/information" element={<CustomerInformation />} />
-      <Route path="/checkout/payment" element={<Payment />} />
-      <Route path="/checkout/review" element={<Review />} />
-      <Route path="/checkout/confirmation" element={<OrderConfirmation />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <>
+      <ScrollToTop />
+      <Routes>
+        <Route path="/" element={<HomeScreen />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<CheckoutEntry />} />
+        <Route path="/checkout/delivery" element={<DeliveryOptions />} />
+        <Route path="/checkout/delivery/pickup" element={<PickupStore />} />
+        <Route path="/checkout/information" element={<CustomerInformation />} />
+        <Route path="/checkout/payment" element={<Payment />} />
+        <Route path="/checkout/review" element={<Review />} />
+        <Route path="/checkout/confirmation" element={<OrderConfirmation />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
   );
 }
 
