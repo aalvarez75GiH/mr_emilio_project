@@ -1,6 +1,7 @@
 /* eslint-disable */
 
 const firebaseController = require("../../fb");
+const customersCatalogControllers = require("../customersCatalog/ customers.controllers");
 
 const {
   buildPendingOrderPayload,
@@ -51,7 +52,25 @@ const createPendingOrder = async ({
   tax,
   confirmationTokenId,
   paymentMethodType,
+  defaultDeliveryAddress = null,
 }) => {
+  const resolvedCustomer =
+    await customersCatalogControllers.resolveGuestCustomer({
+      customer,
+      defaultDeliveryAddress,
+    });
+
+  const orderCustomer = {
+    customerId: resolvedCustomer.id,
+
+    userId: resolvedCustomer.userId || null,
+
+    firstName: customer.firstName,
+    lastName: customer.lastName,
+    email: customer.email,
+    phone: customer.phone,
+  };
+
   const counterRef = firebaseController.db
     .collection(SYSTEM_COUNTERS_COLLECTION)
     .doc(ORDER_COUNTER_DOCUMENT);
@@ -75,7 +94,8 @@ const createPendingOrder = async ({
       const pendingOrder = buildPendingOrderPayload({
         orderNumber,
 
-        customer,
+        customer: orderCustomer,
+
         fulfillment,
         items,
         pricing,

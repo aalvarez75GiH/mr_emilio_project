@@ -473,6 +473,7 @@ const placeOrder = async (checkoutPayload) => {
    * fails, we still have an ordersCatalog record that
    * can be inspected and recovered.
    */
+
   const pendingOrder = await ordersCatalogControllers.createPendingOrder({
     customer: checkoutPayload.customer,
 
@@ -487,6 +488,12 @@ const placeOrder = async (checkoutPayload) => {
     confirmationTokenId,
 
     paymentMethodType: checkoutPayload.paymentMethodType || "card",
+
+    defaultDeliveryAddress:
+      checkoutPayload.fulfillmentMethod ===
+      CHECKOUT_FULFILLMENT_METHODS.LOCAL_DELIVERY
+        ? checkoutPayload.delivery?.address || null
+        : null,
   });
 
   let paymentIntent;
