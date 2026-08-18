@@ -2,6 +2,7 @@ import styled from "styled-components";
 
 export const OrderHistorySection = styled.section`
   width: 100%;
+
   min-height: calc(100vh - ${({ theme }) => theme.sizes.header.desktopHeight});
 
   padding: ${({ theme }) => theme.spacing.section}
@@ -12,20 +13,13 @@ export const OrderHistorySection = styled.section`
 
   @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
     padding-top: ${({ theme }) => theme.spacing.sectionLarge};
-    padding-bottom: ${({ theme }) => theme.spacing.sectionLarge};
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
     padding-top: ${({ theme }) => theme.spacing.section};
-    padding-left: ${({ theme }) => theme.spacing.xl};
-    padding-right: ${({ theme }) => theme.spacing.xl};
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
-    min-height: calc(
-      100vh - ${({ theme }) => theme.sizes.header.desktopHeight}
-    );
-
     padding-top: ${({ theme }) => theme.spacing.xxxl};
     padding-bottom: ${({ theme }) => theme.spacing.section};
   }
@@ -35,14 +29,14 @@ export const OrderHistorySection = styled.section`
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
-    padding: ${({ theme }) => theme.spacing.xxxl}
+    padding: ${({ theme }) => theme.spacing.xxl}
       ${({ theme }) => theme.spacing.lg} ${({ theme }) => theme.spacing.section};
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
     min-height: calc(100vh - ${({ theme }) => theme.sizes.header.mobileHeight});
 
-    padding: ${({ theme }) => theme.spacing.xxl}
+    padding: ${({ theme }) => theme.spacing.xl}
       ${({ theme }) => theme.spacing.lg} ${({ theme }) => theme.spacing.xxxl};
   }
 
@@ -52,8 +46,66 @@ export const OrderHistorySection = styled.section`
   }
 `;
 
+export const OrderMetaIcon = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  color: ${({ theme }) => theme.colors.brand.primary};
+
+  svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.wide}) {
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    svg {
+      width: 17px;
+      height: 17px;
+    }
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    svg {
+      width: 15px;
+      height: 15px;
+    }
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+`;
+
 export const OrderHistoryContainer = styled.div`
   width: 100%;
+
   max-width: ${({ theme }) => theme.sizes.layout.narrowContentWidth};
 
   margin: 0 auto;
@@ -73,14 +125,6 @@ export const OrderHistoryContainer = styled.div`
   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
     max-width: 100%;
   }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    max-width: 100%;
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
-    max-width: 100%;
-  }
 `;
 
 export const OrderHistoryHeader = styled.div`
@@ -90,23 +134,11 @@ export const OrderHistoryHeader = styled.div`
     margin-bottom: ${({ theme }) => theme.spacing.xxxl};
   }
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
-    margin-bottom: ${({ theme }) => theme.spacing.xxl};
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
-    margin-bottom: ${({ theme }) => theme.spacing.xxl};
-  }
-
   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
     margin-bottom: ${({ theme }) => theme.spacing.xl};
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    margin-bottom: ${({ theme }) => theme.spacing.xl};
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
     margin-bottom: ${({ theme }) => theme.spacing.lg};
   }
 `;
@@ -115,8 +147,11 @@ export const OrderHistoryTitle = styled.h1`
   margin: 0 0 ${({ theme }) => theme.spacing.sm};
 
   font-family: ${({ theme }) => theme.fonts.heading};
+
   font-size: ${({ theme }) => theme.fontSizes.text_40};
+
   font-weight: ${({ theme }) => theme.fontWeights.bold};
+
   line-height: 1.15;
 
   color: ${({ theme }) => theme.colors.text.primary};
@@ -125,34 +160,30 @@ export const OrderHistoryTitle = styled.h1`
     font-size: ${({ theme }) => theme.fontSizes.text_48};
   }
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
-    font-size: ${({ theme }) => theme.fontSizes.text_40};
-  }
-
   @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
     font-size: ${({ theme }) => theme.fontSizes.text_36};
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
-    font-size: ${({ theme }) => theme.fontSizes.text_32};
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
     font-size: ${({ theme }) => theme.fontSizes.text_28};
   }
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
     font-size: ${({ theme }) => theme.fontSizes.text_24};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    font-size: ${({ theme }) => theme.fontSizes.text_22};
   }
 `;
 
 export const OrderHistorySubtitle = styled.p`
-  max-width: 640px;
-
   margin: 0;
 
   font-family: ${({ theme }) => theme.fonts.body};
+
   font-size: ${({ theme }) => theme.fontSizes.text_16};
+
   line-height: 1.6;
 
   color: ${({ theme }) => theme.colors.text.secondary};
@@ -161,24 +192,12 @@ export const OrderHistorySubtitle = styled.p`
     font-size: ${({ theme }) => theme.fontSizes.text_18};
   }
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
-    font-size: ${({ theme }) => theme.fontSizes.text_16};
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
-    max-width: 600px;
-  }
-
   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
-    max-width: 560px;
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
     font-size: ${({ theme }) => theme.fontSizes.text_14};
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
-    line-height: 1.55;
+    font-size: ${({ theme }) => theme.fontSizes.text_12};
   }
 `;
 
@@ -192,19 +211,7 @@ export const OrdersList = styled.div`
     gap: ${({ theme }) => theme.spacing.xxl};
   }
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
-    gap: ${({ theme }) => theme.spacing.xl};
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
-    gap: ${({ theme }) => theme.spacing.xl};
-  }
-
   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
-    gap: ${({ theme }) => theme.spacing.lg};
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
     gap: ${({ theme }) => theme.spacing.lg};
   }
 
@@ -215,8 +222,9 @@ export const OrdersList = styled.div`
 
 export const OrderCard = styled.article`
   width: 100%;
+  overflow: hidden;
 
-  padding: ${({ theme }) => theme.spacing.xxl};
+  padding: ${({ theme }) => theme.spacing.xl};
 
   border: 1px solid ${({ theme }) => theme.colors.border.light};
   border-radius: ${({ theme }) => theme.sizes.radius.large};
@@ -226,11 +234,11 @@ export const OrderCard = styled.article`
   box-shadow: ${({ theme }) => theme.sizes.shadow.subtle};
 
   @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
-    padding: ${({ theme }) => theme.spacing.xxxl};
+    padding: ${({ theme }) => theme.spacing.xxl};
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
-    padding: ${({ theme }) => theme.spacing.xxl};
+    padding: ${({ theme }) => theme.spacing.xl};
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
@@ -238,7 +246,7 @@ export const OrderCard = styled.article`
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
-    padding: ${({ theme }) => theme.spacing.xl};
+    padding: ${({ theme }) => theme.spacing.lg};
 
     border-radius: ${({ theme }) => theme.sizes.radius.medium};
   }
@@ -253,56 +261,79 @@ export const OrderCard = styled.article`
 `;
 
 export const OrderCardHeader = styled.div`
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  position: relative;
 
-  gap: ${({ theme }) => theme.spacing.xl};
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
 
-  padding-bottom: ${({ theme }) => theme.spacing.xl};
+  align-items: start;
 
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border.light};
+  gap: ${({ theme }) => theme.spacing.lg};
+
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
 
   @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
-    gap: ${({ theme }) => theme.spacing.xxl};
+    margin-bottom: ${({ theme }) => theme.spacing.xl};
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
-    gap: ${({ theme }) => theme.spacing.xl};
+    margin-bottom: ${({ theme }) => theme.spacing.lg};
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
-    gap: ${({ theme }) => theme.spacing.lg};
+    margin-bottom: ${({ theme }) => theme.spacing.lg};
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
-    padding-bottom: ${({ theme }) => theme.spacing.lg};
+    gap: ${({ theme }) => theme.spacing.md};
+
+    margin-bottom: ${({ theme }) => theme.spacing.md};
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    flex-direction: column;
-    align-items: stretch;
-
-    gap: ${({ theme }) => theme.spacing.md};
+    gap: ${({ theme }) => theme.spacing.sm};
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
-    gap: ${({ theme }) => theme.spacing.sm};
+    gap: ${({ theme }) => theme.spacing.xs};
   }
 `;
 
 export const OrderCardHeaderGroup = styled.div`
+  min-width: 0;
+
   display: flex;
+
   flex-direction: column;
 
   gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+export const OrderHeaderPrimaryRow = styled.div`
+  display: flex;
+
+  align-items: center;
+
+  flex-wrap: wrap;
+
+  gap: ${({ theme }) => theme.spacing.md};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    gap: ${({ theme }) => theme.spacing.sm};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    gap: ${({ theme }) => theme.spacing.xs};
+  }
 `;
 
 export const OrderNumber = styled.h2`
   margin: 0;
 
   font-family: ${({ theme }) => theme.fonts.heading};
+
   font-size: ${({ theme }) => theme.fontSizes.text_22};
+
   font-weight: ${({ theme }) => theme.fontWeights.bold};
 
   color: ${({ theme }) => theme.colors.text.primary};
@@ -311,400 +342,1218 @@ export const OrderNumber = styled.h2`
     font-size: ${({ theme }) => theme.fontSizes.text_24};
   }
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
-    font-size: ${({ theme }) => theme.fontSizes.text_22};
-  }
-
   @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
     font-size: ${({ theme }) => theme.fontSizes.text_20};
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
-    font-size: ${({ theme }) => theme.fontSizes.text_20};
+    font-size: ${({ theme }) => theme.fontSizes.text_16};
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    font-size: ${({ theme }) => theme.fontSizes.text_18};
+    font-size: ${({ theme }) => theme.fontSizes.text_14};
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
-    font-size: ${({ theme }) => theme.fontSizes.text_18};
+    font-size: ${({ theme }) => theme.fontSizes.text_12};
   }
 `;
 
 export const OrderDate = styled.span`
   font-family: ${({ theme }) => theme.fonts.body};
+
   font-size: ${({ theme }) => theme.fontSizes.text_14};
 
   color: ${({ theme }) => theme.colors.text.muted};
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    font-size: ${({ theme }) => theme.fontSizes.text_12};
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    font-size: ${({ theme }) => theme.fontSizes.text_10};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    font-size: 0.55rem;
   }
 `;
 
 export const OrderStatus = styled.span`
-  align-self: flex-start;
+  display: inline-flex;
 
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  align-items: center;
+
+  width: fit-content;
+
+  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.md};
 
   border-radius: ${({ theme }) => theme.sizes.radius.pill};
 
-  background: ${({ theme }) => theme.colors.brand.primaryLight};
+  background: ${({ $status }) =>
+    $status === "delivered" ? "#EEE7FF" : "#E7F8EE"};
 
   font-family: ${({ theme }) => theme.fonts.body};
+
   font-size: ${({ theme }) => theme.fontSizes.text_12};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  text-transform: capitalize;
 
-  color: ${({ theme }) => theme.colors.text.brand};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    padding: ${({ theme }) => theme.spacing.xs}
-      ${({ theme }) => theme.spacing.md};
+  color: ${({ $status, theme }) =>
+    $status === "delivered" ? "#6941C6" : theme.colors.state.success};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    padding: 3px ${({ theme }) => theme.spacing.sm};
+
+    font-size: ${({ theme }) => theme.fontSizes.text_10};
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
-    font-size: ${({ theme }) => theme.fontSizes.text_10};
+    font-size: 0.5rem;
   }
 `;
 
-export const OrderMetaGrid = styled.div`
+export const OrderCardHeaderRight = styled.div`
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: flex-end;
+
+  gap: ${({ theme }) => theme.spacing.xs};
+
+  flex-shrink: 0;
+`;
+
+export const OrderHeaderTotal = styled.strong`
+  font-family: ${({ theme }) => theme.fonts.heading};
+
+  font-size: ${({ theme }) => theme.fontSizes.text_24};
+
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+
+  color: ${({ theme }) => theme.colors.brand.primary};
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
+    font-size: ${({ theme }) => theme.fontSizes.text_28};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    font-size: ${({ theme }) => theme.fontSizes.text_22};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    font-size: ${({ theme }) => theme.fontSizes.text_16};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    font-size: ${({ theme }) => theme.fontSizes.text_14};
+  }
+`;
+
+export const OrderHeaderPayment = styled.span`
+  font-family: ${({ theme }) => theme.fonts.body};
+
+  font-size: ${({ theme }) => theme.fontSizes.text_12};
+
+  color: ${({ theme }) => theme.colors.text.secondary};
+
+  white-space: nowrap;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    font-size: 0.55rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    font-size: 0.5rem;
+  }
+`;
+
+export const OrderCollapseButton = styled.button`
+  width: 30px;
+
+  height: 30px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 0;
+
+  border: none;
+
+  border-radius: ${({ theme }) => theme.sizes.radius.round};
+
+  background: ${({ theme }) => theme.colors.background.softBlue};
+
+  color: ${({ theme }) => theme.colors.text.primary};
+
+  cursor: pointer;
+
+  svg {
+    width: 16px;
+
+    height: 16px;
+
+    transform: ${({ $expanded }) =>
+      $expanded ? "rotate(180deg)" : "rotate(0deg)"};
+
+    transition: transform 160ms ease;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    width: 24px;
+
+    height: 24px;
+
+    svg {
+      width: 13px;
+
+      height: 13px;
+    }
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    width: 20px;
+
+    height: 20px;
+
+    svg {
+      width: 11px;
+
+      height: 11px;
+    }
+  }
+`;
+
+/* TIMELINE */
+
+export const OrderTimeline = styled.div`
+  --timeline-steps: ${({ $stepCount }) => $stepCount};
+
+  position: relative;
+
   display: grid;
-  grid-template-columns: 0.9fr 1.1fr 1.8fr;
+  grid-template-columns: repeat(
+    ${({ $stepCount }) => $stepCount},
+    minmax(0, 1fr)
+  );
 
-  gap: ${({ theme }) => theme.spacing.xl};
+  width: 100%;
 
-  padding: ${({ theme }) => theme.spacing.xl} 0;
+  padding: 0 ${({ theme }) => theme.spacing.xl}
+    ${({ theme }) => theme.spacing.lg};
 
   border-bottom: 1px solid ${({ theme }) => theme.colors.border.light};
 
   @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
-    grid-template-columns: 0.85fr 1.15fr 2fr;
-    gap: ${({ theme }) => theme.spacing.xxl};
+    padding-left: ${({ theme }) => theme.spacing.xxl};
+    padding-right: ${({ theme }) => theme.spacing.xxl};
+    padding-bottom: ${({ theme }) => theme.spacing.xl};
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
-    grid-template-columns: 0.9fr 1.1fr 1.7fr;
+    padding-left: ${({ theme }) => theme.spacing.xl};
+    padding-right: ${({ theme }) => theme.spacing.xl};
+    padding-bottom: ${({ theme }) => theme.spacing.lg};
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-
-    gap: ${({ theme }) => theme.spacing.lg};
-
-    ${"" /* Address naturally moves to second row */}
+    padding-left: ${({ theme }) => theme.spacing.lg};
+    padding-right: ${({ theme }) => theme.spacing.lg};
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
-    grid-template-columns: 1fr;
+    padding: 0 0 ${({ theme }) => theme.spacing.md};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    /* Approved responsive behavior:
+       timeline always stays horizontal. */
+    padding-bottom: ${({ theme }) => theme.spacing.md};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    padding-bottom: ${({ theme }) => theme.spacing.sm};
+  }
+`;
+
+export const OrderTimelineTrack = styled.div`
+  position: absolute;
+
+  top: 16px;
+
+  left: calc(50% / var(--timeline-steps));
+
+  right: calc(50% / var(--timeline-steps));
+
+  height: 2px;
+
+  background: ${({ theme }) => theme.colors.border.medium};
+
+  z-index: 0;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    top: 12px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    top: 10px;
+  }
+`;
+
+export const OrderTimelineStep = styled.div`
+  position: relative;
+
+  z-index: 1;
+
+  min-width: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  text-align: center;
+`;
+
+export const OrderTimelineNode = styled.div`
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: ${({ theme }) => theme.sizes.radius.round};
+
+  background: ${({ $completed, $status, theme }) => {
+    if (!$completed) {
+      return theme.colors.border.medium;
+    }
+
+    if ($status === "order_placed") {
+      return theme.colors.brand.primary;
+    }
+
+    if ($status === "out_for_delivery") {
+      return theme.colors.state.warning;
+    }
+
+    return theme.colors.state.success;
+  }};
+
+  color: ${({ theme }) => theme.colors.text.inverse};
+
+  box-shadow: 0 0 0 4px ${({ theme }) => theme.colors.background.primary};
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
+    width: 34px;
+    height: 34px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    width: 32px;
+    height: 32px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    width: 30px;
+    height: 30px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    width: 24px;
+    height: 24px;
+
+    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.background.primary};
+
+    svg {
+      width: 11px;
+      height: 11px;
+    }
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    width: 24px;
+    height: 24px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    width: 20px;
+    height: 20px;
+
+    svg {
+      width: 9px;
+      height: 9px;
+    }
+  }
+`;
+
+export const OrderTimelineLabel = styled.span`
+  margin-top: ${({ theme }) => theme.spacing.sm};
+
+  font-family: ${({ theme }) => theme.fonts.body};
+
+  font-size: ${({ theme }) => theme.fontSizes.text_14};
+
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+
+  line-height: 1.25;
+
+  color: ${({ theme }) => theme.colors.text.primary};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    margin-top: ${({ theme }) => theme.spacing.xs};
+
+    font-size: ${({ theme }) => theme.fontSizes.text_10};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    font-size: 0.5rem;
+  }
+`;
+
+export const OrderTimelineDate = styled.span`
+  min-height: 32px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  margin-top: ${({ theme }) => theme.spacing.xs};
+
+  font-family: ${({ theme }) => theme.fonts.body};
+
+  font-size: ${({ theme }) => theme.fontSizes.text_12};
+
+  line-height: 1.35;
+
+  color: ${({ theme }) => theme.colors.text.muted};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    min-height: 24px;
+
+    font-size: 0.55rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    font-size: 0.48rem;
+  }
+`;
+
+/* DESKTOP / LAPTOP */
+
+export const DesktopOrderDetails = styled.div`
+  display: block;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    display: none;
+  }
+`;
+
+export const DesktopMetaGrid = styled.div`
+  display: grid;
+
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  padding: ${({ theme }) => theme.spacing.lg} 0;
+
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border.light};
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    padding: ${({ theme }) => theme.spacing.xl} 0;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 
     padding: ${({ theme }) => theme.spacing.lg} 0;
   }
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    gap: ${({ theme }) => theme.spacing.md};
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    padding: ${({ theme }) => theme.spacing.md} 0;
   }
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
-    gap: ${({ theme }) => theme.spacing.sm};
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    display: none;
+  }
+`;
+export const DesktopMetaItem = styled.div`
+  min-width: 0;
+
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+
+  align-items: start;
+
+  column-gap: 0;
+
+  padding: 0 ${({ theme }) => theme.spacing.xl};
+
+  border-right: 1px solid ${({ theme }) => theme.colors.border.light};
+
+  &:first-child {
+    padding-left: 0;
+  }
+
+  &:last-child {
+    padding-right: 0;
+    border-right: none;
+  }
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
+    padding-left: ${({ theme }) => theme.spacing.xl};
+    padding-right: ${({ theme }) => theme.spacing.xl};
+
+    &:first-child {
+      padding-left: 0;
+    }
+
+    &:last-child {
+      padding-right: 0;
+    }
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    padding-left: ${({ theme }) => theme.spacing.lg};
+    padding-right: ${({ theme }) => theme.spacing.lg};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    padding-left: ${({ theme }) => theme.spacing.md};
+    padding-right: ${({ theme }) => theme.spacing.md};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    padding-left: ${({ theme }) => theme.spacing.sm};
+    padding-right: ${({ theme }) => theme.spacing.sm};
   }
 `;
 
-export const OrderMetaItem = styled.div`
+export const DesktopMetaIcon = styled.div`
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-top: 2px;
+
+  color: ${({ theme }) => theme.colors.brand.primary};
+
+  svg {
+    display: block;
+
+    width: ${({ theme }) => theme.sizes.icon.small};
+    height: ${({ theme }) => theme.sizes.icon.small};
+  }
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
+    svg {
+      width: ${({ theme }) => theme.sizes.icon.medium};
+      height: ${({ theme }) => theme.sizes.icon.medium};
+    }
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    svg {
+      width: ${({ theme }) => theme.sizes.icon.small};
+      height: ${({ theme }) => theme.sizes.icon.small};
+    }
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    svg {
+      width: 13px;
+      height: 13px;
+    }
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    svg {
+      width: 12px;
+      height: 12px;
+    }
+  }
+`;
+
+export const DesktopMetaContent = styled.div`
   min-width: 0;
 
   display: flex;
   flex-direction: column;
 
   gap: ${({ theme }) => theme.spacing.xs};
+
+  padding-left: ${({ theme }) => theme.spacing.lg};
+
+  text-align: left;
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
+    padding-left: ${({ theme }) => theme.spacing.xl};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    padding-left: ${({ theme }) => theme.spacing.lg};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    padding-left: ${({ theme }) => theme.spacing.md};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    padding-left: ${({ theme }) => theme.spacing.sm};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    padding-left: 0;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    padding-left: 0;
+  }
 `;
 
-export const OrderMetaLabel = styled.span`
+export const DesktopMetaLabel = styled.span`
   font-family: ${({ theme }) => theme.fonts.body};
-  font-size: ${({ theme }) => theme.fontSizes.text_12};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
 
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: ${({ theme }) => theme.fontSizes.text_12};
 
   color: ${({ theme }) => theme.colors.text.muted};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    font-size: ${({ theme }) => theme.fontSizes.text_10};
+  }
+`;
+
+export const DesktopMetaValue = styled.span`
+  font-family: ${({ theme }) => theme.fonts.body};
+
+  font-size: ${({ theme }) => theme.fontSizes.text_14};
+
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+
+  line-height: 1.45;
+
+  color: ${({ theme }) => theme.colors.text.primary};
+
+  overflow-wrap: anywhere;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    font-size: ${({ theme }) => theme.fontSizes.text_12};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    font-size: ${({ theme }) => theme.fontSizes.text_10};
+  }
+`;
+
+export const DesktopBottomGrid = styled.div`
+  display: grid;
+
+  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.85fr);
+
+  gap: ${({ theme }) => theme.spacing.xl};
+
+  padding-top: ${({ theme }) => theme.spacing.lg};
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
+    grid-template-columns: minmax(0, 1.8fr) minmax(320px, 0.8fr);
+
+    padding-top: ${({ theme }) => theme.spacing.xl};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    padding-top: ${({ theme }) => theme.spacing.lg};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    grid-template-columns: minmax(0, 1.5fr) minmax(260px, 0.85fr);
+
+    gap: ${({ theme }) => theme.spacing.lg};
+
+    padding-top: ${({ theme }) => theme.spacing.lg};
+  }
+`;
+
+export const DesktopOrderItems = styled.div`
+  display: flex;
+
+  flex-direction: column;
+
+  gap: ${({ theme }) => theme.spacing.md};
+
+  padding-right: ${({ theme }) => theme.spacing.xl};
+
+  border-right: 1px solid ${({ theme }) => theme.colors.border.light};
+`;
+
+export const DesktopOrderItem = styled.div`
+  display: grid;
+
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+
+  align-items: center;
+
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+export const DesktopOrderItemVisual = styled.div`
+  width: 52px;
+
+  height: 52px;
+
+  flex-shrink: 0;
+
+  border: 1px solid ${({ theme }) => theme.colors.border.light};
+
+  border-radius: ${({ theme }) => theme.sizes.radius.small};
+
+  overflow: hidden;
+
+  background: ${({ theme }) => theme.colors.background.secondary};
+`;
+
+export const ProductThumbnail = styled.img`
+  width: 100%;
+
+  height: 100%;
+
+  object-fit: contain;
+`;
+
+export const ProductThumbnailFallback = styled.div`
+  width: 100%;
+
+  height: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  color: ${({ theme }) => theme.colors.brand.primary};
+
+  svg {
+    width: 20px;
+
+    height: 20px;
+  }
+`;
+
+export const DesktopOrderItemContent = styled.div`
+  min-width: 0;
+`;
+
+export const DesktopOrderItemName = styled.p`
+  margin: 0 0 ${({ theme }) => theme.spacing.xs};
+
+  font-family: ${({ theme }) => theme.fonts.body};
+
+  font-size: ${({ theme }) => theme.fontSizes.text_16};
+
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+
+  color: ${({ theme }) => theme.colors.text.primary};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    font-size: ${({ theme }) => theme.fontSizes.text_14};
+  }
+`;
+
+export const DesktopOrderItemMeta = styled.p`
+  margin: 0;
+
+  font-family: ${({ theme }) => theme.fonts.body};
+
+  font-size: ${({ theme }) => theme.fontSizes.text_14};
+
+  color: ${({ theme }) => theme.colors.text.secondary};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    font-size: ${({ theme }) => theme.fontSizes.text_12};
+  }
+`;
+
+export const DesktopOrderItemPrice = styled.span`
+  font-family: ${({ theme }) => theme.fonts.body};
+
+  font-size: ${({ theme }) => theme.fontSizes.text_16};
+
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+
+  color: ${({ theme }) => theme.colors.text.primary};
+`;
+
+export const DesktopOrderSummary = styled.div`
+  display: flex;
+
+  flex-direction: column;
+
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+export const SummaryRow = styled.div`
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: ${({ theme }) => theme.spacing.xl};
+`;
+
+export const SummaryLabel = styled.span`
+  font-family: ${({ theme }) => theme.fonts.body};
+
+  font-size: ${({ theme }) => theme.fontSizes.text_14};
+
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
+export const SummaryValue = styled.span`
+  font-family: ${({ theme }) => theme.fonts.body};
+
+  font-size: ${({ theme }) => theme.fontSizes.text_14};
+
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+
+  color: ${({ theme }) => theme.colors.text.primary};
+`;
+
+export const SummaryTotalRow = styled(SummaryRow)`
+  margin-top: ${({ theme }) => theme.spacing.sm};
+
+  padding-top: ${({ theme }) => theme.spacing.lg};
+
+  border-top: 1px solid ${({ theme }) => theme.colors.border.light};
+`;
+
+export const SummaryTotalLabel = styled.span`
+  font-family: ${({ theme }) => theme.fonts.heading};
+
+  font-size: ${({ theme }) => theme.fontSizes.text_18};
+
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+
+  color: ${({ theme }) => theme.colors.text.primary};
+`;
+
+export const SummaryTotalValue = styled.span`
+  font-family: ${({ theme }) => theme.fonts.heading};
+
+  font-size: ${({ theme }) => theme.fontSizes.text_22};
+
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+
+  color: ${({ theme }) => theme.colors.brand.primary};
+`;
+
+/* TABLET / MOBILE / MOBILE SMALL */
+
+export const CompactOrderDetails = styled.div`
+  display: none;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    display: block;
+  }
+`;
+
+export const CompactFulfillmentRow = styled.div`
+  display: grid;
+
+  grid-template-columns: auto minmax(0, 1fr) auto;
+
+  align-items: center;
+
+  gap: ${({ theme }) => theme.spacing.md};
+
+  padding: ${({ theme }) => theme.spacing.md} 0;
+
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border.light};
+
+  text-align: left;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    gap: ${({ theme }) => theme.spacing.md};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    gap: ${({ theme }) => theme.spacing.sm};
+
+    padding: ${({ theme }) => theme.spacing.sm} 0
+      ${({ theme }) => theme.spacing.md};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    gap: ${({ theme }) => theme.spacing.sm};
+
+    padding-bottom: ${({ theme }) => theme.spacing.sm};
+  }
+`;
+
+export const CompactFulfillmentIcon = styled.div`
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  color: ${({ theme }) => theme.colors.brand.primary};
+
+  svg {
+    width: 16px;
+
+    height: 16px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    svg {
+      width: 13px;
+
+      height: 13px;
+    }
+  }
+`;
+
+export const CompactFulfillmentContent = styled.div`
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: flex-start;
+
+  gap: 2px;
+
+  text-align: left;
+`;
+
+export const CompactFulfillmentMethod = styled.span`
+  font-family: ${({ theme }) => theme.fonts.body};
+
+  font-size: ${({ theme }) => theme.fontSizes.text_12};
+
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+
+  color: ${({ theme }) => theme.colors.text.primary};
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
     font-size: ${({ theme }) => theme.fontSizes.text_10};
   }
 `;
 
-export const OrderMetaValue = styled.span`
+export const CompactFulfillmentText = styled.span`
   font-family: ${({ theme }) => theme.fonts.body};
-  font-size: ${({ theme }) => theme.fontSizes.text_14};
-  line-height: 1.5;
 
-  color: ${({ theme }) => theme.colors.text.primary};
+  font-size: ${({ theme }) => theme.fontSizes.text_10};
+
+  line-height: 1.35;
+
+  color: ${({ theme }) => theme.colors.text.secondary};
 
   overflow-wrap: anywhere;
 
-  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
-    font-size: ${({ theme }) => theme.fontSizes.text_16};
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    font-size: ${({ theme }) => theme.fontSizes.text_14};
-  }
-
   @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
-    font-size: ${({ theme }) => theme.fontSizes.text_12};
+    font-size: 0.52rem;
   }
 `;
 
-export const OrderItems = styled.div`
+export const CompactFulfillmentArrow = styled.div`
   display: flex;
-  flex-direction: column;
 
-  padding: ${({ theme }) => theme.spacing.xl} 0;
+  align-items: center;
 
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border.light};
+  color: ${({ theme }) => theme.colors.text.primary};
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
-    padding: ${({ theme }) => theme.spacing.lg} 0;
-  }
+  svg {
+    width: 14px;
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    padding: ${({ theme }) => theme.spacing.lg} 0;
+    height: 14px;
   }
 `;
 
-export const OrderItem = styled.div`
+export const CompactFooter = styled.div`
   display: flex;
-  align-items: flex-start;
+
+  align-items: center;
+
   justify-content: space-between;
-
-  gap: ${({ theme }) => theme.spacing.xl};
-
-  padding: ${({ theme }) => theme.spacing.md} 0;
-
-  &:first-child {
-    padding-top: 0;
-  }
-
-  &:last-child {
-    padding-bottom: 0;
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
-    gap: ${({ theme }) => theme.spacing.lg};
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
-    gap: ${({ theme }) => theme.spacing.md};
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    gap: ${({ theme }) => theme.spacing.md};
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
-    align-items: flex-start;
-
-    gap: ${({ theme }) => theme.spacing.sm};
-  }
-`;
-
-export const OrderItemContent = styled.div`
-  min-width: 0;
-  flex: 1;
-`;
-
-export const OrderItemName = styled.p`
-  margin: 0 0 ${({ theme }) => theme.spacing.xs};
-
-  font-family: ${({ theme }) => theme.fonts.body};
-  font-size: ${({ theme }) => theme.fontSizes.text_16};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-
-  color: ${({ theme }) => theme.colors.text.primary};
-
-  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
-    font-size: ${({ theme }) => theme.fontSizes.text_18};
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    font-size: ${({ theme }) => theme.fontSizes.text_14};
-  }
-`;
-
-export const OrderItemMeta = styled.p`
-  margin: 0;
-
-  font-family: ${({ theme }) => theme.fonts.body};
-  font-size: ${({ theme }) => theme.fontSizes.text_14};
-
-  color: ${({ theme }) => theme.colors.text.secondary};
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    font-size: ${({ theme }) => theme.fontSizes.text_12};
-  }
-`;
-
-export const OrderItemPrice = styled.span`
-  flex-shrink: 0;
-
-  font-family: ${({ theme }) => theme.fonts.body};
-  font-size: ${({ theme }) => theme.fontSizes.text_16};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-
-  color: ${({ theme }) => theme.colors.text.primary};
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    font-size: ${({ theme }) => theme.fontSizes.text_14};
-  }
-`;
-
-export const OrderSummary = styled.div`
-  width: 100%;
-  max-width: 420px;
-
-  display: flex;
-  flex-direction: column;
 
   gap: ${({ theme }) => theme.spacing.md};
 
-  margin-left: auto;
+  padding-top: ${({ theme }) => theme.spacing.md};
+`;
 
-  padding-top: ${({ theme }) => theme.spacing.xl};
+export const CompactItemsSummary = styled.div`
+  min-width: 0;
 
-  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
-    max-width: 460px;
-  }
+  display: flex;
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
-    max-width: 420px;
-  }
+  align-items: center;
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
-    max-width: 400px;
-  }
+  gap: ${({ theme }) => theme.spacing.md};
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
-    max-width: 100%;
-
-    padding-top: ${({ theme }) => theme.spacing.lg};
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
     gap: ${({ theme }) => theme.spacing.sm};
   }
 `;
 
-export const OrderSummaryRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  gap: ${({ theme }) => theme.spacing.xl};
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    gap: ${({ theme }) => theme.spacing.lg};
-  }
-`;
-
-export const OrderSummaryLabel = styled.span`
-  font-family: ${({ theme }) => theme.fonts.body};
-  font-size: ${({ theme }) => theme.fontSizes.text_14};
-
-  color: ${({ theme }) => theme.colors.text.secondary};
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
-    font-size: ${({ theme }) => theme.fontSizes.text_12};
-  }
-`;
-
-export const OrderSummaryValue = styled.span`
+export const CompactItemCount = styled.span`
   flex-shrink: 0;
 
   font-family: ${({ theme }) => theme.fonts.body};
-  font-size: ${({ theme }) => theme.fontSizes.text_14};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
+
+  font-size: ${({ theme }) => theme.fontSizes.text_12};
+
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
 
   color: ${({ theme }) => theme.colors.text.primary};
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
-    font-size: ${({ theme }) => theme.fontSizes.text_12};
+    font-size: ${({ theme }) => theme.fontSizes.text_10};
   }
 `;
 
-export const OrderSummaryTotalRow = styled(OrderSummaryRow)`
-  margin-top: ${({ theme }) => theme.spacing.sm};
+export const CompactThumbnails = styled.div`
+  display: flex;
 
-  padding-top: ${({ theme }) => theme.spacing.lg};
+  align-items: center;
 
-  border-top: 1px solid ${({ theme }) => theme.colors.border.light};
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+export const CompactThumbnail = styled.img`
+  width: 30px;
+
+  height: 30px;
+
+  object-fit: contain;
+
+  border-radius: ${({ theme }) => theme.sizes.radius.small};
+
+  background: ${({ theme }) => theme.colors.background.secondary};
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    padding-top: ${({ theme }) => theme.spacing.md};
+    width: 26px;
+
+    height: 26px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    width: 22px;
+
+    height: 22px;
   }
 `;
 
-export const OrderSummaryTotalLabel = styled.span`
-  font-family: ${({ theme }) => theme.fonts.heading};
-  font-size: ${({ theme }) => theme.fontSizes.text_18};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
+export const CompactThumbnailFallback = styled.div`
+  width: 30px;
+
+  height: 30px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: ${({ theme }) => theme.sizes.radius.small};
+
+  background: ${({ theme }) => theme.colors.background.secondary};
+
+  color: ${({ theme }) => theme.colors.brand.primary};
+
+  svg {
+    width: 14px;
+
+    height: 14px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    width: 26px;
+
+    height: 26px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    width: 22px;
+
+    height: 22px;
+  }
+`;
+
+export const CompactTotalGroup = styled.div`
+  display: flex;
+
+  align-items: center;
+
+  gap: ${({ theme }) => theme.spacing.md};
+
+  flex-shrink: 0;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    gap: ${({ theme }) => theme.spacing.sm};
+  }
+`;
+
+export const CompactTotalLabel = styled.span`
+  font-family: ${({ theme }) => theme.fonts.body};
+
+  font-size: ${({ theme }) => theme.fontSizes.text_12};
+
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
 
   color: ${({ theme }) => theme.colors.text.primary};
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    font-size: ${({ theme }) => theme.fontSizes.text_16};
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    font-size: ${({ theme }) => theme.fontSizes.text_10};
   }
 `;
 
-export const OrderSummaryTotalValue = styled.span`
+export const CompactTotalValue = styled.strong`
   font-family: ${({ theme }) => theme.fonts.heading};
-  font-size: ${({ theme }) => theme.fontSizes.text_20};
+
+  font-size: ${({ theme }) => theme.fontSizes.text_16};
+
   font-weight: ${({ theme }) => theme.fontWeights.bold};
 
-  color: ${({ theme }) => theme.colors.text.brand};
+  color: ${({ theme }) => theme.colors.brand.primary};
 
-  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
-    font-size: ${({ theme }) => theme.fontSizes.text_22};
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    font-size: ${({ theme }) => theme.fontSizes.text_18};
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    font-size: ${({ theme }) => theme.fontSizes.text_14};
   }
 `;
 
-export const PaymentDetails = styled.p`
-  width: 100%;
-  max-width: 420px;
+/* PAGINATION */
 
-  margin: ${({ theme }) => theme.spacing.xl} 0 0 auto;
+export const Pagination = styled.div`
+  display: flex;
 
+  align-items: center;
+
+  justify-content: center;
+
+  gap: ${({ theme }) => theme.spacing.xl};
+
+  margin-top: ${({ theme }) => theme.spacing.xxl};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    flex-direction: column;
+
+    gap: ${({ theme }) => theme.spacing.md};
+
+    margin-top: ${({ theme }) => theme.spacing.xl};
+  }
+`;
+
+export const PaginationSummary = styled.span`
   font-family: ${({ theme }) => theme.fonts.body};
-  font-size: ${({ theme }) => theme.fontSizes.text_14};
+
+  font-size: ${({ theme }) => theme.fontSizes.text_12};
 
   color: ${({ theme }) => theme.colors.text.secondary};
 
-  text-align: right;
-
-  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
-    max-width: 460px;
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    font-size: ${({ theme }) => theme.fontSizes.text_10};
   }
+`;
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
-    max-width: 400px;
+export const PaginationControls = styled.div`
+  display: flex;
+
+  align-items: center;
+
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+export const PaginationButton = styled.button`
+  width: 30px;
+
+  height: 30px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 0;
+
+  border: none;
+
+  background: transparent;
+
+  color: ${({ theme }) => theme.colors.text.primary};
+
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.3;
+
+    cursor: default;
   }
+`;
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
-    max-width: 100%;
-  }
+export const PaginationPageButton = styled.button`
+  width: 34px;
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    margin-top: ${({ theme }) => theme.spacing.lg};
+  height: 34px;
 
-    font-size: ${({ theme }) => theme.fontSizes.text_12};
+  display: flex;
 
-    text-align: left;
-  }
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 0;
+
+  border: none;
+
+  border-radius: ${({ theme }) => theme.sizes.radius.round};
+
+  background: ${({ $active, theme }) =>
+    $active ? theme.colors.brand.primaryLight : "transparent"};
+
+  font-family: ${({ theme }) => theme.fonts.body};
+
+  font-size: ${({ theme }) => theme.fontSizes.text_12};
+
+  font-weight: ${({ $active, theme }) =>
+    $active ? theme.fontWeights.bold : theme.fontWeights.medium};
+
+  color: ${({ $active, theme }) =>
+    $active ? theme.colors.brand.primary : theme.colors.text.primary};
+
+  cursor: pointer;
 `;
 
 export const EmptyOrdersState = styled.div`
@@ -713,6 +1562,7 @@ export const EmptyOrdersState = styled.div`
   padding: ${({ theme }) => theme.spacing.xxxl};
 
   border: 1px solid ${({ theme }) => theme.colors.border.light};
+
   border-radius: ${({ theme }) => theme.sizes.radius.large};
 
   background: ${({ theme }) => theme.colors.background.primary};
@@ -720,25 +1570,12 @@ export const EmptyOrdersState = styled.div`
   box-shadow: ${({ theme }) => theme.sizes.shadow.subtle};
 
   font-family: ${({ theme }) => theme.fonts.body};
+
   font-size: ${({ theme }) => theme.fontSizes.text_16};
-  line-height: 1.6;
 
   text-align: center;
 
   color: ${({ theme }) => theme.colors.text.secondary};
-
-  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
-    padding: ${({ theme }) => theme.spacing.section};
-    font-size: ${({ theme }) => theme.fontSizes.text_18};
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
-    padding: ${({ theme }) => theme.spacing.xxxl};
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
-    padding: ${({ theme }) => theme.spacing.xxl};
-  }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
     padding: ${({ theme }) => theme.spacing.xl};

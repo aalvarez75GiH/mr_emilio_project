@@ -104,6 +104,8 @@ export const OrderConfirmation = () => {
 
   const order = checkout.completedOrder;
 
+  console.log("OrderConfirmation: order:", JSON.stringify(order, null, 2));
+
   const isPickup = order?.fulfillment?.method === FULFILLMENT_METHODS.PICKUP;
 
   const isLocalDelivery =
