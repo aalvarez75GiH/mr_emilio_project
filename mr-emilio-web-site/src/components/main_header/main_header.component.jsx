@@ -67,9 +67,17 @@ export const MainHeader = () => {
         </Navigation>
 
         <Actions>
-          <ActionButton type="button" aria-label="Account">
+          <ActionButton
+            as={Link}
+            to="/my-orders"
+            aria-label="My Orders"
+            title="My Orders"
+          >
             <FiUser />
           </ActionButton>
+          {/* <ActionButton type="button" aria-label="Account">
+            <FiUser />
+          </ActionButton> */}
 
           <CartActionContainer>
             <ActionButton as={Link} to="/cart" aria-label={cartAriaLabel}>
