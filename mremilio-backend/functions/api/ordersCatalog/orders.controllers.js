@@ -1,7 +1,7 @@
 /* eslint-disable */
 
 const firebaseController = require("../../fb");
-const customersCatalogControllers = require("../customersCatalog/ customers.controllers");
+const customersCatalogControllers = require("../customersCatalog/customers.controllers");
 
 const {
   buildPendingOrderPayload,
@@ -42,6 +42,36 @@ const getOrderById = async (orderId) => {
   }
 
   return snapshot.data();
+};
+
+const getOrdersByCustomerId = async (customerId) => {
+  if (typeof customerId !== "string" || !customerId.trim()) {
+    return [];
+  }
+
+  const snapshot = await firebaseController.db
+    .collection(ORDERS_COLLECTION)
+    .where("customer.customerId", "==", customerId.trim())
+    .get();
+
+  const orders = [];
+
+  snapshot.forEach((doc) => {
+    orders.push(doc.data());
+  });
+
+  orders.sort((a, b) => {
+    const aCreatedAt = Date.parse(a?.createdAt || "");
+    const bCreatedAt = Date.parse(b?.createdAt || "");
+
+    const normalizedA = Number.isFinite(aCreatedAt) ? aCreatedAt : 0;
+
+    const normalizedB = Number.isFinite(bCreatedAt) ? bCreatedAt : 0;
+
+    return normalizedB - normalizedA;
+  });
+
+  return orders;
 };
 
 const createPendingOrder = async ({
@@ -305,6 +335,7 @@ const markOrderAsPaymentFailed = async ({
 
 module.exports = {
   getOrderById,
+  getOrdersByCustomerId,
   createPendingOrder,
   markOrderAsPaid,
   markOrderAsRequiresAttention,

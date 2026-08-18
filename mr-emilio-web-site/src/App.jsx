@@ -11,6 +11,7 @@ import { CustomerInformation } from "./screens/checkout/customer_information.scr
 import { Payment } from "./screens/checkout/payment.screen";
 import { Review } from "./screens/checkout/review.screen";
 import { OrderConfirmation } from "./screens/checkout/order_confirmation.screen";
+import { MyOrders } from "./screens/orders/my_orders.screen";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path="/checkout/payment" element={<Payment />} />
         <Route path="/checkout/review" element={<Review />} />
         <Route path="/checkout/confirmation" element={<OrderConfirmation />} />
+        <Route path="/my-orders" element={<MyOrders />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>

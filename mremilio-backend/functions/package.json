@@ -23,6 +23,7 @@
     "firebase-admin": "^10.0.2",
     "firebase-functions": "^4.2.1",
     "nanoid": "^2.1.9",
+    "nodemailer": "^9.0.5",
     "stripe": "^22.5.0",
     "uuid": "^8.3.2",
     "uuid-validate": "^0.0.3"

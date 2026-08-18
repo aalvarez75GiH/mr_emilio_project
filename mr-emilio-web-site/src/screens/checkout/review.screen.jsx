@@ -182,7 +182,6 @@ export const Review = () => {
         },
       };
     }
-
     if (isLocalDelivery) {
       return {
         ...basePayload,
@@ -203,11 +202,48 @@ export const Review = () => {
 
             country: checkout.delivery?.address?.country || "US",
 
-            formattedAddress: checkout.delivery?.resolvedAddress || null,
+            formattedAddress:
+              checkout.delivery?.resolvedAddress ||
+              checkout.delivery?.address?.formattedAddress ||
+              "",
+
+            placeId: checkout.delivery?.address?.placeId || "",
+
+            coordinates: checkout.delivery?.address?.coordinates
+              ? {
+                  lat: checkout.delivery.address.coordinates.lat,
+                  lng: checkout.delivery.address.coordinates.lng,
+                }
+              : null,
           },
         },
       };
     }
+    // if (isLocalDelivery) {
+    //   return {
+    //     ...basePayload,
+
+    //     delivery: {
+    //       warehouseId: checkout.delivery?.fulfillingWarehouseId || null,
+
+    //       address: {
+    //         street: checkout.delivery?.address?.street || "",
+
+    //         unit: checkout.delivery?.address?.unit || "",
+
+    //         city: checkout.delivery?.address?.city || "",
+
+    //         state: checkout.delivery?.address?.state || "",
+
+    //         postalCode: checkout.delivery?.address?.postalCode || "",
+
+    //         country: checkout.delivery?.address?.country || "US",
+
+    //         formattedAddress: checkout.delivery?.resolvedAddress || null,
+    //       },
+    //     },
+    //   };
+    // }
 
     return basePayload;
   };

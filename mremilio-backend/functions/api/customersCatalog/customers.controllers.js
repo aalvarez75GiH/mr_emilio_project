@@ -168,6 +168,59 @@ const createGuestCustomer = async ({
   return customerDocument;
 };
 
+const updateGuestCustomerProfile = async ({
+  existingCustomer,
+  customer,
+  defaultDeliveryAddress = null,
+}) => {
+  const normalizedCustomer = validateCustomerPayload(customer);
+
+  const normalizedDeliveryAddress = normalizeDeliveryAddress(
+    defaultDeliveryAddress
+  );
+
+  const customerId = existingCustomer?.id;
+
+  if (!customerId) {
+    throw new Error("Existing customer id is required");
+  }
+
+  const now = new Date().toISOString();
+
+  const customerUpdates = {
+    firstName: normalizedCustomer.firstName,
+    lastName: normalizedCustomer.lastName,
+
+    email: normalizedCustomer.email,
+    phone: normalizedCustomer.phone,
+
+    updatedAt: now,
+  };
+
+  /**
+   * Only update the saved delivery address when
+   * the current checkout actually provides one.
+   *
+   * A Pickup checkout must not erase an existing
+   * Local Delivery address.
+   */
+  if (normalizedDeliveryAddress) {
+    customerUpdates.defaultDeliveryAddress = normalizedDeliveryAddress;
+  }
+
+  await firebaseController.db
+    .collection(CUSTOMERS_COLLECTION)
+    .doc(customerId)
+    .set(customerUpdates, {
+      merge: true,
+    });
+
+  return {
+    ...existingCustomer,
+    ...customerUpdates,
+  };
+};
+
 const resolveGuestCustomer = async ({
   customer,
   defaultDeliveryAddress = null,
@@ -177,7 +230,13 @@ const resolveGuestCustomer = async ({
   const existingCustomer = await getCustomerByEmail(normalizedCustomer.email);
 
   if (existingCustomer) {
-    return existingCustomer;
+    return updateGuestCustomerProfile({
+      existingCustomer,
+
+      customer: normalizedCustomer,
+
+      defaultDeliveryAddress,
+    });
   }
 
   return createGuestCustomer({
@@ -185,9 +244,27 @@ const resolveGuestCustomer = async ({
     defaultDeliveryAddress,
   });
 };
+// const resolveGuestCustomer = async ({
+//   customer,
+//   defaultDeliveryAddress = null,
+// }) => {
+//   const normalizedCustomer = validateCustomerPayload(customer);
+
+//   const existingCustomer = await getCustomerByEmail(normalizedCustomer.email);
+
+//   if (existingCustomer) {
+//     return existingCustomer;
+//   }
+
+//   return createGuestCustomer({
+//     customer: normalizedCustomer,
+//     defaultDeliveryAddress,
+//   });
+// };
 
 module.exports = {
   getCustomerByEmail,
   createGuestCustomer,
+  updateGuestCustomerProfile,
   resolveGuestCustomer,
 };
