@@ -7,6 +7,7 @@ const {
   buildPendingOrderPayload,
   ORDER_STATUSES,
   PAYMENT_STATUSES,
+  ORDER_TIMELINE_STATUSES,
 } = require("./orders.handlers");
 
 const ORDERS_COLLECTION = "ordersCatalog";
@@ -184,14 +185,36 @@ const markOrderAsPaid = async ({
     return null;
   }
 
+  const existingOrderData = existingOrder.data();
+
   const now = new Date().toISOString();
+
+  const existingStatusHistory = Array.isArray(existingOrderData.statusHistory)
+    ? existingOrderData.statusHistory
+    : [];
+
+  const alreadyConfirmed = existingStatusHistory.some(
+    (entry) => entry?.status === ORDER_TIMELINE_STATUSES.CONFIRMED
+  );
+
+  const nextStatusHistory = alreadyConfirmed
+    ? existingStatusHistory
+    : [
+        ...existingStatusHistory,
+        {
+          status: ORDER_TIMELINE_STATUSES.CONFIRMED,
+          createdAt: now,
+        },
+      ];
 
   await orderRef.set(
     {
       status: ORDER_STATUSES.CONFIRMED,
 
+      statusHistory: nextStatusHistory,
+
       payment: {
-        ...existingOrder.data().payment,
+        ...existingOrderData.payment,
 
         status: PAYMENT_STATUSES.PAID,
 
@@ -206,7 +229,7 @@ const markOrderAsPaid = async ({
             }
           : null,
 
-        paidAt: now,
+        paidAt: existingOrderData.payment?.paidAt || now,
 
         failure: null,
       },
@@ -222,6 +245,60 @@ const markOrderAsPaid = async ({
 
   return updatedOrder.data();
 };
+// const markOrderAsPaid = async ({
+//   orderId,
+//   paymentIntentId,
+//   latestChargeId,
+//   card,
+// }) => {
+//   const orderRef = firebaseController.db
+//     .collection(ORDERS_COLLECTION)
+//     .doc(String(orderId));
+
+//   const existingOrder = await orderRef.get();
+
+//   if (!existingOrder.exists) {
+//     return null;
+//   }
+
+//   const now = new Date().toISOString();
+
+//   await orderRef.set(
+//     {
+//       status: ORDER_STATUSES.CONFIRMED,
+
+//       payment: {
+//         ...existingOrder.data().payment,
+
+//         status: PAYMENT_STATUSES.PAID,
+
+//         paymentIntentId: paymentIntentId || null,
+
+//         latestChargeId: latestChargeId || null,
+
+//         card: card
+//           ? {
+//               brand: card.brand || null,
+//               last4: card.last4 || null,
+//             }
+//           : null,
+
+//         paidAt: now,
+
+//         failure: null,
+//       },
+
+//       updatedAt: now,
+//     },
+//     {
+//       merge: true,
+//     }
+//   );
+
+//   const updatedOrder = await orderRef.get();
+
+//   return updatedOrder.data();
+// };
 
 const markOrderAsRequiresAttention = async ({
   orderId,

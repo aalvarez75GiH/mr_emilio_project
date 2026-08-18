@@ -5,6 +5,7 @@ const crypto = require("crypto");
 const {
   ORDER_STATUSES,
   PAYMENT_STATUSES,
+  ORDER_TIMELINE_STATUSES,
   ORDER_CURRENCY,
 } = require("./orders.constants");
 
@@ -76,38 +77,6 @@ const normalizeCustomerSnapshot = (customer) => {
     phone,
   };
 };
-// const normalizeCustomerSnapshot = (customer) => {
-//   if (!isPlainObject(customer)) {
-//     throw createOrderHandlerError(
-//       "Order customer information is required",
-//       400
-//     );
-//   }
-
-//   const firstName =
-//     typeof customer.firstName === "string" ? customer.firstName.trim() : "";
-
-//   const lastName =
-//     typeof customer.lastName === "string" ? customer.lastName.trim() : "";
-
-//   const email = typeof customer.email === "string" ? customer.email.trim() : "";
-
-//   const phone = typeof customer.phone === "string" ? customer.phone.trim() : "";
-
-//   if (!firstName || !lastName || !email || !phone) {
-//     throw createOrderHandlerError(
-//       "Complete customer information is required to create an order",
-//       400
-//     );
-//   }
-
-//   return {
-//     firstName,
-//     lastName,
-//     email,
-//     phone,
-//   };
-// };
 
 const normalizeOrderItems = (items) => {
   if (!Array.isArray(items) || items.length === 0) {
@@ -276,6 +245,13 @@ const buildPendingOrderPayload = ({
 
     status: ORDER_STATUSES.PAYMENT_PROCESSING,
 
+    statusHistory: [
+      {
+        status: ORDER_TIMELINE_STATUSES.ORDER_PLACED,
+        createdAt: now,
+      },
+    ],
+
     customer: customerSnapshot,
 
     fulfillment,
@@ -310,7 +286,6 @@ const buildPendingOrderPayload = ({
     updatedAt: now,
   };
 };
-
 module.exports = {
   createOrderHandlerError,
 
@@ -318,4 +293,5 @@ module.exports = {
 
   ORDER_STATUSES,
   PAYMENT_STATUSES,
+  ORDER_TIMELINE_STATUSES,
 };

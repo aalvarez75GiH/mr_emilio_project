@@ -191,6 +191,13 @@ const serializeCustomerOrder = (order) => {
 
     status: order.status || null,
 
+    statusHistory: Array.isArray(order.statusHistory)
+      ? order.statusHistory.map((entry) => ({
+          status: entry?.status || null,
+          createdAt: entry?.createdAt || null,
+        }))
+      : [],
+
     customer: {
       firstName: order.customer?.firstName || "",
       lastName: order.customer?.lastName || "",

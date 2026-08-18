@@ -21,10 +21,19 @@ const PAYMENT_STATUSES = Object.freeze({
   FAILED: "failed",
 });
 
+const ORDER_TIMELINE_STATUSES = Object.freeze({
+  ORDER_PLACED: "order_placed",
+  CONFIRMED: "confirmed",
+  PICKED_UP: "picked_up",
+  OUT_FOR_DELIVERY: "out_for_delivery",
+  DELIVERED: "delivered",
+});
+
 const ORDER_CURRENCY = "usd";
 
 module.exports = {
   ORDER_STATUSES,
   PAYMENT_STATUSES,
   ORDER_CURRENCY,
+  ORDER_TIMELINE_STATUSES,
 };
