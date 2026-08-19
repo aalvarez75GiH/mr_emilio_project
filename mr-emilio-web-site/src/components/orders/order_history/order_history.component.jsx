@@ -13,8 +13,7 @@ import {
 } from "react-icons/fi";
 // import storeIcon from "../../../assets/checkout/icons/storeIcon.svg";
 import { StoreIcon } from "../../icons/store_icon/store_icon.component";
-import { useOrders } from "../../../infrastructure/services/orders/use-orders.hook";
-
+import { getDisplayProduct } from "../../home/shop_products_carousel/shop_products_carousel.helpers";
 import {
   buildOrderTimeline,
   ORDER_TIMELINE_STATES,
@@ -32,7 +31,8 @@ import {
   OrderCardHeaderGroup,
   OrderHeaderPrimaryRow,
   OrderNumber,
-  OrderDate,
+  OrderNumberLabel,
+  // OrderDate,
   OrderStatus,
   OrderCardHeaderRight,
   OrderHeaderTotal,
@@ -77,7 +77,9 @@ import {
   CompactItemsSummary,
   CompactItemCount,
   CompactThumbnails,
-  CompactThumbnail,
+  // CompactThumbnail,
+  CompactThumbnailFrame,
+  CompactThumbnailImage,
   CompactThumbnailFallback,
   CompactTotalGroup,
   CompactTotalLabel,
@@ -92,6 +94,9 @@ import {
   DesktopMetaContent,
 } from "./order_history.styles";
 
+import { useOrders } from "../../../infrastructure/services/orders/use-orders.hook";
+import { useCustomerCatalog } from "../../../infrastructure/services/catalog/use-customer_catalog.hook";
+
 const ORDERS_PER_PAGE = 2;
 
 const formatCurrencyFromCents = (amountInCents) => {
@@ -105,20 +110,6 @@ const formatCurrencyFromCents = (amountInCents) => {
     style: "currency",
     currency: "USD",
   }).format(amount / 100);
-};
-
-const formatOrderDate = (date) => {
-  const parsedDate = new Date(date);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return "";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(parsedDate);
 };
 
 const formatTimelineDate = (date) => {
@@ -212,12 +203,48 @@ const getUpcomingTimelineText = (status) => {
   return "Pending";
 };
 
-const getItemImageSrc = (item) => {
-  if (typeof item?.image?.url === "string" && item.image.url.trim()) {
-    return item.image.url.trim();
+const getItemImageSrc = (item, customerCatalogProducts) => {
+  if (!item?.productId) {
+    return null;
+  }
+
+  if (!Array.isArray(customerCatalogProducts)) {
+    return null;
+  }
+
+  const catalogProduct = customerCatalogProducts.find(
+    (product) => product?.id === item.productId
+  );
+
+  if (!catalogProduct) {
+    return null;
+  }
+
+  const displayProduct = getDisplayProduct(catalogProduct);
+
+  if (
+    typeof displayProduct?.image === "string" &&
+    displayProduct.image.trim()
+  ) {
+    return displayProduct.image.trim();
   }
 
   return null;
+};
+const getItemDisplayProduct = (item, customerCatalogProducts) => {
+  if (!item?.productId || !Array.isArray(customerCatalogProducts)) {
+    return null;
+  }
+
+  const catalogProduct = customerCatalogProducts.find(
+    (product) => product?.id === item.productId
+  );
+
+  if (!catalogProduct) {
+    return null;
+  }
+
+  return getDisplayProduct(catalogProduct);
 };
 
 const getItemAlt = (item) => {
@@ -266,6 +293,7 @@ const OrderTimelineView = ({ timeline }) => {
 
 export const OrderHistory = () => {
   const { customerOrders } = useOrders();
+  const { customerCatalogProducts } = useCustomerCatalog();
 
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -333,15 +361,24 @@ export const OrderHistory = () => {
         <OrdersList>
           {pageOrders.map((order) => {
             const timeline = buildOrderTimeline(order);
-
             const isExpanded = expandedOrders[order.id] !== false;
-
             const isPickup = order.fulfillment?.method === "pickup";
+            const itemCount = Array.isArray(order.items)
+              ? order.items.length
+              : 0;
+            const isSingleItemOrder = itemCount === 1;
+            // const timeline = buildOrderTimeline(order);
+
+            // const isExpanded = expandedOrders[order.id] !== false;
+
+            // const isPickup = order.fulfillment?.method === "pickup";
 
             return (
               <OrderCard key={order.id}>
                 <OrderCardHeader>
                   <OrderCardHeaderGroup>
+                    <OrderNumberLabel>Order #</OrderNumberLabel>
+
                     <OrderHeaderPrimaryRow>
                       <OrderNumber>{order.orderNumber}</OrderNumber>
 
@@ -349,8 +386,6 @@ export const OrderHistory = () => {
                         {formatOrderStatus(order.status)}
                       </OrderStatus>
                     </OrderHeaderPrimaryRow>
-
-                    <OrderDate>{formatOrderDate(order.createdAt)}</OrderDate>
                   </OrderCardHeaderGroup>
 
                   <OrderCardHeaderRight>
@@ -436,11 +471,13 @@ export const OrderHistory = () => {
                         </DesktopMetaItem>
                       </DesktopMetaGrid>
 
-                      <DesktopBottomGrid>
+                      <DesktopBottomGrid $singleItem={isSingleItemOrder}>
                         <DesktopOrderItems>
                           {order.items?.map((item) => {
-                            const imageSrc = getItemImageSrc(item);
-
+                            const imageSrc = getItemImageSrc(
+                              item,
+                              customerCatalogProducts
+                            );
                             return (
                               <DesktopOrderItem key={item.productId}>
                                 <DesktopOrderItemVisual>
@@ -480,7 +517,7 @@ export const OrderHistory = () => {
                           })}
                         </DesktopOrderItems>
 
-                        <DesktopOrderSummary>
+                        <DesktopOrderSummary $singleItem={isSingleItemOrder}>
                           <SummaryRow>
                             <SummaryLabel>Subtotal</SummaryLabel>
 
@@ -515,7 +552,7 @@ export const OrderHistory = () => {
                             </SummaryValue>
                           </SummaryRow>
 
-                          <SummaryTotalRow>
+                          <SummaryTotalRow $singleItem={isSingleItemOrder}>
                             <SummaryTotalLabel>Total</SummaryTotalLabel>
 
                             <SummaryTotalValue>
@@ -564,18 +601,29 @@ export const OrderHistory = () => {
 
                           <CompactThumbnails>
                             {order.items?.slice(0, 4).map((item) => {
-                              const imageSrc = getItemImageSrc(item);
+                              const displayProduct = getItemDisplayProduct(
+                                item,
+                                customerCatalogProducts
+                              );
 
-                              return imageSrc ? (
-                                <CompactThumbnail
-                                  key={item.productId}
-                                  src={imageSrc}
-                                  alt={getItemAlt(item)}
-                                />
-                              ) : (
-                                <CompactThumbnailFallback key={item.productId}>
-                                  <FiPackage />
-                                </CompactThumbnailFallback>
+                              if (!displayProduct?.image) {
+                                return (
+                                  <CompactThumbnailFallback
+                                    key={item.productId}
+                                  >
+                                    <FiPackage />
+                                  </CompactThumbnailFallback>
+                                );
+                              }
+
+                              return (
+                                <CompactThumbnailFrame key={item.productId}>
+                                  <CompactThumbnailImage
+                                    src={displayProduct.image}
+                                    alt={displayProduct.alt || getItemAlt(item)}
+                                    $imageScale={displayProduct.imageScale}
+                                  />
+                                </CompactThumbnailFrame>
                               );
                             })}
                           </CompactThumbnails>
