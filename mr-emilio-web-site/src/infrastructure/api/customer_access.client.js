@@ -1,11 +1,15 @@
 import axios from "axios";
 
+import environment from "../../config/environment";
+
 const customerAccessClient = axios.create({
-  baseURL: "",
+  baseURL: environment.apiBaseUrl,
+
   headers: {
     Accept: "application/json",
     "Content-Type": "application/json",
   },
+
   withCredentials: true,
 });
 
