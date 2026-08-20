@@ -32,7 +32,6 @@ export const OrderHistorySection = styled.section`
     padding: ${({ theme }) => theme.spacing.xxl}
       ${({ theme }) => theme.spacing.lg} ${({ theme }) => theme.spacing.section};
   }
-
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
     min-height: calc(100vh - ${({ theme }) => theme.sizes.header.mobileHeight});
 
@@ -42,6 +41,7 @@ export const OrderHistorySection = styled.section`
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
     padding-left: ${({ theme }) => theme.spacing.md};
+
     padding-right: ${({ theme }) => theme.spacing.md};
   }
 `;
@@ -105,7 +105,6 @@ export const OrderMetaIcon = styled.div`
 
 export const OrderHistoryContainer = styled.div`
   width: 100%;
-
   max-width: ${({ theme }) => theme.sizes.layout.narrowContentWidth};
 
   margin: 0 auto;
@@ -126,6 +125,60 @@ export const OrderHistoryContainer = styled.div`
     max-width: 100%;
   }
 `;
+// export const OrderHistoryContainer = styled.div`
+//   width: 100%;
+
+//   max-width: ${({ theme }) => theme.sizes.layout.narrowContentWidth};
+
+//   margin: 0 auto;
+
+//   @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
+//     max-width: ${({ theme }) => theme.sizes.layout.contentWidth};
+//   }
+
+//   @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+//     max-width: ${({ theme }) => theme.sizes.layout.narrowContentWidth};
+//   }
+
+//   @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+//     max-width: 960px;
+//   }
+
+//   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+//     max-width: 100%;
+//   }
+
+//   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+//     padding-top: ${({ theme }) => theme.spacing.xl};
+//   }
+
+//   @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+//     padding-top: ${({ theme }) => theme.spacing.lg};
+//   }
+// `;
+// export const OrderHistoryContainer = styled.div`
+//   width: 100%;
+
+//   max-width: ${({ theme }) => theme.sizes.layout.narrowContentWidth};
+
+//   margin: 0 auto;
+
+//   @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
+//     max-width: ${({ theme }) => theme.sizes.layout.contentWidth};
+//   }
+
+//   @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+//     max-width: ${({ theme }) => theme.sizes.layout.narrowContentWidth};
+//   }
+
+//   @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+//     max-width: 960px;
+//   }
+
+//   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+//     max-width: 100%;
+//   }
+// `;
 
 export const OrderHistoryHeader = styled.div`
   width: 100%;

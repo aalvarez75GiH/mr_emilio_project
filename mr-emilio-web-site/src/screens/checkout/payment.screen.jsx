@@ -18,8 +18,7 @@ import { FULFILLMENT_METHODS } from "../../infrastructure/services/checkout/chec
 
 import { MainHeader } from "../../components/main_header/main_header.component";
 
-import { CheckoutBackHeader } from "../../components/layout/checkout_back_header/checkout_back_header.component";
-
+import { BackHeader } from "../../components/common/back_header/back_header.component";
 import { Snackbar } from "../../components/layout/snackbar/snackbar.component";
 
 import { StripePaymentForm } from "../../components/forms/stripe_payment_form/stripe_payment_form.component";
@@ -448,29 +447,6 @@ export const Payment = () => {
       setReviewPreparation(reviewResponse);
 
       navigateWithTransition("/checkout/review", "forward");
-      //   setPaymentPreparation({
-      //     confirmationTokenId: confirmationToken.id,
-
-      //     paymentMethodType:
-      //       confirmationToken?.payment_method_preview?.type || "card",
-      //   });
-
-      //   console.log("PAYMENT READY FOR REVIEW:", {
-      //     confirmationTokenId: confirmationToken.id,
-
-      //     paymentMethodType:
-      //       confirmationToken?.payment_method_preview?.type || "card",
-
-      //     cartSubtotal,
-
-      //     deliveryFee,
-
-      //     provisionalTax: tax,
-
-      //     provisionalTotal: currentTotal,
-      //   });
-
-      //   navigateWithTransition("/checkout/review", "forward");
     } catch (error) {
       console.error("Unable to prepare Stripe payment:", error);
 
@@ -487,7 +463,7 @@ export const Payment = () => {
     >
       <MainHeader />
 
-      <CheckoutBackHeader
+      <BackHeader
         label="Information"
         ariaLabel="Return to customer information"
         onBack={handleBack}

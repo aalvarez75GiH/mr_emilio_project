@@ -5,8 +5,7 @@ import { useState } from "react";
 import checkoutProducts from "../../assets/checkout/type_of_customer/cartoonish_products.png";
 
 import { MainHeader } from "../../components/main_header/main_header.component";
-import { CheckoutBackHeader } from "../../components/layout/checkout_back_header/checkout_back_header.component";
-
+import { BackHeader } from "../../components/common/back_header/back_header.component";
 import {
   CheckoutEntryTransition,
   CheckoutEntryPage,
@@ -88,7 +87,7 @@ export const CheckoutEntry = () => {
     >
       <MainHeader />
 
-      <CheckoutBackHeader
+      <BackHeader
         label="Cart"
         ariaLabel="Return to cart"
         onBack={handleBackToCart}

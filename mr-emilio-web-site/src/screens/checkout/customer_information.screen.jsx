@@ -9,8 +9,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { MainHeader } from "../../components/main_header/main_header.component";
-import { CheckoutBackHeader } from "../../components/layout/checkout_back_header/checkout_back_header.component";
-
+import { BackHeader } from "../../components/common/back_header/back_header.component";
 import { AddressAutocomplete } from "../../components/forms/address_autocomplete/address_autocomplete.component";
 
 import {
@@ -343,7 +342,7 @@ export const CustomerInformation = () => {
     >
       <MainHeader />
 
-      <CheckoutBackHeader
+      <BackHeader
         label={isPickup ? "Stores" : "Delivery type"}
         ariaLabel={
           isPickup ? "Return to store selection" : "Return to delivery options"

@@ -11,8 +11,7 @@ import { useNavigate } from "react-router-dom";
 
 import { MainHeader } from "../../components/main_header/main_header.component";
 
-import { CheckoutBackHeader } from "../../components/layout/checkout_back_header/checkout_back_header.component";
-
+import { BackHeader } from "../../components/common/back_header/back_header.component";
 import { useCheckout } from "../../infrastructure/services/checkout/use-checkout.hook";
 
 import { useCart } from "../../infrastructure/services/cart/use-cart.hook";
@@ -219,31 +218,6 @@ export const Review = () => {
         },
       };
     }
-    // if (isLocalDelivery) {
-    //   return {
-    //     ...basePayload,
-
-    //     delivery: {
-    //       warehouseId: checkout.delivery?.fulfillingWarehouseId || null,
-
-    //       address: {
-    //         street: checkout.delivery?.address?.street || "",
-
-    //         unit: checkout.delivery?.address?.unit || "",
-
-    //         city: checkout.delivery?.address?.city || "",
-
-    //         state: checkout.delivery?.address?.state || "",
-
-    //         postalCode: checkout.delivery?.address?.postalCode || "",
-
-    //         country: checkout.delivery?.address?.country || "US",
-
-    //         formattedAddress: checkout.delivery?.resolvedAddress || null,
-    //       },
-    //     },
-    //   };
-    // }
 
     return basePayload;
   };
@@ -371,7 +345,7 @@ export const Review = () => {
       >
         <MainHeader />
 
-        <CheckoutBackHeader
+        <BackHeader
           label="Payment"
           ariaLabel="Return to payment"
           onBack={handleBack}
@@ -396,7 +370,7 @@ export const Review = () => {
     >
       <MainHeader />
 
-      <CheckoutBackHeader
+      <BackHeader
         label="Payment"
         ariaLabel="Return to payment"
         onBack={handleBack}

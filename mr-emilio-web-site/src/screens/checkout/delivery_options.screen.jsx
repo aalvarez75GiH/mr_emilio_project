@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { MainHeader } from "../../components/main_header/main_header.component";
 
-import { CheckoutBackHeader } from "../../components/layout/checkout_back_header/checkout_back_header.component";
+import { BackHeader } from "../../components/common/back_header/back_header.component";
 
 import { useCheckout } from "../../infrastructure/services/checkout/use-checkout.hook";
 
@@ -90,7 +90,7 @@ export const DeliveryOptions = () => {
     >
       <MainHeader />
 
-      <CheckoutBackHeader
+      <BackHeader
         label="Account"
         ariaLabel="Return to checkout options"
         onBack={handleBack}

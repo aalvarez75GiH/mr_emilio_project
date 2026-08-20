@@ -11,8 +11,7 @@ import { useNavigate } from "react-router-dom";
 
 import { MainHeader } from "../../components/main_header/main_header.component";
 
-import { CheckoutBackHeader } from "../../components/layout/checkout_back_header/checkout_back_header.component";
-
+import { BackHeader } from "../../components/common/back_header/back_header.component";
 import storeIcon from "../../assets/checkout/icons/storeIcon.svg";
 
 import { useWarehouse } from "../../infrastructure/services/warehouse/use-warehouse.hook";
@@ -209,7 +208,7 @@ export const PickupStore = () => {
     >
       <MainHeader />
 
-      <CheckoutBackHeader
+      <BackHeader
         label="Delivery type"
         ariaLabel="Return to delivery options"
         onBack={handleBack}

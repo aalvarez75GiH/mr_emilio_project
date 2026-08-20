@@ -102,8 +102,7 @@ import {
 } from "./cart.styles";
 
 import { MainHeader } from "../../components/main_header/main_header.component";
-
-import { CheckoutBackHeader } from "../../components/layout/checkout_back_header/checkout_back_header.component";
+import { BackHeader } from "../../components/common/back_header/back_header.component";
 
 const formatCurrency = (amount) =>
   new Intl.NumberFormat("en-US", {
@@ -220,7 +219,7 @@ export const Cart = () => {
         <CartScreenTransition $isExiting={isExiting}>
           <MainHeader />
 
-          <CheckoutBackHeader
+          <BackHeader
             label="Continue shopping"
             ariaLabel="Return to shopping"
             onBack={handleBackToShopping}
@@ -255,7 +254,7 @@ export const Cart = () => {
       <CartScreenTransition $isExiting={isExiting}>
         <MainHeader />
 
-        <CheckoutBackHeader
+        <BackHeader
           label="Continue shopping"
           ariaLabel="Return to shopping"
           onBack={handleBackToShopping}

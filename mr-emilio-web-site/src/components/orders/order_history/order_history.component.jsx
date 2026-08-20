@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import {
   FiCheck,
@@ -19,6 +20,8 @@ import {
   ORDER_TIMELINE_STATES,
 } from "../../../infrastructure/services/orders/orders.helpers";
 
+import { ScreenTransition } from "../../common/screen_transition/screen_transition.styles";
+const TRANSITION_DURATION_MS = 260;
 import {
   OrderHistorySection,
   OrderHistoryContainer,
@@ -93,6 +96,7 @@ import {
   DesktopMetaIcon,
   DesktopMetaContent,
 } from "./order_history.styles";
+import { BackHeader } from "../../common/back_header/back_header.component";
 
 import { useOrders } from "../../../infrastructure/services/orders/use-orders.hook";
 import { useCustomerCatalog } from "../../../infrastructure/services/catalog/use-customer_catalog.hook";
@@ -292,12 +296,30 @@ const OrderTimelineView = ({ timeline }) => {
 };
 
 export const OrderHistory = () => {
+  const navigate = useNavigate();
+
   const { customerOrders } = useOrders();
   const { customerCatalogProducts } = useCustomerCatalog();
 
   const [currentPage, setCurrentPage] = useState(1);
 
   const [expandedOrders, setExpandedOrders] = useState({});
+
+  const [transitionState, setTransitionState] = useState({
+    isExiting: false,
+    direction: "forward",
+  });
+
+  const handleBack = () => {
+    setTransitionState({
+      isExiting: true,
+      direction: "back",
+    });
+
+    window.setTimeout(() => {
+      navigate(-1);
+    }, TRANSITION_DURATION_MS);
+  };
 
   const totalPages = Math.max(
     1,
@@ -348,350 +370,359 @@ export const OrderHistory = () => {
   );
 
   return (
-    <OrderHistorySection>
-      <OrderHistoryContainer>
-        <OrderHistoryHeader>
-          <OrderHistoryTitle>My Orders</OrderHistoryTitle>
+    <ScreenTransition
+      $isExiting={transitionState.isExiting}
+      $direction={transitionState.direction}
+    >
+      <BackHeader
+        label="Back"
+        ariaLabel="Go back from My Orders"
+        onBack={handleBack}
+      />
+      <OrderHistorySection>
+        <OrderHistoryContainer>
+          <OrderHistoryHeader>
+            <OrderHistoryTitle>My Orders</OrderHistoryTitle>
 
-          <OrderHistorySubtitle>
-            Track your orders, from placement to pickup or delivery.
-          </OrderHistorySubtitle>
-        </OrderHistoryHeader>
+            <OrderHistorySubtitle>
+              Track your orders, from placement to pickup or delivery.
+            </OrderHistorySubtitle>
+          </OrderHistoryHeader>
 
-        <OrdersList>
-          {pageOrders.map((order) => {
-            const timeline = buildOrderTimeline(order);
-            const isExpanded = expandedOrders[order.id] !== false;
-            const isPickup = order.fulfillment?.method === "pickup";
-            const itemCount = Array.isArray(order.items)
-              ? order.items.length
-              : 0;
-            const isSingleItemOrder = itemCount === 1;
-            // const timeline = buildOrderTimeline(order);
+          <OrdersList>
+            {pageOrders.map((order) => {
+              const timeline = buildOrderTimeline(order);
+              const isExpanded = expandedOrders[order.id] !== false;
+              const isPickup = order.fulfillment?.method === "pickup";
+              const itemCount = Array.isArray(order.items)
+                ? order.items.length
+                : 0;
+              const isSingleItemOrder = itemCount === 1;
 
-            // const isExpanded = expandedOrders[order.id] !== false;
+              return (
+                <OrderCard key={order.id}>
+                  <OrderCardHeader>
+                    <OrderCardHeaderGroup>
+                      <OrderNumberLabel>Order #</OrderNumberLabel>
 
-            // const isPickup = order.fulfillment?.method === "pickup";
+                      <OrderHeaderPrimaryRow>
+                        <OrderNumber>{order.orderNumber}</OrderNumber>
 
-            return (
-              <OrderCard key={order.id}>
-                <OrderCardHeader>
-                  <OrderCardHeaderGroup>
-                    <OrderNumberLabel>Order #</OrderNumberLabel>
+                        <OrderStatus $status={order.status}>
+                          {formatOrderStatus(order.status)}
+                        </OrderStatus>
+                      </OrderHeaderPrimaryRow>
+                    </OrderCardHeaderGroup>
 
-                    <OrderHeaderPrimaryRow>
-                      <OrderNumber>{order.orderNumber}</OrderNumber>
+                    <OrderCardHeaderRight>
+                      <OrderHeaderTotal>
+                        {formatCurrencyFromCents(order.pricing?.totalInCents)}
+                      </OrderHeaderTotal>
 
-                      <OrderStatus $status={order.status}>
-                        {formatOrderStatus(order.status)}
-                      </OrderStatus>
-                    </OrderHeaderPrimaryRow>
-                  </OrderCardHeaderGroup>
+                      <OrderHeaderPayment>
+                        {order.payment?.card?.last4
+                          ? `${formatCardBrand(
+                              order.payment.card.brand
+                            )} ending in ${order.payment.card.last4}`
+                          : "Card payment"}
+                      </OrderHeaderPayment>
+                    </OrderCardHeaderRight>
 
-                  <OrderCardHeaderRight>
-                    <OrderHeaderTotal>
-                      {formatCurrencyFromCents(order.pricing?.totalInCents)}
-                    </OrderHeaderTotal>
+                    <OrderCollapseButton
+                      type="button"
+                      aria-label={
+                        isExpanded
+                          ? `Collapse ${order.orderNumber}`
+                          : `Expand ${order.orderNumber}`
+                      }
+                      aria-expanded={isExpanded}
+                      $expanded={isExpanded}
+                      onClick={() => toggleOrder(order.id)}
+                    >
+                      <FiChevronDown />
+                    </OrderCollapseButton>
+                  </OrderCardHeader>
 
-                    <OrderHeaderPayment>
-                      {order.payment?.card?.last4
-                        ? `${formatCardBrand(
-                            order.payment.card.brand
-                          )} ending in ${order.payment.card.last4}`
-                        : "Card payment"}
-                    </OrderHeaderPayment>
-                  </OrderCardHeaderRight>
+                  {isExpanded && (
+                    <>
+                      <OrderTimelineView timeline={timeline} />
 
-                  <OrderCollapseButton
-                    type="button"
-                    aria-label={
-                      isExpanded
-                        ? `Collapse ${order.orderNumber}`
-                        : `Expand ${order.orderNumber}`
-                    }
-                    aria-expanded={isExpanded}
-                    $expanded={isExpanded}
-                    onClick={() => toggleOrder(order.id)}
-                  >
-                    <FiChevronDown />
-                  </OrderCollapseButton>
-                </OrderCardHeader>
+                      <DesktopOrderDetails>
+                        <DesktopMetaGrid>
+                          <DesktopMetaItem>
+                            <DesktopMetaIcon>
+                              {getFulfillmentIcon(order.fulfillment?.method)}
+                            </DesktopMetaIcon>
 
-                {isExpanded && (
-                  <>
-                    <OrderTimelineView timeline={timeline} />
+                            <DesktopMetaContent>
+                              <DesktopMetaLabel>Fulfillment</DesktopMetaLabel>
 
-                    <DesktopOrderDetails>
-                      <DesktopMetaGrid>
-                        <DesktopMetaItem>
-                          <DesktopMetaIcon>
-                            {getFulfillmentIcon(order.fulfillment?.method)}
-                          </DesktopMetaIcon>
+                              <DesktopMetaValue>
+                                {formatFulfillmentMethod(
+                                  order.fulfillment?.method
+                                )}
+                              </DesktopMetaValue>
+                            </DesktopMetaContent>
+                          </DesktopMetaItem>
 
-                          <DesktopMetaContent>
-                            <DesktopMetaLabel>Fulfillment</DesktopMetaLabel>
+                          <DesktopMetaItem>
+                            <DesktopMetaIcon>
+                              <StoreIcon />
+                            </DesktopMetaIcon>
+                            <DesktopMetaContent>
+                              <DesktopMetaLabel>Store</DesktopMetaLabel>
 
-                            <DesktopMetaValue>
-                              {formatFulfillmentMethod(
-                                order.fulfillment?.method
-                              )}
-                            </DesktopMetaValue>
-                          </DesktopMetaContent>
-                        </DesktopMetaItem>
+                              <DesktopMetaValue>
+                                {order.fulfillment?.warehouseName || "—"}
+                              </DesktopMetaValue>
+                            </DesktopMetaContent>
+                          </DesktopMetaItem>
 
-                        <DesktopMetaItem>
-                          <DesktopMetaIcon>
-                            <StoreIcon />
-                          </DesktopMetaIcon>
-                          <DesktopMetaContent>
-                            <DesktopMetaLabel>Store</DesktopMetaLabel>
+                          <DesktopMetaItem>
+                            <DesktopMetaIcon>
+                              <FiMapPin />
+                            </DesktopMetaIcon>
 
-                            <DesktopMetaValue>
-                              {order.fulfillment?.warehouseName || "—"}
-                            </DesktopMetaValue>
-                          </DesktopMetaContent>
-                        </DesktopMetaItem>
+                            <DesktopMetaContent>
+                              <DesktopMetaLabel>
+                                {isPickup
+                                  ? "Pickup location"
+                                  : "Delivery address"}
+                              </DesktopMetaLabel>
 
-                        <DesktopMetaItem>
-                          <DesktopMetaIcon>
-                            <FiMapPin />
-                          </DesktopMetaIcon>
+                              <DesktopMetaValue>
+                                {order.fulfillment?.address || "—"}
+                              </DesktopMetaValue>
+                            </DesktopMetaContent>
+                          </DesktopMetaItem>
+                        </DesktopMetaGrid>
 
-                          <DesktopMetaContent>
-                            <DesktopMetaLabel>
-                              {isPickup
-                                ? "Pickup location"
-                                : "Delivery address"}
-                            </DesktopMetaLabel>
-
-                            <DesktopMetaValue>
-                              {order.fulfillment?.address || "—"}
-                            </DesktopMetaValue>
-                          </DesktopMetaContent>
-                        </DesktopMetaItem>
-                      </DesktopMetaGrid>
-
-                      <DesktopBottomGrid $singleItem={isSingleItemOrder}>
-                        <DesktopOrderItems>
-                          {order.items?.map((item) => {
-                            const imageSrc = getItemImageSrc(
-                              item,
-                              customerCatalogProducts
-                            );
-                            return (
-                              <DesktopOrderItem key={item.productId}>
-                                <DesktopOrderItemVisual>
-                                  {imageSrc ? (
-                                    <ProductThumbnail
-                                      src={imageSrc}
-                                      alt={getItemAlt(item)}
-                                    />
-                                  ) : (
-                                    <ProductThumbnailFallback>
-                                      <FiPackage />
-                                    </ProductThumbnailFallback>
-                                  )}
-                                </DesktopOrderItemVisual>
-
-                                <DesktopOrderItemContent>
-                                  <DesktopOrderItemName>
-                                    {item.productName}
-                                  </DesktopOrderItemName>
-
-                                  <DesktopOrderItemMeta>
-                                    Qty {item.quantity} ·{" "}
-                                    {formatCurrencyFromCents(
-                                      item.unitPriceInCents
-                                    )}{" "}
-                                    each
-                                  </DesktopOrderItemMeta>
-                                </DesktopOrderItemContent>
-
-                                <DesktopOrderItemPrice>
-                                  {formatCurrencyFromCents(
-                                    item.lineTotalInCents
-                                  )}
-                                </DesktopOrderItemPrice>
-                              </DesktopOrderItem>
-                            );
-                          })}
-                        </DesktopOrderItems>
-
-                        <DesktopOrderSummary $singleItem={isSingleItemOrder}>
-                          <SummaryRow>
-                            <SummaryLabel>Subtotal</SummaryLabel>
-
-                            <SummaryValue>
-                              {formatCurrencyFromCents(
-                                order.pricing?.subtotalInCents
-                              )}
-                            </SummaryValue>
-                          </SummaryRow>
-
-                          <SummaryRow>
-                            <SummaryLabel>
-                              {isPickup ? "Pickup" : "Delivery fee"}
-                            </SummaryLabel>
-
-                            <SummaryValue>
-                              {isPickup
-                                ? "Free"
-                                : formatCurrencyFromCents(
-                                    order.pricing?.deliveryFeeInCents
-                                  )}
-                            </SummaryValue>
-                          </SummaryRow>
-
-                          <SummaryRow>
-                            <SummaryLabel>Sales tax</SummaryLabel>
-
-                            <SummaryValue>
-                              {formatCurrencyFromCents(
-                                order.pricing?.taxInCents
-                              )}
-                            </SummaryValue>
-                          </SummaryRow>
-
-                          <SummaryTotalRow $singleItem={isSingleItemOrder}>
-                            <SummaryTotalLabel>Total</SummaryTotalLabel>
-
-                            <SummaryTotalValue>
-                              {formatCurrencyFromCents(
-                                order.pricing?.totalInCents
-                              )}
-                            </SummaryTotalValue>
-                          </SummaryTotalRow>
-                        </DesktopOrderSummary>
-                      </DesktopBottomGrid>
-                    </DesktopOrderDetails>
-
-                    <CompactOrderDetails>
-                      <CompactFulfillmentRow>
-                        <CompactFulfillmentIcon>
-                          {getFulfillmentIcon(order.fulfillment?.method)}
-                        </CompactFulfillmentIcon>
-
-                        <CompactFulfillmentContent>
-                          <CompactFulfillmentMethod>
-                            {formatFulfillmentMethod(order.fulfillment?.method)}
-                          </CompactFulfillmentMethod>
-
-                          <CompactFulfillmentText>
-                            {order.fulfillment?.warehouseName || "—"}
-                          </CompactFulfillmentText>
-
-                          <CompactFulfillmentText>
-                            {order.fulfillment?.address || "—"}
-                          </CompactFulfillmentText>
-                        </CompactFulfillmentContent>
-
-                        <CompactFulfillmentArrow>
-                          <FiChevronRight />
-                        </CompactFulfillmentArrow>
-                      </CompactFulfillmentRow>
-
-                      <CompactFooter>
-                        <CompactItemsSummary>
-                          <CompactItemCount>
-                            {order.items?.length || 0}{" "}
-                            {(order.items?.length || 0) === 1
-                              ? "item"
-                              : "items"}
-                          </CompactItemCount>
-
-                          <CompactThumbnails>
-                            {order.items?.slice(0, 4).map((item) => {
-                              const displayProduct = getItemDisplayProduct(
+                        <DesktopBottomGrid $singleItem={isSingleItemOrder}>
+                          <DesktopOrderItems>
+                            {order.items?.map((item) => {
+                              const imageSrc = getItemImageSrc(
                                 item,
                                 customerCatalogProducts
                               );
-
-                              if (!displayProduct?.image) {
-                                return (
-                                  <CompactThumbnailFallback
-                                    key={item.productId}
-                                  >
-                                    <FiPackage />
-                                  </CompactThumbnailFallback>
-                                );
-                              }
-
                               return (
-                                <CompactThumbnailFrame key={item.productId}>
-                                  <CompactThumbnailImage
-                                    src={displayProduct.image}
-                                    alt={displayProduct.alt || getItemAlt(item)}
-                                    $imageScale={displayProduct.imageScale}
-                                  />
-                                </CompactThumbnailFrame>
+                                <DesktopOrderItem key={item.productId}>
+                                  <DesktopOrderItemVisual>
+                                    {imageSrc ? (
+                                      <ProductThumbnail
+                                        src={imageSrc}
+                                        alt={getItemAlt(item)}
+                                      />
+                                    ) : (
+                                      <ProductThumbnailFallback>
+                                        <FiPackage />
+                                      </ProductThumbnailFallback>
+                                    )}
+                                  </DesktopOrderItemVisual>
+
+                                  <DesktopOrderItemContent>
+                                    <DesktopOrderItemName>
+                                      {item.productName}
+                                    </DesktopOrderItemName>
+
+                                    <DesktopOrderItemMeta>
+                                      Qty {item.quantity} ·{" "}
+                                      {formatCurrencyFromCents(
+                                        item.unitPriceInCents
+                                      )}{" "}
+                                      each
+                                    </DesktopOrderItemMeta>
+                                  </DesktopOrderItemContent>
+
+                                  <DesktopOrderItemPrice>
+                                    {formatCurrencyFromCents(
+                                      item.lineTotalInCents
+                                    )}
+                                  </DesktopOrderItemPrice>
+                                </DesktopOrderItem>
                               );
                             })}
-                          </CompactThumbnails>
-                        </CompactItemsSummary>
+                          </DesktopOrderItems>
 
-                        <CompactTotalGroup>
-                          <CompactTotalLabel>Total</CompactTotalLabel>
+                          <DesktopOrderSummary $singleItem={isSingleItemOrder}>
+                            <SummaryRow>
+                              <SummaryLabel>Subtotal</SummaryLabel>
 
-                          <CompactTotalValue>
-                            {formatCurrencyFromCents(
-                              order.pricing?.totalInCents
-                            )}
-                          </CompactTotalValue>
-                        </CompactTotalGroup>
-                      </CompactFooter>
-                    </CompactOrderDetails>
-                  </>
-                )}
-              </OrderCard>
-            );
-          })}
-        </OrdersList>
+                              <SummaryValue>
+                                {formatCurrencyFromCents(
+                                  order.pricing?.subtotalInCents
+                                )}
+                              </SummaryValue>
+                            </SummaryRow>
 
-        {customerOrders.length > ORDERS_PER_PAGE && (
-          <Pagination>
-            <PaginationSummary>
-              Showing {firstVisibleOrder}–{lastVisibleOrder} of{" "}
-              {customerOrders.length} orders
-            </PaginationSummary>
+                            <SummaryRow>
+                              <SummaryLabel>
+                                {isPickup ? "Pickup" : "Delivery fee"}
+                              </SummaryLabel>
 
-            <PaginationControls>
-              <PaginationButton
-                type="button"
-                disabled={currentPage === 1}
-                onClick={() => goToPage(currentPage - 1)}
-                aria-label="Previous orders"
-              >
-                <FiChevronLeft />
-              </PaginationButton>
+                              <SummaryValue>
+                                {isPickup
+                                  ? "Free"
+                                  : formatCurrencyFromCents(
+                                      order.pricing?.deliveryFeeInCents
+                                    )}
+                              </SummaryValue>
+                            </SummaryRow>
 
-              {Array.from(
-                {
-                  length: totalPages,
-                },
-                (_, index) => index + 1
-              ).map((page) => (
-                <PaginationPageButton
-                  key={page}
+                            <SummaryRow>
+                              <SummaryLabel>Sales tax</SummaryLabel>
+
+                              <SummaryValue>
+                                {formatCurrencyFromCents(
+                                  order.pricing?.taxInCents
+                                )}
+                              </SummaryValue>
+                            </SummaryRow>
+
+                            <SummaryTotalRow $singleItem={isSingleItemOrder}>
+                              <SummaryTotalLabel>Total</SummaryTotalLabel>
+
+                              <SummaryTotalValue>
+                                {formatCurrencyFromCents(
+                                  order.pricing?.totalInCents
+                                )}
+                              </SummaryTotalValue>
+                            </SummaryTotalRow>
+                          </DesktopOrderSummary>
+                        </DesktopBottomGrid>
+                      </DesktopOrderDetails>
+
+                      <CompactOrderDetails>
+                        <CompactFulfillmentRow>
+                          <CompactFulfillmentIcon>
+                            {getFulfillmentIcon(order.fulfillment?.method)}
+                          </CompactFulfillmentIcon>
+
+                          <CompactFulfillmentContent>
+                            <CompactFulfillmentMethod>
+                              {formatFulfillmentMethod(
+                                order.fulfillment?.method
+                              )}
+                            </CompactFulfillmentMethod>
+
+                            <CompactFulfillmentText>
+                              {order.fulfillment?.warehouseName || "—"}
+                            </CompactFulfillmentText>
+
+                            <CompactFulfillmentText>
+                              {order.fulfillment?.address || "—"}
+                            </CompactFulfillmentText>
+                          </CompactFulfillmentContent>
+
+                          <CompactFulfillmentArrow>
+                            <FiChevronRight />
+                          </CompactFulfillmentArrow>
+                        </CompactFulfillmentRow>
+
+                        <CompactFooter>
+                          <CompactItemsSummary>
+                            <CompactItemCount>
+                              {order.items?.length || 0}{" "}
+                              {(order.items?.length || 0) === 1
+                                ? "item"
+                                : "items"}
+                            </CompactItemCount>
+
+                            <CompactThumbnails>
+                              {order.items?.slice(0, 4).map((item) => {
+                                const displayProduct = getItemDisplayProduct(
+                                  item,
+                                  customerCatalogProducts
+                                );
+
+                                if (!displayProduct?.image) {
+                                  return (
+                                    <CompactThumbnailFallback
+                                      key={item.productId}
+                                    >
+                                      <FiPackage />
+                                    </CompactThumbnailFallback>
+                                  );
+                                }
+
+                                return (
+                                  <CompactThumbnailFrame key={item.productId}>
+                                    <CompactThumbnailImage
+                                      src={displayProduct.image}
+                                      alt={
+                                        displayProduct.alt || getItemAlt(item)
+                                      }
+                                      $imageScale={displayProduct.imageScale}
+                                    />
+                                  </CompactThumbnailFrame>
+                                );
+                              })}
+                            </CompactThumbnails>
+                          </CompactItemsSummary>
+
+                          <CompactTotalGroup>
+                            <CompactTotalLabel>Total</CompactTotalLabel>
+
+                            <CompactTotalValue>
+                              {formatCurrencyFromCents(
+                                order.pricing?.totalInCents
+                              )}
+                            </CompactTotalValue>
+                          </CompactTotalGroup>
+                        </CompactFooter>
+                      </CompactOrderDetails>
+                    </>
+                  )}
+                </OrderCard>
+              );
+            })}
+          </OrdersList>
+
+          {customerOrders.length > ORDERS_PER_PAGE && (
+            <Pagination>
+              <PaginationSummary>
+                Showing {firstVisibleOrder}–{lastVisibleOrder} of{" "}
+                {customerOrders.length} orders
+              </PaginationSummary>
+
+              <PaginationControls>
+                <PaginationButton
                   type="button"
-                  $active={page === currentPage}
-                  onClick={() => goToPage(page)}
+                  disabled={currentPage === 1}
+                  onClick={() => goToPage(currentPage - 1)}
+                  aria-label="Previous orders"
                 >
-                  {page}
-                </PaginationPageButton>
-              ))}
+                  <FiChevronLeft />
+                </PaginationButton>
 
-              <PaginationButton
-                type="button"
-                disabled={currentPage === totalPages}
-                onClick={() => goToPage(currentPage + 1)}
-                aria-label="Next orders"
-              >
-                <FiChevronRight />
-              </PaginationButton>
-            </PaginationControls>
-          </Pagination>
-        )}
-      </OrderHistoryContainer>
-    </OrderHistorySection>
+                {Array.from(
+                  {
+                    length: totalPages,
+                  },
+                  (_, index) => index + 1
+                ).map((page) => (
+                  <PaginationPageButton
+                    key={page}
+                    type="button"
+                    $active={page === currentPage}
+                    onClick={() => goToPage(page)}
+                  >
+                    {page}
+                  </PaginationPageButton>
+                ))}
+
+                <PaginationButton
+                  type="button"
+                  disabled={currentPage === totalPages}
+                  onClick={() => goToPage(currentPage + 1)}
+                  aria-label="Next orders"
+                >
+                  <FiChevronRight />
+                </PaginationButton>
+              </PaginationControls>
+            </Pagination>
+          )}
+        </OrderHistoryContainer>
+      </OrderHistorySection>
+    </ScreenTransition>
   );
 };

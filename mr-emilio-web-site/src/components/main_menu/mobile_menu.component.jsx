@@ -211,9 +211,7 @@ export const MobileMenu = ({ isOpen, onClose }) => {
                 disabled={isLocationLoading}
               >
                 <StoreCardActionLabel>
-                  {isLocationLoading
-                    ? "Updating location..."
-                    : "Change location"}
+                  {isLocationLoading ? "Updating store..." : "Change Store"}
                 </StoreCardActionLabel>
 
                 {!isLocationLoading && <FiChevronRight />}
