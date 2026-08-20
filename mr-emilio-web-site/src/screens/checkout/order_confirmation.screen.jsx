@@ -10,11 +10,8 @@ import {
 import storeIcon from "../../assets/checkout/icons/storeIcon.svg";
 
 import { useNavigate } from "react-router-dom";
-
 import confirmationBanner from "../../assets/checkout/images/confirmation_screen_logo.png";
-
 import { useCheckout } from "../../infrastructure/services/checkout/use-checkout.hook";
-
 import { FULFILLMENT_METHODS } from "../../infrastructure/services/checkout/checkout.helpers";
 
 import {

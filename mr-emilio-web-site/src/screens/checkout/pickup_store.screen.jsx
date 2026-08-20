@@ -9,19 +9,15 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { ScreenTransition } from "../../components/common/screen_transition/screen_transition.styles";
 import { MainHeader } from "../../components/main_header/main_header.component";
-
 import { BackHeader } from "../../components/common/back_header/back_header.component";
+import { useWarehouse } from "../../infrastructure/services/warehouse/use-warehouse.hook";
+import { useCheckout } from "../../infrastructure/services/checkout/use-checkout.hook";
+import { FULFILLMENT_METHODS } from "../../infrastructure/services/checkout/checkout.helpers";
 import storeIcon from "../../assets/checkout/icons/storeIcon.svg";
 
-import { useWarehouse } from "../../infrastructure/services/warehouse/use-warehouse.hook";
-
-import { useCheckout } from "../../infrastructure/services/checkout/use-checkout.hook";
-
-import { FULFILLMENT_METHODS } from "../../infrastructure/services/checkout/checkout.helpers";
-
 import {
-  PickupStoreTransition,
   PickupStorePage,
   PickupStoreContainer,
   PickupStoreHeader,
@@ -202,7 +198,7 @@ export const PickupStore = () => {
     Boolean(customerCoordinates) && isPickupWarehousesLoading;
 
   return (
-    <PickupStoreTransition
+    <ScreenTransition
       $isExiting={transitionState.isExiting}
       $direction={transitionState.direction}
     >
@@ -405,6 +401,6 @@ export const PickupStore = () => {
           )}
         </PickupStoreContainer>
       </PickupStorePage>
-    </PickupStoreTransition>
+    </ScreenTransition>
   );
 };

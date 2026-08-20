@@ -18,7 +18,7 @@ import {
 
 export const OrderAccessEmail = () => {
   const { requestAccessCode, isRequestingCode, error } = useOrders();
-
+  console.log("Error:", error);
   const [email, setEmail] = useState("");
 
   const handleSubmit = async (event) => {

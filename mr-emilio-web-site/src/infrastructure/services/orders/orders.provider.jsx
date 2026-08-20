@@ -8,6 +8,8 @@ import {
   getCustomerOrdersRequest,
 } from "./orders.requests";
 
+import { getOrdersErrorMessage } from "./orders.helpers";
+
 const ORDER_ACCESS_STATES = {
   IDLE: "idle",
   CHECKING_SESSION: "checking_session",
@@ -61,53 +63,18 @@ export const OrdersProvider = ({ children }) => {
         return [];
       }
 
-      setError(
-        error?.response?.data?.error ||
-          error?.message ||
-          "We could not load your orders."
-      );
+      setError(getOrdersErrorMessage(error, "We could not load your orders."));
+      //   setError(
+      //     error?.response?.data?.error ||
+      //       error?.message ||
+      //       "We could not load your orders."
+      //   );
 
       throw error;
     } finally {
       setIsLoadingOrders(false);
     }
   }, []);
-  //   const loadCustomerOrders = useCallback(async () => {
-  //     setIsLoadingOrders(true);
-  //     setError(null);
-
-  //     try {
-  //       const response = await getCustomerOrdersRequest();
-
-  //       const orders = Array.isArray(response?.customerOrders)
-  //         ? response.customerOrders
-  //         : [];
-
-  //       setCustomerOrders(orders);
-
-  //       setAccessState(ORDER_ACCESS_STATES.VERIFIED);
-
-  //       return orders;
-  //     } catch (error) {
-  //       if (error?.statusCode === 401) {
-  //         setCustomerOrders([]);
-
-  //         setAccessState(ORDER_ACCESS_STATES.EMAIL_REQUIRED);
-
-  //         return [];
-  //       }
-
-  //       setCustomerOrders([]);
-
-  //       setError(error?.message || "We could not load your orders.");
-
-  //       setAccessState(ORDER_ACCESS_STATES.ERROR);
-
-  //       return [];
-  //     } finally {
-  //       setIsLoadingOrders(false);
-  //     }
-  //   }, []);
 
   const checkCustomerAccessSession = useCallback(async () => {
     setAccessState(ORDER_ACCESS_STATES.CHECKING_SESSION);
@@ -132,7 +99,12 @@ export const OrdersProvider = ({ children }) => {
 
       return response;
     } catch (error) {
-      setError(error?.message || "We could not send your verification code.");
+      setError(
+        getOrdersErrorMessage(
+          error,
+          "We could not send your verification code."
+        )
+      );
 
       throw error;
     } finally {
@@ -166,7 +138,10 @@ export const OrdersProvider = ({ children }) => {
         return await loadCustomerOrders();
       } catch (error) {
         setError(
-          error?.message || "The verification code could not be confirmed."
+          getOrdersErrorMessage(
+            error,
+            "The verification code could not be confirmed."
+          )
         );
 
         throw error;

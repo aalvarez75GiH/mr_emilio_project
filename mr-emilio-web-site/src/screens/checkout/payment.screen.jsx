@@ -1,34 +1,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { FiChevronRight, FiCreditCard, FiLock, FiMapPin } from "react-icons/fi";
-
 import { Elements } from "@stripe/react-stripe-js";
-
 import { useNavigate } from "react-router-dom";
-
 import { stripePromise } from "../../infrastructure/stripe/stripe.client";
-
 import { getStripeCustomerError } from "../../infrastructure/stripe/stripe.errors";
-
 import { useCart } from "../../infrastructure/services/cart/use-cart.hook";
-
 import { useCheckout } from "../../infrastructure/services/checkout/use-checkout.hook";
-
 import { FULFILLMENT_METHODS } from "../../infrastructure/services/checkout/checkout.helpers";
-
 import { MainHeader } from "../../components/main_header/main_header.component";
-
 import { BackHeader } from "../../components/common/back_header/back_header.component";
 import { Snackbar } from "../../components/layout/snackbar/snackbar.component";
-
 import { StripePaymentForm } from "../../components/forms/stripe_payment_form/stripe_payment_form.component";
-
 import storeIcon from "../../assets/checkout/icons/storeIcon.svg";
-
 import { prepareReviewRequest } from "../../infrastructure/services/checkout/checkout.requests";
+import { ScreenTransition } from "../../components/common/screen_transition/screen_transition.styles";
 
 import {
-  PaymentTransition,
   PaymentPage,
   PaymentContainer,
   CheckoutProgress,
@@ -457,7 +445,7 @@ export const Payment = () => {
   };
 
   return (
-    <PaymentTransition
+    <ScreenTransition
       $isExiting={transitionState.isExiting}
       $direction={transitionState.direction}
     >
@@ -773,6 +761,6 @@ export const Payment = () => {
         message={snackbar.message}
         onClose={closeSnackbar}
       />
-    </PaymentTransition>
+    </ScreenTransition>
   );
 };

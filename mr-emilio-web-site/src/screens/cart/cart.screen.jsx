@@ -17,13 +17,11 @@ import {
 } from "react-icons/fi";
 
 import { Link, useNavigate } from "react-router-dom";
-
 import { BenefitIcon } from "../../assets/shop_products_carousel/product_card/icons";
-
-import { useCart } from "../../infrastructure/services/cart/use-cart.hook";
+import { ScreenTransition } from "../../components/common/screen_transition/screen_transition.styles";
 
 import {
-  CartScreenTransition,
+  // CartScreenTransition,
   CartPage,
   CartPageContainer,
   CartHeader,
@@ -103,6 +101,8 @@ import {
 
 import { MainHeader } from "../../components/main_header/main_header.component";
 import { BackHeader } from "../../components/common/back_header/back_header.component";
+
+import { useCart } from "../../infrastructure/services/cart/use-cart.hook";
 
 const formatCurrency = (amount) =>
   new Intl.NumberFormat("en-US", {
@@ -216,7 +216,7 @@ export const Cart = () => {
   if (cartItems.length === 0) {
     return (
       <>
-        <CartScreenTransition $isExiting={isExiting}>
+        <ScreenTransition $isExiting={isExiting}>
           <MainHeader />
 
           <BackHeader
@@ -244,14 +244,14 @@ export const Cart = () => {
               </EmptyCart>
             </CartPageContainer>
           </CartPage>
-        </CartScreenTransition>
+        </ScreenTransition>
       </>
     );
   }
 
   return (
     <>
-      <CartScreenTransition $isExiting={isExiting}>
+      <ScreenTransition $isExiting={isExiting}>
         <MainHeader />
 
         <BackHeader
@@ -598,7 +598,7 @@ export const Cart = () => {
             </CartLayout>
           </CartPageContainer>
         </CartPage>
-      </CartScreenTransition>
+      </ScreenTransition>
     </>
   );
 };

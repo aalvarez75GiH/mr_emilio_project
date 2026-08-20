@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { MainHeader } from "../../components/main_header/main_header.component";
 import { BackHeader } from "../../components/common/back_header/back_header.component";
 import { AddressAutocomplete } from "../../components/forms/address_autocomplete/address_autocomplete.component";
+import { ScreenTransition } from "../../components/common/screen_transition/screen_transition.styles";
 
 import {
   FULFILLMENT_METHODS,
@@ -33,7 +34,6 @@ import { useCheckout } from "../../infrastructure/services/checkout/use-checkout
 import { useWarehouse } from "../../infrastructure/services/warehouse/use-warehouse.hook";
 
 import {
-  CustomerInformationTransition,
   CustomerInformationPage,
   CustomerInformationContainer,
   CheckoutProgress,
@@ -336,7 +336,7 @@ export const CustomerInformation = () => {
   };
 
   return (
-    <CustomerInformationTransition
+    <ScreenTransition
       $isExiting={transitionState.isExiting}
       $direction={transitionState.direction}
     >
@@ -601,6 +601,6 @@ export const CustomerInformation = () => {
           </CustomerForm>
         </CustomerInformationContainer>
       </CustomerInformationPage>
-    </CustomerInformationTransition>
+    </ScreenTransition>
   );
 };

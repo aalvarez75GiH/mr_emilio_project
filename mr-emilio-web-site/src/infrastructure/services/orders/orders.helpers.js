@@ -115,3 +115,15 @@ export const buildOrderTimeline = (order) => {
 
   return sharedSteps;
 };
+
+export const getOrdersErrorMessage = (
+  error,
+  fallbackMessage = "Something went wrong."
+) => {
+  return (
+    error?.response?.data?.error ||
+    error?.response?.data?.message ||
+    error?.message ||
+    fallbackMessage
+  );
+};

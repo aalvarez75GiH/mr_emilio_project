@@ -3,15 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 import { MainHeader } from "../../components/main_header/main_header.component";
-
 import { BackHeader } from "../../components/common/back_header/back_header.component";
-
 import { useCheckout } from "../../infrastructure/services/checkout/use-checkout.hook";
-
 import { FULFILLMENT_METHODS } from "../../infrastructure/services/checkout/checkout.helpers";
+import { ScreenTransition } from "../../components/common/screen_transition/screen_transition.styles";
 
 import {
-  DeliveryScreenTransition,
   DeliveryPage,
   DeliveryContainer,
   CheckoutProgress,
@@ -84,7 +81,7 @@ export const DeliveryOptions = () => {
     checkout.fulfillmentMethod === FULFILLMENT_METHODS.LOCAL_DELIVERY;
 
   return (
-    <DeliveryScreenTransition
+    <ScreenTransition
       $isExiting={transitionState.isExiting}
       $direction={transitionState.direction}
     >
@@ -208,6 +205,6 @@ export const DeliveryOptions = () => {
           </DeliveryContinueButton>
         </DeliveryContainer>
       </DeliveryPage>
-    </DeliveryScreenTransition>
+    </ScreenTransition>
   );
 };

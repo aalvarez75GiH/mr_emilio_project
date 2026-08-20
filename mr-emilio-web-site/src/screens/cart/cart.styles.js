@@ -37,29 +37,6 @@ export const CartScreenTransition = styled.div`
     animation: none;
   }
 `;
-// export const CartScreenTransition = styled.div`
-//   width: 100%;
-
-//   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-//     animation: cart-screen-enter 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
-
-//     @keyframes cart-screen-enter {
-//       from {
-//         opacity: 0.96;
-//         transform: translateX(100%);
-//       }
-
-//       to {
-//         opacity: 1;
-//         transform: translateX(0);
-//       }
-//     }
-//   }
-
-//   @media (prefers-reduced-motion: reduce) {
-//     animation: none;
-//   }
-// `;
 
 export const CartPage = styled.main`
   width: 100%;

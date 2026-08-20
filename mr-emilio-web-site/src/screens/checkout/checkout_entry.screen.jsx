@@ -6,8 +6,9 @@ import checkoutProducts from "../../assets/checkout/type_of_customer/cartoonish_
 
 import { MainHeader } from "../../components/main_header/main_header.component";
 import { BackHeader } from "../../components/common/back_header/back_header.component";
+import { ScreenTransition } from "../../components/common/screen_transition/screen_transition.styles";
 import {
-  CheckoutEntryTransition,
+  //   CheckoutEntryTransition,
   CheckoutEntryPage,
   CheckoutEntryContainer,
   CheckoutIllustrationSection,
@@ -81,7 +82,7 @@ export const CheckoutEntry = () => {
   };
 
   return (
-    <CheckoutEntryTransition
+    <ScreenTransition
       $isExiting={transitionState.isExiting}
       $direction={transitionState.direction}
     >
@@ -185,6 +186,6 @@ export const CheckoutEntry = () => {
           </CheckoutLegal>
         </CheckoutEntryContainer>
       </CheckoutEntryPage>
-    </CheckoutEntryTransition>
+    </ScreenTransition>
   );
 };

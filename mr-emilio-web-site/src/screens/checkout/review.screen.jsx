@@ -8,20 +8,16 @@ import {
 
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import { MainHeader } from "../../components/main_header/main_header.component";
-
 import { BackHeader } from "../../components/common/back_header/back_header.component";
 import { useCheckout } from "../../infrastructure/services/checkout/use-checkout.hook";
-
 import { useCart } from "../../infrastructure/services/cart/use-cart.hook";
-
 import { FULFILLMENT_METHODS } from "../../infrastructure/services/checkout/checkout.helpers";
+import { ScreenTransition } from "../../components/common/screen_transition/screen_transition.styles";
 
 import storeIcon from "../../assets/checkout/icons/storeIcon.svg";
 
 import {
-  ReviewTransition,
   ReviewPage,
   ReviewContainer,
   CheckoutProgress,
@@ -339,7 +335,7 @@ export const Review = () => {
 
   if (!reviewIsReady) {
     return (
-      <ReviewTransition
+      <ScreenTransition
         $isExiting={transitionState.isExiting}
         $direction={transitionState.direction}
       >
@@ -359,12 +355,12 @@ export const Review = () => {
             </ReviewUnavailableState>
           </ReviewContainer>
         </ReviewPage>
-      </ReviewTransition>
+      </ScreenTransition>
     );
   }
 
   return (
-    <ReviewTransition
+    <ScreenTransition
       $isExiting={transitionState.isExiting}
       $direction={transitionState.direction}
     >
@@ -691,6 +687,6 @@ export const Review = () => {
           </ReviewLayout>
         </ReviewContainer>
       </ReviewPage>
-    </ReviewTransition>
+    </ScreenTransition>
   );
 };
