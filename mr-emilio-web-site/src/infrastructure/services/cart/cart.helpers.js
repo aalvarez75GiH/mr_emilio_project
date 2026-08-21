@@ -241,6 +241,47 @@ export const revalidateCartForWarehouse = (cartItems = [], warehouse) => {
   );
 };
 
+export const canWarehouseFulfillCart = (cartItems = [], warehouse) => {
+  if (!warehouse?.id) {
+    return false;
+  }
+
+  if (!Array.isArray(cartItems)) {
+    return false;
+  }
+
+  if (cartItems.length === 0) {
+    return true;
+  }
+
+  const revalidatedItems = revalidateCartForWarehouse(cartItems, warehouse);
+
+  return revalidatedItems.every(
+    (item) =>
+      item.isAvailableAtWarehouse === true &&
+      item.availabilityStatus === CART_ITEM_AVAILABILITY.AVAILABLE &&
+      Number(item.quantity) > 0 &&
+      Number(item.quantity) <= Number(item.availableStock)
+  );
+};
+
+export const filterWarehouseEntriesForCart = (
+  warehouseEntries = [],
+  cartItems = []
+) => {
+  if (!Array.isArray(warehouseEntries)) {
+    return [];
+  }
+
+  if (!Array.isArray(cartItems) || cartItems.length === 0) {
+    return warehouseEntries;
+  }
+
+  return warehouseEntries.filter((entry) =>
+    canWarehouseFulfillCart(cartItems, entry?.warehouse)
+  );
+};
+
 export const getCartQuantity = (cartItems = []) => {
   return cartItems.reduce((total, item) => {
     return total + Number(item.quantity || 0);

@@ -1,11 +1,4 @@
-import {
-  FiAlertTriangle,
-  FiChevronRight,
-  FiClock,
-  FiMapPin,
-  FiNavigation,
-} from "react-icons/fi";
-
+import { FiChevronRight } from "react-icons/fi";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -15,7 +8,6 @@ import { BackHeader } from "../../components/common/back_header/back_header.comp
 import { useWarehouse } from "../../infrastructure/services/warehouse/use-warehouse.hook";
 import { useCheckout } from "../../infrastructure/services/checkout/use-checkout.hook";
 import { FULFILLMENT_METHODS } from "../../infrastructure/services/checkout/checkout.helpers";
-import storeIcon from "../../assets/checkout/icons/storeIcon.svg";
 
 import {
   PickupStorePage,
@@ -23,36 +15,10 @@ import {
   PickupStoreHeader,
   PickupStoreTitle,
   PickupStoreSubtitle,
-  StoreSection,
-  StoreSectionLabel,
-  StoreCard,
-  StoreCardLayout,
-  StoreIconColumn,
-  StoreIconContainer,
-  StoreIconImage,
-  StoreMainContent,
-  StoreSelectionColumn,
-  StoreCardHeader,
-  StoreRadio,
-  StoreInformation,
-  StoreName,
-  StoreRecommendedBadge,
-  StoreAddress,
-  StoreMeta,
-  StoreMetaItem,
-  StoreDistanceWarning,
-  StoreDistanceWarningIcon,
-  StoreDistanceWarningContent,
-  StoreDistanceWarningTitle,
-  StoreDistanceWarningText,
-  StoreHours,
-  StoreHoursIcon,
-  StoreHoursContent,
-  StoreHoursLabel,
-  StoreHoursValue,
   PickupStoreEmptyState,
   PickupStoreContinueButton,
 } from "./pickup_store.styles";
+import { StoreSelectionCard } from "../../components/store_selection/store_selection_card.component";
 
 const TRANSITION_DURATION_MS = 260;
 
@@ -240,152 +206,26 @@ export const PickupStore = () => {
               {stores.map((storeEntry, index) => {
                 const store = storeEntry.warehouse;
 
-                const distanceMiles =
-                  storeEntry.customerContext?.distance?.miles;
-
-                const pickupDistanceWarning =
-                  storeEntry.customerContext?.fulfillment
-                    ?.pickupDistanceWarning;
-
-                const shouldShowDistanceWarning =
-                  pickupDistanceWarning?.shouldDisplay === true;
-
-                const openingTime = store.warehouse_information?.opening_time;
-
-                const closingTime = store.warehouse_information?.closing_time;
-
                 const isSelected = selectedWarehouseId === store.id;
 
                 const isClosest = index === 0;
 
-                const normalizedDistanceMiles = Number(distanceMiles);
-
-                const hasValidDistance = Number.isFinite(
-                  normalizedDistanceMiles
-                );
-
-                const distanceLabel = hasValidDistance
-                  ? `${normalizedDistanceMiles.toFixed(1)} miles away`
-                  : null;
-
-                const cardAriaLabel = [
-                  store.warehouse_name,
-                  store.physical_address,
-                  distanceLabel,
-                  shouldShowDistanceWarning
-                    ? "This store is farther than the recommended pickup distance."
-                    : null,
-                  isSelected ? "Selected" : "Not selected",
-                ]
-                  .filter(Boolean)
-                  .join(". ");
+                const sectionLabel =
+                  index === 0
+                    ? "Closest store"
+                    : index === 1
+                    ? "Other stores"
+                    : null;
 
                 return (
-                  <StoreSection key={store.id}>
-                    {index === 0 && (
-                      <StoreSectionLabel>Closest store</StoreSectionLabel>
-                    )}
-
-                    {index === 1 && (
-                      <StoreSectionLabel>Other stores</StoreSectionLabel>
-                    )}
-
-                    <StoreCard
-                      type="button"
-                      $selected={isSelected}
-                      aria-pressed={isSelected}
-                      aria-label={cardAriaLabel}
-                      onClick={() => handleStoreSelection(storeEntry)}
-                    >
-                      <StoreCardLayout>
-                        <StoreIconColumn>
-                          <StoreIconContainer>
-                            <StoreIconImage
-                              src={storeIcon}
-                              alt=""
-                              aria-hidden="true"
-                            />
-                          </StoreIconContainer>
-                        </StoreIconColumn>
-
-                        <StoreMainContent>
-                          <StoreCardHeader>
-                            <StoreInformation>
-                              <StoreName>{store.warehouse_name}</StoreName>
-
-                              {isClosest && (
-                                <StoreRecommendedBadge>
-                                  Closest to you
-                                </StoreRecommendedBadge>
-                              )}
-                            </StoreInformation>
-                          </StoreCardHeader>
-
-                          <StoreAddress>
-                            <FiMapPin aria-hidden="true" />
-
-                            <span>{store.physical_address}</span>
-                          </StoreAddress>
-
-                          {hasValidDistance && (
-                            <StoreMeta>
-                              <StoreMetaItem>
-                                <FiNavigation aria-hidden="true" />
-                                {normalizedDistanceMiles.toFixed(1)} miles away
-                              </StoreMetaItem>
-                            </StoreMeta>
-                          )}
-                          {shouldShowDistanceWarning && (
-                            <StoreDistanceWarning>
-                              <StoreDistanceWarningIcon aria-hidden="true">
-                                <FiAlertTriangle />
-                              </StoreDistanceWarningIcon>
-
-                              <StoreDistanceWarningContent>
-                                <StoreDistanceWarningTitle>
-                                  This store is farther away
-                                </StoreDistanceWarningTitle>
-
-                                <StoreDistanceWarningText>
-                                  Take into consideration that this store is{" "}
-                                  {normalizedDistanceMiles.toFixed(1)} miles
-                                  away! You can still choose this store, up to
-                                  you.
-                                </StoreDistanceWarningText>
-                              </StoreDistanceWarningContent>
-                            </StoreDistanceWarning>
-                          )}
-
-                          {(openingTime || closingTime) && (
-                            <StoreHours>
-                              <StoreHoursIcon aria-hidden="true">
-                                <FiClock />
-                              </StoreHoursIcon>
-
-                              <StoreHoursContent>
-                                <StoreHoursLabel>Pickup hours</StoreHoursLabel>
-
-                                <StoreHoursValue>
-                                  {openingTime || "Opening time unavailable"}
-
-                                  {openingTime && closingTime ? " – " : ""}
-
-                                  {closingTime || "Closing time unavailable"}
-                                </StoreHoursValue>
-                              </StoreHoursContent>
-                            </StoreHours>
-                          )}
-                        </StoreMainContent>
-
-                        <StoreSelectionColumn>
-                          <StoreRadio
-                            $selected={isSelected}
-                            aria-hidden="true"
-                          />
-                        </StoreSelectionColumn>
-                      </StoreCardLayout>
-                    </StoreCard>
-                  </StoreSection>
+                  <StoreSelectionCard
+                    key={store.id}
+                    storeEntry={storeEntry}
+                    isSelected={isSelected}
+                    isClosest={isClosest}
+                    sectionLabel={sectionLabel}
+                    onSelect={handleStoreSelection}
+                  />
                 );
               })}
 

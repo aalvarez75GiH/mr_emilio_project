@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+
 import { Link } from "react-router-dom";
 
 import {
@@ -14,7 +15,6 @@ import {
 import { StoreIcon } from "../icons/store_icon/store_icon.component";
 
 import { useWarehouse } from "../../infrastructure/services/warehouse/use-warehouse.hook";
-import { useGeolocation } from "../../infrastructure/services/geolocation/use-geolocation.hook";
 
 import { getWarehouseLocationLabel } from "../location/location_selector/location_selector.helpers";
 
@@ -49,27 +49,15 @@ import {
 } from "./mobile_menu.styles";
 
 export const MobileMenu = ({ isOpen, onClose }) => {
-  const { warehouse, isWarehouseLoading } = useWarehouse();
-
-  const { requestCurrentLocation, isGeolocationLoading } = useGeolocation();
+  const { warehouse } = useWarehouse();
 
   const warehouseLocation = useMemo(
     () => getWarehouseLocationLabel(warehouse),
     [warehouse]
   );
 
-  const isLocationLoading = isWarehouseLoading || isGeolocationLoading;
-
   const handleNavigation = () => {
     onClose?.();
-  };
-
-  const handleLocationRequest = async () => {
-    if (isLocationLoading) {
-      return;
-    }
-
-    await requestCurrentLocation();
   };
 
   return (
@@ -206,15 +194,13 @@ export const MobileMenu = ({ isOpen, onClose }) => {
               </StoreCardTop>
 
               <StoreCardAction
-                type="button"
-                onClick={handleLocationRequest}
-                disabled={isLocationLoading}
+                as={Link}
+                to="/change-store"
+                onClick={handleNavigation}
               >
-                <StoreCardActionLabel>
-                  {isLocationLoading ? "Updating store..." : "Change Store"}
-                </StoreCardActionLabel>
+                <StoreCardActionLabel>Change Store</StoreCardActionLabel>
 
-                {!isLocationLoading && <FiChevronRight />}
+                <FiChevronRight />
               </StoreCardAction>
             </StoreCard>
           )}

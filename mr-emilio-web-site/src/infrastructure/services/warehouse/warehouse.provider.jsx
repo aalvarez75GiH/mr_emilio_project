@@ -10,23 +10,15 @@ import {
   getWarehousesByDistanceRequest,
   getPickupWarehousesByDrivingDistanceRequest,
 } from "./warehouse.requests";
-// import {
-//   getClosestWarehouseRequest,
-//   getWarehouseByIdRequest,
-//   getWarehousesByDistanceRequest,
-// } from "./warehouse.requests";
 
 import {
   normalizeClosestWarehouseResponse,
   normalizeWarehousesByDistanceResponse,
   normalizePickupWarehousesByDrivingDistanceResponse,
 } from "./warehouse.helpers";
-// import {
-//   normalizeClosestWarehouseResponse,
-//   normalizeWarehousesByDistanceResponse,
-// } from "./warehouse.helpers";
 
 const DEFAULT_WAREHOUSE_ID = "main-warehouse-cumming";
+const SESSION_WAREHOUSE_ID_STORAGE_KEY = "mr-emilio-session-warehouse-id";
 
 const WAREHOUSE_RESOLUTION_SOURCES = Object.freeze({
   DEFAULT: "default",
@@ -39,6 +31,59 @@ const isCanceledRequest = (error) =>
   error?.name === "CanceledError" ||
   error?.name === "AbortError" ||
   error?.code === "ERR_CANCELED";
+
+const getSessionWarehouseId = () => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const warehouseId = window.sessionStorage.getItem(
+      SESSION_WAREHOUSE_ID_STORAGE_KEY
+    );
+
+    return typeof warehouseId === "string" && warehouseId.trim()
+      ? warehouseId.trim()
+      : null;
+  } catch (error) {
+    console.warn("Unable to read the session warehouse selection:", error);
+
+    return null;
+  }
+};
+
+const setSessionWarehouseId = (warehouseId) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    if (typeof warehouseId === "string" && warehouseId.trim()) {
+      window.sessionStorage.setItem(
+        SESSION_WAREHOUSE_ID_STORAGE_KEY,
+        warehouseId.trim()
+      );
+
+      return;
+    }
+
+    window.sessionStorage.removeItem(SESSION_WAREHOUSE_ID_STORAGE_KEY);
+  } catch (error) {
+    console.warn("Unable to store the session warehouse selection:", error);
+  }
+};
+
+const clearSessionWarehouseId = () => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.sessionStorage.removeItem(SESSION_WAREHOUSE_ID_STORAGE_KEY);
+  } catch (error) {
+    console.warn("Unable to clear the session warehouse selection:", error);
+  }
+};
 
 const normalizeDefaultWarehouseResponse = (warehouse) => {
   if (!warehouse || typeof warehouse !== "object" || Array.isArray(warehouse)) {
@@ -273,6 +318,51 @@ export const WarehouseProvider = ({ children }) => {
     []
   );
 
+  const selectSessionWarehouse = useCallback((storeEntry) => {
+    const selectedWarehouse = storeEntry?.warehouse;
+
+    const selectedCustomerContext = storeEntry?.customerContext;
+
+    if (
+      !selectedWarehouse ||
+      typeof selectedWarehouse !== "object" ||
+      !selectedWarehouse.id
+    ) {
+      throw new Error(
+        "A valid store is required to change the shopping store."
+      );
+    }
+
+    setResolvedWarehouse(selectedWarehouse);
+
+    setResolvedCustomerContext(
+      selectedCustomerContext && typeof selectedCustomerContext === "object"
+        ? selectedCustomerContext
+        : null
+    );
+
+    setWarehouseResolutionSource(WAREHOUSE_RESOLUTION_SOURCES.MANUAL_LOCATION);
+
+    setWarehouseError(null);
+
+    setSessionWarehouseId(selectedWarehouse.id);
+
+    return {
+      warehouse: selectedWarehouse,
+
+      customerContext:
+        selectedCustomerContext && typeof selectedCustomerContext === "object"
+          ? selectedCustomerContext
+          : null,
+    };
+  }, []);
+
+  const clearSessionWarehouseSelection = useCallback(() => {
+    clearSessionWarehouseId();
+
+    setWarehouseResolutionSource(null);
+  }, []);
+
   const resolvePickupWarehousesByDrivingDistance = useCallback(
     async (nextCoordinates, { signal } = {}) => {
       if (!nextCoordinates) {
@@ -335,16 +425,50 @@ export const WarehouseProvider = ({ children }) => {
             ? WAREHOUSE_RESOLUTION_SOURCES.STORED_LOCATION
             : WAREHOUSE_RESOLUTION_SOURCES.BROWSER_LOCATION;
 
-        await Promise.all([
-          resolveClosestWarehouse(coordinates, {
-            signal: abortController.signal,
-            source: locationSource,
-          }),
+        const sessionWarehouseId = getSessionWarehouseId();
 
-          resolveWarehousesByDistance(coordinates, {
+        setIsWarehouseLoading(true);
+        setWarehouseError(null);
+        const resolvedWarehouses = await resolveWarehousesByDistance(
+          coordinates,
+          {
             signal: abortController.signal,
-          }),
-        ]);
+          }
+        );
+
+        if (abortController.signal.aborted) {
+          return;
+        }
+
+        if (sessionWarehouseId) {
+          const sessionStoreEntry = resolvedWarehouses.find(
+            (entry) => entry?.warehouse?.id === sessionWarehouseId
+          );
+
+          if (sessionStoreEntry) {
+            setResolvedWarehouse(sessionStoreEntry.warehouse);
+
+            setResolvedCustomerContext(
+              sessionStoreEntry.customerContext || null
+            );
+
+            setWarehouseResolutionSource(
+              WAREHOUSE_RESOLUTION_SOURCES.MANUAL_LOCATION
+            );
+
+            setWarehouseError(null);
+            setIsWarehouseLoading(false);
+
+            return;
+          }
+
+          clearSessionWarehouseId();
+        }
+
+        await resolveClosestWarehouse(coordinates, {
+          signal: abortController.signal,
+          source: locationSource,
+        });
 
         return;
       }
@@ -367,6 +491,48 @@ export const WarehouseProvider = ({ children }) => {
     resolveDefaultWarehouse,
     resolveWarehousesByDistance,
   ]);
+  // useEffect(() => {
+  //   const abortController = new AbortController();
+
+  //   const initializeWarehouse = async () => {
+  //     if (hasResolvedLocation && coordinates) {
+  //       const locationSource =
+  //         location?.source === "storage"
+  //           ? WAREHOUSE_RESOLUTION_SOURCES.STORED_LOCATION
+  //           : WAREHOUSE_RESOLUTION_SOURCES.BROWSER_LOCATION;
+
+  //       await Promise.all([
+  //         resolveClosestWarehouse(coordinates, {
+  //           signal: abortController.signal,
+  //           source: locationSource,
+  //         }),
+
+  //         resolveWarehousesByDistance(coordinates, {
+  //           signal: abortController.signal,
+  //         }),
+  //       ]);
+
+  //       return;
+  //     }
+
+  //     await resolveDefaultWarehouse({
+  //       signal: abortController.signal,
+  //     });
+  //   };
+
+  //   initializeWarehouse();
+
+  //   return () => {
+  //     abortController.abort();
+  //   };
+  // }, [
+  //   coordinates,
+  //   hasResolvedLocation,
+  //   location?.source,
+  //   resolveClosestWarehouse,
+  //   resolveDefaultWarehouse,
+  //   resolveWarehousesByDistance,
+  // ]);
 
   const warehouse = resolvedWarehouse;
 
@@ -375,6 +541,9 @@ export const WarehouseProvider = ({ children }) => {
   const isUsingDefaultWarehouse =
     warehouseResolutionSource === WAREHOUSE_RESOLUTION_SOURCES.DEFAULT;
 
+  const isUsingSessionWarehouse =
+    warehouseResolutionSource === WAREHOUSE_RESOLUTION_SOURCES.MANUAL_LOCATION;
+
   const hasResolvedWarehouse = Boolean(warehouse);
 
   const isResolvingLocationOrWarehouse =
@@ -382,20 +551,42 @@ export const WarehouseProvider = ({ children }) => {
 
   const combinedWarehouseError = warehouseError || geolocationError || null;
 
-  const reloadWarehouse = useCallback(() => {
+  const reloadWarehouse = useCallback(async () => {
     if (hasResolvedLocation && coordinates) {
       const locationSource =
         location?.source === "storage"
           ? WAREHOUSE_RESOLUTION_SOURCES.STORED_LOCATION
           : WAREHOUSE_RESOLUTION_SOURCES.BROWSER_LOCATION;
 
-      return Promise.all([
-        resolveClosestWarehouse(coordinates, {
-          source: locationSource,
-        }),
+      const sessionWarehouseId = getSessionWarehouseId();
 
-        resolveWarehousesByDistance(coordinates),
-      ]);
+      const resolvedWarehouses = await resolveWarehousesByDistance(coordinates);
+
+      if (sessionWarehouseId) {
+        const sessionStoreEntry = resolvedWarehouses.find(
+          (entry) => entry?.warehouse?.id === sessionWarehouseId
+        );
+
+        if (sessionStoreEntry) {
+          setResolvedWarehouse(sessionStoreEntry.warehouse);
+
+          setResolvedCustomerContext(sessionStoreEntry.customerContext || null);
+
+          setWarehouseResolutionSource(
+            WAREHOUSE_RESOLUTION_SOURCES.MANUAL_LOCATION
+          );
+
+          setWarehouseError(null);
+
+          return sessionStoreEntry;
+        }
+
+        clearSessionWarehouseId();
+      }
+
+      return resolveClosestWarehouse(coordinates, {
+        source: locationSource,
+      });
     }
 
     return resolveDefaultWarehouse();
@@ -407,7 +598,6 @@ export const WarehouseProvider = ({ children }) => {
     resolveDefaultWarehouse,
     resolveWarehousesByDistance,
   ]);
-
   const contextValue = useMemo(
     () => ({
       warehouse,
@@ -421,6 +611,11 @@ export const WarehouseProvider = ({ children }) => {
 
       warehouseResolutionSource,
       isUsingDefaultWarehouse,
+
+      isUsingSessionWarehouse,
+
+      selectSessionWarehouse,
+      clearSessionWarehouseSelection,
 
       isWarehouseLoading,
       warehouseError,
@@ -454,6 +649,10 @@ export const WarehouseProvider = ({ children }) => {
 
       warehouseResolutionSource,
       isUsingDefaultWarehouse,
+      isUsingSessionWarehouse,
+
+      selectSessionWarehouse,
+      clearSessionWarehouseSelection,
 
       isWarehouseLoading,
       warehouseError,

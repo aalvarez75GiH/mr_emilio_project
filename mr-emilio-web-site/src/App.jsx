@@ -12,6 +12,7 @@ import { Payment } from "./screens/checkout/payment.screen";
 import { Review } from "./screens/checkout/review.screen";
 import { OrderConfirmation } from "./screens/checkout/order_confirmation.screen";
 import { MyOrders } from "./screens/orders/my_orders.screen";
+import { ChangeStore } from "./screens/change_store/change_store.component";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
         <Route path="/checkout/review" element={<Review />} />
         <Route path="/checkout/confirmation" element={<OrderConfirmation />} />
         <Route path="/my-orders" element={<MyOrders />} />
+        <Route path="/change-store" element={<ChangeStore />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
