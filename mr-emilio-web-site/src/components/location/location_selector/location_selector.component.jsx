@@ -28,6 +28,7 @@ export const LocationSelector = ({
     isUsingDefaultWarehouse,
     isWarehouseLoading,
     warehouseError,
+    restoreClosestWarehouse,
   } = useWarehouse();
 
   const {
@@ -120,7 +121,22 @@ export const LocationSelector = ({
     setButtonState("idle");
 
     await requestCurrentLocation();
+
+    await restoreClosestWarehouse();
   };
+  // const handleLocationRequest = async () => {
+  //   if (typeof window !== "undefined" && window.isSecureContext !== true) {
+  //     console.info(
+  //       "Geolocation was not requested because this page is not using HTTPS."
+  //     );
+
+  //     return;
+  //   }
+
+  //   setButtonState("idle");
+
+  //   await requestCurrentLocation();
+  // };
 
   if (!warehouse) {
     return null;

@@ -598,6 +598,39 @@ export const WarehouseProvider = ({ children }) => {
     resolveDefaultWarehouse,
     resolveWarehousesByDistance,
   ]);
+
+  const restoreClosestWarehouse = useCallback(async () => {
+    clearSessionWarehouseId();
+
+    setWarehouseResolutionSource(null);
+
+    if (hasResolvedLocation && coordinates) {
+      const locationSource =
+        location?.source === "storage"
+          ? WAREHOUSE_RESOLUTION_SOURCES.STORED_LOCATION
+          : WAREHOUSE_RESOLUTION_SOURCES.BROWSER_LOCATION;
+
+      const [, closestWarehouse] = await Promise.all([
+        resolveWarehousesByDistance(coordinates),
+
+        resolveClosestWarehouse(coordinates, {
+          source: locationSource,
+        }),
+      ]);
+
+      return closestWarehouse;
+    }
+
+    return resolveDefaultWarehouse();
+  }, [
+    coordinates,
+    hasResolvedLocation,
+    location?.source,
+    resolveClosestWarehouse,
+    resolveDefaultWarehouse,
+    resolveWarehousesByDistance,
+  ]);
+
   const contextValue = useMemo(
     () => ({
       warehouse,
@@ -636,6 +669,7 @@ export const WarehouseProvider = ({ children }) => {
       customerCoordinates: coordinates,
 
       defaultWarehouseId: DEFAULT_WAREHOUSE_ID,
+      restoreClosestWarehouse,
     }),
     [
       warehouse,
@@ -653,6 +687,8 @@ export const WarehouseProvider = ({ children }) => {
 
       selectSessionWarehouse,
       clearSessionWarehouseSelection,
+
+      restoreClosestWarehouse,
 
       isWarehouseLoading,
       warehouseError,

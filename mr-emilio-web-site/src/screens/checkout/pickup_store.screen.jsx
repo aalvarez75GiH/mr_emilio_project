@@ -5,8 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { ScreenTransition } from "../../components/common/screen_transition/screen_transition.styles";
 import { MainHeader } from "../../components/main_header/main_header.component";
 import { BackHeader } from "../../components/common/back_header/back_header.component";
-import { useWarehouse } from "../../infrastructure/services/warehouse/use-warehouse.hook";
-import { useCheckout } from "../../infrastructure/services/checkout/use-checkout.hook";
 import { FULFILLMENT_METHODS } from "../../infrastructure/services/checkout/checkout.helpers";
 
 import {
@@ -19,6 +17,11 @@ import {
   PickupStoreContinueButton,
 } from "./pickup_store.styles";
 import { StoreSelectionCard } from "../../components/store_selection/store_selection_card.component";
+import { filterWarehouseEntriesForCart } from "../../infrastructure/services/cart/cart.helpers";
+
+import { useWarehouse } from "../../infrastructure/services/warehouse/use-warehouse.hook";
+import { useCheckout } from "../../infrastructure/services/checkout/use-checkout.hook";
+import { useCart } from "../../infrastructure/services/cart/use-cart.hook";
 
 const TRANSITION_DURATION_MS = 260;
 
@@ -36,10 +39,13 @@ export const PickupStore = () => {
     customerCoordinates,
 
     resolvePickupWarehousesByDrivingDistance,
+    selectSessionWarehouse,
   } = useWarehouse();
 
   const { checkout, selectFulfillmentMethod, selectPickupWarehouse } =
     useCheckout();
+
+  const { cartItems } = useCart();
 
   const [transitionState, setTransitionState] = useState({
     isExiting: false,
@@ -86,10 +92,12 @@ export const PickupStore = () => {
       return [];
     }
 
-    return pickupWarehousesByDrivingDistance.filter(
+    const pickupAvailableStores = pickupWarehousesByDrivingDistance.filter(
       (entry) => entry?.customerContext?.fulfillment?.pickup?.available === true
     );
-  }, [pickupWarehousesByDrivingDistance]);
+
+    return filterWarehouseEntriesForCart(pickupAvailableStores, cartItems);
+  }, [pickupWarehousesByDrivingDistance, cartItems]);
 
   /**
    * Fallback is only intended for customers whose location
@@ -100,6 +108,7 @@ export const PickupStore = () => {
    * Haversine/default warehouse result as if it were the final
    * pickup-store ordering.
    */
+
   const fallbackStore = useMemo(() => {
     if (customerCoordinates) {
       return null;
@@ -113,11 +122,18 @@ export const PickupStore = () => {
       return null;
     }
 
-    return {
+    const candidateStore = {
       warehouse,
       customerContext,
     };
-  }, [customerCoordinates, warehouse, customerContext]);
+
+    const eligibleStores = filterWarehouseEntriesForCart(
+      [candidateStore],
+      cartItems
+    );
+
+    return eligibleStores[0] || null;
+  }, [customerCoordinates, warehouse, customerContext, cartItems]);
 
   const stores = useMemo(() => {
     if (customerCoordinates) {
@@ -147,10 +163,21 @@ export const PickupStore = () => {
   };
 
   const handleStoreSelection = (storeEntry) => {
+    if (!storeEntry?.warehouse?.id) {
+      return;
+    }
+
+    selectSessionWarehouse(storeEntry);
+
     selectFulfillmentMethod(FULFILLMENT_METHODS.PICKUP);
 
     selectPickupWarehouse(storeEntry);
   };
+  // const handleStoreSelection = (storeEntry) => {
+  //   selectFulfillmentMethod(FULFILLMENT_METHODS.PICKUP);
+
+  //   selectPickupWarehouse(storeEntry);
+  // };
 
   const handleContinue = () => {
     if (!checkout.pickup.selectedWarehouseId) {
