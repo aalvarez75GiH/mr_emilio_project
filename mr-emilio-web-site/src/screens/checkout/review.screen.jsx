@@ -288,15 +288,21 @@ export const Review = () => {
         throw new Error("The order could not be confirmed.");
       }
 
-      setCompletedOrder(response.order);
+      setCompletedOrder({
+        order: response.order,
+        fulfillmentCredential: response.fulfillmentCredential || null,
+      });
 
       /**
        * The order now exists in ordersCatalog,
-       * Stripe payment succeeded, and inventory was committed.
+       * Stripe payment succeeded, inventory was committed,
+       * and the fulfillment verification credential has
+       * been returned for the confirmed order.
        *
        * The purchased cart is no longer active.
        */
       clearCart();
+
       navigateWithTransition("/checkout/confirmation", "forward");
     } catch (error) {
       console.error("Unable to place order:", error);

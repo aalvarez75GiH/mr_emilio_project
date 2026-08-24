@@ -31,9 +31,22 @@ const ORDER_TIMELINE_STATUSES = Object.freeze({
 
 const ORDER_CURRENCY = "usd";
 
+const FULFILLMENT_VERIFICATION_STATUSES = Object.freeze({
+  PENDING: "pending",
+  ACTIVE: "active",
+  USED: "used",
+});
+
+const FULFILLMENT_COMPLETION_METHODS = Object.freeze({
+  QR_SCAN: "qr_scan",
+  DELIVERY_PHOTO: "delivery_photo",
+});
+
 module.exports = {
   ORDER_STATUSES,
   PAYMENT_STATUSES,
   ORDER_CURRENCY,
   ORDER_TIMELINE_STATUSES,
+  FULFILLMENT_VERIFICATION_STATUSES,
+  FULFILLMENT_COMPLETION_METHODS,
 };

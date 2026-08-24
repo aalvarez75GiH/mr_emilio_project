@@ -62,6 +62,8 @@ import {
   SupportIcon,
 } from "./order_confirmation.styles";
 
+import { OrderQrCode } from "../../components/orders/order_qr_code/order_qr_code.component";
+
 const formatCurrencyFromCents = (amountInCents) => {
   const normalizedAmount = Number(amountInCents);
 
@@ -100,6 +102,11 @@ export const OrderConfirmation = () => {
   const { checkout, resetCheckout } = useCheckout();
 
   const order = checkout.completedOrder;
+  const fulfillmentCredential = checkout.fulfillmentCredential;
+  console.log(
+    "OrderConfirmation fulfillmentCredential:",
+    fulfillmentCredential
+  );
 
   console.log("OrderConfirmation: order:", JSON.stringify(order, null, 2));
 
@@ -358,7 +365,6 @@ export const OrderConfirmation = () => {
               </PaymentRow>
             </ConfirmationSectionContent>
           </ConfirmationSection>
-
           <NextStepsCard>
             <ConfirmationSectionIcon aria-hidden="true">
               <FiClock />
@@ -384,6 +390,38 @@ export const OrderConfirmation = () => {
               )}
             </ConfirmationSectionContent>
           </NextStepsCard>
+
+          <OrderQrCode
+            credential={fulfillmentCredential?.credential}
+            orderNumber={order.orderNumber}
+            fulfillmentMethod={order.fulfillment?.method}
+          />
+
+          {/* <NextStepsCard>
+            <ConfirmationSectionIcon aria-hidden="true">
+              <FiClock />
+            </ConfirmationSectionIcon>
+
+            <ConfirmationSectionContent>
+              <ConfirmationSectionTitle>What’s next?</ConfirmationSectionTitle>
+
+              {isPickup && (
+                <ConfirmationText>
+                  Your order is confirmed. Pick it up anytime during the store’s
+                  pickup hours.
+                </ConfirmationText>
+              )}
+
+              {isLocalDelivery && (
+                <ConfirmationText>
+                  We’ll prepare your order and deliver it to the address above.
+                  {deliveryEstimate
+                    ? ` Estimated delivery is ${deliveryEstimate.minimum}–${deliveryEstimate.maximum} minutes.`
+                    : ""}
+                </ConfirmationText>
+              )}
+            </ConfirmationSectionContent>
+          </NextStepsCard> */}
           <SupportLink href="tel:7066124602">
             <SupportIcon aria-hidden="true">
               <FiPhone />

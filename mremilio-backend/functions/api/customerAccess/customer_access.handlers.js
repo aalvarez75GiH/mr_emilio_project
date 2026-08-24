@@ -207,6 +207,18 @@ const serializeCustomerOrder = (order) => {
 
     fulfillment: order.fulfillment || null,
 
+    fulfillmentVerification: {
+      version: Number.isInteger(Number(order.fulfillmentVerification?.version))
+        ? Number(order.fulfillmentVerification.version)
+        : 1,
+
+      status: order.fulfillmentVerification?.status || null,
+
+      activatedAt: order.fulfillmentVerification?.activatedAt || null,
+
+      usedAt: order.fulfillmentVerification?.usedAt || null,
+    },
+
     items: Array.isArray(order.items) ? order.items : [],
 
     pricing: order.pricing || null,

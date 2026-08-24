@@ -10,6 +10,8 @@ const {
   ORDER_TIMELINE_STATUSES,
 } = require("./orders.handlers");
 
+const { FULFILLMENT_VERIFICATION_STATUSES } = require("./orders.constants");
+
 const ORDERS_COLLECTION = "ordersCatalog";
 
 const SYSTEM_COUNTERS_COLLECTION = "systemCounters";
@@ -213,6 +215,20 @@ const markOrderAsPaid = async ({
 
       statusHistory: nextStatusHistory,
 
+      fulfillmentVerification: {
+        ...existingOrderData.fulfillmentVerification,
+
+        version:
+          Number(existingOrderData.fulfillmentVerification?.version) || 1,
+
+        status: FULFILLMENT_VERIFICATION_STATUSES.ACTIVE,
+
+        activatedAt:
+          existingOrderData.fulfillmentVerification?.activatedAt || now,
+
+        usedAt: existingOrderData.fulfillmentVerification?.usedAt || null,
+      },
+
       payment: {
         ...existingOrderData.payment,
 
@@ -245,60 +261,6 @@ const markOrderAsPaid = async ({
 
   return updatedOrder.data();
 };
-// const markOrderAsPaid = async ({
-//   orderId,
-//   paymentIntentId,
-//   latestChargeId,
-//   card,
-// }) => {
-//   const orderRef = firebaseController.db
-//     .collection(ORDERS_COLLECTION)
-//     .doc(String(orderId));
-
-//   const existingOrder = await orderRef.get();
-
-//   if (!existingOrder.exists) {
-//     return null;
-//   }
-
-//   const now = new Date().toISOString();
-
-//   await orderRef.set(
-//     {
-//       status: ORDER_STATUSES.CONFIRMED,
-
-//       payment: {
-//         ...existingOrder.data().payment,
-
-//         status: PAYMENT_STATUSES.PAID,
-
-//         paymentIntentId: paymentIntentId || null,
-
-//         latestChargeId: latestChargeId || null,
-
-//         card: card
-//           ? {
-//               brand: card.brand || null,
-//               last4: card.last4 || null,
-//             }
-//           : null,
-
-//         paidAt: now,
-
-//         failure: null,
-//       },
-
-//       updatedAt: now,
-//     },
-//     {
-//       merge: true,
-//     }
-//   );
-
-//   const updatedOrder = await orderRef.get();
-
-//   return updatedOrder.data();
-// };
 
 const markOrderAsRequiresAttention = async ({
   orderId,

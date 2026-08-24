@@ -1911,6 +1911,44 @@ export const CompactTotalValue = styled.strong`
   }
 `;
 
+export const OrderQrCodeSection = styled.div`
+  width: 100%;
+
+  margin-top: ${({ theme }) => theme.spacing.xl};
+  padding-top: ${({ theme }) => theme.spacing.xl};
+
+  border-top: 1px solid ${({ theme }) => theme.colors.border.light};
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.wide}) {
+    margin-top: ${({ theme }) => theme.spacing.xxl};
+    padding-top: ${({ theme }) => theme.spacing.xxl};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    margin-top: ${({ theme }) => theme.spacing.xl};
+    padding-top: ${({ theme }) => theme.spacing.xl};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
+    margin-top: ${({ theme }) => theme.spacing.lg};
+    padding-top: ${({ theme }) => theme.spacing.lg};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    margin-top: ${({ theme }) => theme.spacing.lg};
+    padding-top: ${({ theme }) => theme.spacing.lg};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    margin-top: ${({ theme }) => theme.spacing.md};
+    padding-top: ${({ theme }) => theme.spacing.md};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobileSmall}) {
+    margin-top: ${({ theme }) => theme.spacing.sm};
+    padding-top: ${({ theme }) => theme.spacing.sm};
+  }
+`;
 /* PAGINATION */
 
 export const Pagination = styled.div`

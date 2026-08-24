@@ -1,6 +1,7 @@
 /* eslint-disable */
 
 const nodemailer = require("nodemailer");
+const { buildOrderConfirmationEmail } = require("./email_templates");
 
 const { EMAIL_FROM_NAME } = require("./email.constants");
 
@@ -121,6 +122,35 @@ const sendEmail = async ({ to, subject, text, html, replyTo = null }) => {
   }
 };
 
+const sendOrderConfirmationEmail = async ({ order }) => {
+  if (!order || typeof order !== "object" || Array.isArray(order)) {
+    throw new Error("Confirmed order is required to send confirmation email");
+  }
+
+  const customerEmail =
+    typeof order.customer?.email === "string"
+      ? order.customer.email.trim()
+      : "";
+
+  if (!customerEmail) {
+    throw new Error(
+      "Confirmed order does not contain a customer email address"
+    );
+  }
+
+  const email = buildOrderConfirmationEmail({
+    order,
+  });
+
+  return sendEmail({
+    to: customerEmail,
+    subject: email.subject,
+    text: email.text,
+    html: email.html,
+  });
+};
+
 module.exports = {
   sendEmail,
+  sendOrderConfirmationEmail,
 };

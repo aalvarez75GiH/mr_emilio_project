@@ -8,6 +8,10 @@ const customersCatalogControllers = require("../customersCatalog/customers.contr
 
 const emailService = require("../email/email_service");
 
+const {
+  createFulfillmentVerificationCredential,
+} = require("../ordersCatalog/fulfillment_verification.helpers");
+
 const emailTemplates = require("../email/email_templates");
 const ordersCatalogControllers = require("../ordersCatalog/orders.controllers");
 
@@ -293,10 +297,60 @@ const getCustomerOrders = async ({ customerId }) => {
   const orders = await ordersCatalogControllers.getOrdersByCustomerId(
     customerId.trim()
   );
-  const customerOrders = serializeCustomerOrders(orders);
+
+  const serializedOrders = serializeCustomerOrders(orders);
+
+  const ordersById = new Map(
+    orders
+      .filter(
+        (order) =>
+          order && typeof order === "object" && typeof order.id === "string"
+      )
+      .map((order) => [order.id, order])
+  );
+
+  const customerOrders = serializedOrders.map((serializedOrder) => {
+    const sourceOrder = ordersById.get(serializedOrder.id);
+
+    if (!sourceOrder) {
+      return {
+        ...serializedOrder,
+        fulfillmentCredential: null,
+      };
+    }
+
+    const verificationStatus = sourceOrder.fulfillmentVerification?.status;
+
+    /**
+     * Only active fulfillment credentials should
+     * be exposed to the verified customer.
+     *
+     * Pending, used, or otherwise inactive
+     * credentials cannot be presented as a valid QR.
+     */
+    if (verificationStatus !== "active") {
+      return {
+        ...serializedOrder,
+        fulfillmentCredential: null,
+      };
+    }
+
+    const credential = createFulfillmentVerificationCredential(sourceOrder);
+
+    return {
+      ...serializedOrder,
+
+      fulfillmentCredential: {
+        credential,
+
+        version: Number(sourceOrder.fulfillmentVerification?.version) || 1,
+      },
+    };
+  });
 
   return {
     status: "success",
+
     customerOrders,
   };
 };

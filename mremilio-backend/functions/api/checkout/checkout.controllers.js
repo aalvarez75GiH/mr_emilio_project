@@ -13,6 +13,12 @@ const {
 } = require("./checkout.constants");
 
 const {
+  createFulfillmentVerificationCredential,
+} = require("../ordersCatalog/fulfillment_verification.helpers");
+
+const { sendOrderConfirmationEmail } = require("../email/email_service");
+
+const {
   createCheckoutHandlerError,
 
   isPlainObject,
@@ -532,37 +538,6 @@ const placeOrder = async (checkoutPayload) => {
         fulfillmentMethod: review.fulfillment?.method || "",
       },
     });
-    // paymentIntent = await stripeClient.paymentIntents.create({
-    //   amount: totalInCents,
-
-    //   currency: CHECKOUT_CURRENCY,
-
-    //   confirmation_token: confirmationTokenId,
-
-    //   confirm: true,
-
-    //   payment_method_types: ["card"],
-
-    //   hooks: {
-    //     inputs: {
-    //       tax: {
-    //         calculation: taxCalculationId,
-    //       },
-    //     },
-    //   },
-
-    //   metadata: {
-    //     source: "mr_emilio_website",
-
-    //     orderId: pendingOrder.id,
-
-    //     orderNumber: pendingOrder.orderNumber,
-
-    //     warehouseId: review.fulfillment?.warehouseId || "",
-
-    //     fulfillmentMethod: review.fulfillment?.method || "",
-    //   },
-    // });
   } catch (error) {
     console.error("STRIPE PLACE ORDER ERROR:", {
       orderId: pendingOrder.id,
@@ -787,10 +762,51 @@ const placeOrder = async (checkoutPayload) => {
     );
   }
 
+  const fulfillmentVerificationCredential =
+    createFulfillmentVerificationCredential(confirmedOrder);
+  /**
+   * Order confirmation email is a post-payment side effect.
+   *
+   * IMPORTANT:
+   *
+   * At this point:
+   * - Stripe payment succeeded;
+   * - inventory was committed;
+   * - the order was marked paid/confirmed.
+   *
+   * An email delivery failure MUST NOT reclassify
+   * this successful order as failed.
+   */
+  try {
+    const emailResult = await sendOrderConfirmationEmail({
+      order: confirmedOrder,
+    });
+
+    console.log("ORDER CONFIRMATION EMAIL SENT:", {
+      orderId: confirmedOrder.id,
+      orderNumber: confirmedOrder.orderNumber,
+      customerEmail: confirmedOrder.customer?.email || null,
+      messageId: emailResult?.messageId || null,
+    });
+  } catch (emailError) {
+    console.error("ORDER CONFIRMATION EMAIL FAILED:", {
+      orderId: confirmedOrder.id,
+      orderNumber: confirmedOrder.orderNumber,
+      customerEmail: confirmedOrder.customer?.email || null,
+      message: emailError?.message || null,
+    });
+  }
+
   return {
     status: "order_confirmed",
 
     order: confirmedOrder,
+
+    fulfillmentCredential: {
+      credential: fulfillmentVerificationCredential,
+
+      version: confirmedOrder.fulfillmentVerification?.version || 1,
+    },
 
     payment: {
       paymentIntentId: paymentIntent.id,

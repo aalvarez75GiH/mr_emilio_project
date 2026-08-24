@@ -137,16 +137,13 @@ customerAccessRouter.post("/verify-code", async (req, res) => {
     const result = await customerAccessControllers.verifyCustomerAccessCode(
       req.body
     );
+    const isProduction = process.env.NODE_ENV === "production";
 
     res.cookie(CUSTOMER_ACCESS_SESSION_COOKIE_NAME, result.sessionToken, {
       httpOnly: true,
-
-      secure: true,
-
-      sameSite: "none",
-
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
       maxAge: CUSTOMER_ACCESS_SESSION_TTL_HOURS * 60 * 60 * 1000,
-
       path: "/",
     });
 

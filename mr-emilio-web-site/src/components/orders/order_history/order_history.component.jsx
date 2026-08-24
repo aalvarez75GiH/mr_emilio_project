@@ -6,19 +6,19 @@ import {
   FiChevronDown,
   FiChevronLeft,
   FiChevronRight,
-  //   FiHome,
   FiMapPin,
   FiPackage,
   FiShoppingBag,
   FiTruck,
 } from "react-icons/fi";
-// import storeIcon from "../../../assets/checkout/icons/storeIcon.svg";
 import { StoreIcon } from "../../icons/store_icon/store_icon.component";
 import { getDisplayProduct } from "../../home/shop_products_carousel/shop_products_carousel.helpers";
 import {
   buildOrderTimeline,
   ORDER_TIMELINE_STATES,
 } from "../../../infrastructure/services/orders/orders.helpers";
+
+import { OrderQrCode } from "../order_qr_code/order_qr_code.component";
 
 import { ScreenTransition } from "../../common/screen_transition/screen_transition.styles";
 const TRANSITION_DURATION_MS = 260;
@@ -35,7 +35,6 @@ import {
   OrderHeaderPrimaryRow,
   OrderNumber,
   OrderNumberLabel,
-  // OrderDate,
   OrderStatus,
   OrderCardHeaderRight,
   OrderHeaderTotal,
@@ -80,7 +79,6 @@ import {
   CompactItemsSummary,
   CompactItemCount,
   CompactThumbnails,
-  // CompactThumbnail,
   CompactThumbnailFrame,
   CompactThumbnailImage,
   CompactThumbnailFallback,
@@ -95,6 +93,7 @@ import {
   EmptyOrdersState,
   DesktopMetaIcon,
   DesktopMetaContent,
+  OrderQrCodeSection,
 } from "./order_history.styles";
 import { BackHeader } from "../../common/back_header/back_header.component";
 
@@ -670,6 +669,15 @@ export const OrderHistory = () => {
                           </CompactTotalGroup>
                         </CompactFooter>
                       </CompactOrderDetails>
+                      {order.fulfillmentCredential?.credential && (
+                        <OrderQrCodeSection>
+                          <OrderQrCode
+                            credential={order.fulfillmentCredential.credential}
+                            orderNumber={order.orderNumber}
+                            fulfillmentMethod={order.fulfillment?.method}
+                          />
+                        </OrderQrCodeSection>
+                      )}
                     </>
                   )}
                 </OrderCard>

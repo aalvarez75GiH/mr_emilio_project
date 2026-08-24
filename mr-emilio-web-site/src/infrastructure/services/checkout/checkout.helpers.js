@@ -124,6 +124,8 @@ export const createInitialCheckoutState = () => ({
   },
 
   completedOrder: null,
+
+  fulfillmentCredential: null,
 });
 
 export const buildDeliveryAddressString = (address = {}) => {

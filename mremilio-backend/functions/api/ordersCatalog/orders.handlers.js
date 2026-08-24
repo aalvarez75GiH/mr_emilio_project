@@ -7,6 +7,7 @@ const {
   PAYMENT_STATUSES,
   ORDER_TIMELINE_STATUSES,
   ORDER_CURRENCY,
+  FULFILLMENT_VERIFICATION_STATUSES,
 } = require("./orders.constants");
 
 const createOrderHandlerError = (message, statusCode = 500, details = null) => {
@@ -255,6 +256,13 @@ const buildPendingOrderPayload = ({
     customer: customerSnapshot,
 
     fulfillment,
+
+    fulfillmentVerification: {
+      version: 1,
+      status: FULFILLMENT_VERIFICATION_STATUSES.PENDING,
+      activatedAt: null,
+      usedAt: null,
+    },
 
     items: itemSnapshots,
 

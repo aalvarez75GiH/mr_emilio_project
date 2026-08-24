@@ -362,17 +362,36 @@ export const CheckoutProvider = ({ children }) => {
     }));
   }, []);
 
-  const setCompletedOrder = useCallback((order) => {
-    if (!order || typeof order !== "object" || Array.isArray(order)) {
-      return;
-    }
+  const setCompletedOrder = useCallback(
+    ({ order, fulfillmentCredential = null }) => {
+      if (!order || typeof order !== "object" || Array.isArray(order)) {
+        return;
+      }
 
-    setCheckout((currentCheckout) => ({
-      ...currentCheckout,
+      setCheckout((currentCheckout) => ({
+        ...currentCheckout,
 
-      completedOrder: order,
-    }));
-  }, []);
+        completedOrder: order,
+
+        fulfillmentCredential:
+          fulfillmentCredential &&
+          typeof fulfillmentCredential === "object" &&
+          !Array.isArray(fulfillmentCredential)
+            ? {
+                credential:
+                  typeof fulfillmentCredential.credential === "string"
+                    ? fulfillmentCredential.credential
+                    : null,
+
+                version: Number.isInteger(Number(fulfillmentCredential.version))
+                  ? Number(fulfillmentCredential.version)
+                  : null,
+              }
+            : null,
+      }));
+    },
+    []
+  );
 
   const resetCheckout = useCallback(() => {
     setCheckout(createInitialCheckoutState());
