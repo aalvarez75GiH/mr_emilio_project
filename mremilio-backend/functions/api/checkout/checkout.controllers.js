@@ -780,6 +780,12 @@ const placeOrder = async (checkoutPayload) => {
   try {
     const emailResult = await sendOrderConfirmationEmail({
       order: confirmedOrder,
+
+      fulfillmentCredential: {
+        credential: fulfillmentVerificationCredential,
+
+        version: confirmedOrder.fulfillmentVerification?.version || 1,
+      },
     });
 
     console.log("ORDER CONFIRMATION EMAIL SENT:", {

@@ -1,6 +1,7 @@
 /* eslint-disable */
 
 const nodemailer = require("nodemailer");
+const QRCode = require("qrcode");
 const { buildOrderConfirmationEmail } = require("./email_templates");
 
 const { EMAIL_FROM_NAME } = require("./email.constants");
@@ -57,7 +58,14 @@ const getEmailTransporter = () => {
   return transporter;
 };
 
-const sendEmail = async ({ to, subject, text, html, replyTo = null }) => {
+const sendEmail = async ({
+  to,
+  subject,
+  text,
+  html,
+  replyTo = null,
+  attachments = [],
+}) => {
   if (typeof to !== "string" || !to.trim()) {
     throw new Error("Email recipient is required");
   }
@@ -79,16 +87,13 @@ const sendEmail = async ({ to, subject, text, html, replyTo = null }) => {
 
   const mailOptions = {
     from: `"${EMAIL_FROM_NAME}" <${fromEmail}>`,
-
     to: to.trim(),
-
     subject: subject.trim(),
-
     text: typeof text === "string" ? text : undefined,
-
     html: typeof html === "string" ? html : undefined,
-  };
 
+    attachments: Array.isArray(attachments) ? attachments : [],
+  };
   if (typeof replyTo === "string" && replyTo.trim()) {
     mailOptions.replyTo = replyTo.trim();
   }
@@ -122,7 +127,10 @@ const sendEmail = async ({ to, subject, text, html, replyTo = null }) => {
   }
 };
 
-const sendOrderConfirmationEmail = async ({ order }) => {
+const sendOrderConfirmationEmail = async ({
+  order,
+  fulfillmentCredential = null,
+}) => {
   if (!order || typeof order !== "object" || Array.isArray(order)) {
     throw new Error("Confirmed order is required to send confirmation email");
   }
@@ -138,15 +146,48 @@ const sendOrderConfirmationEmail = async ({ order }) => {
     );
   }
 
+  const credential =
+    typeof fulfillmentCredential?.credential === "string"
+      ? fulfillmentCredential.credential.trim()
+      : "";
+
+  let qrCodeAttachment = null;
+
+  if (credential) {
+    const qrCodeBuffer = await QRCode.toBuffer(credential, {
+      type: "png",
+      errorCorrectionLevel: "M",
+      margin: 2,
+      width: 440,
+    });
+
+    qrCodeAttachment = {
+      filename: `mr-emilio-${order.orderNumber || "order"}-verification.png`,
+
+      content: qrCodeBuffer,
+
+      contentType: "image/png",
+
+      cid: "mr-emilio-order-verification-qr",
+    };
+  }
+
   const email = buildOrderConfirmationEmail({
     order,
+
+    hasFulfillmentQrCode: Boolean(qrCodeAttachment),
   });
 
   return sendEmail({
     to: customerEmail,
+
     subject: email.subject,
+
     text: email.text,
+
     html: email.html,
+
+    attachments: qrCodeAttachment ? [qrCodeAttachment] : [],
   });
 };
 

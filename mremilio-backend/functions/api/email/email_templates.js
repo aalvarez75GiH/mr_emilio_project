@@ -45,7 +45,6 @@ const buildCustomerAccessCodeEmail = ({
 
   const html = `
       <!DOCTYPE html>
-  
       <html>
         <body
           style="
@@ -91,7 +90,7 @@ const buildCustomerAccessCodeEmail = ({
                       >
                         Access your orders
                       </h1>
-  
+
                       <p
                         style="
                           margin: 0 0 16px;
@@ -101,7 +100,7 @@ const buildCustomerAccessCodeEmail = ({
                       >
                         Hi ${normalizedFirstName},
                       </p>
-  
+
                       <p
                         style="
                           margin: 0 0 24px;
@@ -112,7 +111,7 @@ const buildCustomerAccessCodeEmail = ({
                         Use this verification code to securely access
                         your Mr. Emilio orders.
                       </p>
-  
+
                       <div
                         style="
                           margin: 0 0 24px;
@@ -128,7 +127,7 @@ const buildCustomerAccessCodeEmail = ({
                       >
                         ${normalizedCode}
                       </div>
-  
+
                       <p
                         style="
                           margin: 0 0 16px;
@@ -139,7 +138,7 @@ const buildCustomerAccessCodeEmail = ({
                       >
                         This code expires in ${expirationMinutes} minutes.
                       </p>
-  
+
                       <p
                         style="
                           margin: 0;
@@ -297,7 +296,10 @@ const formatCardBrand = (brand) => {
   return brandLabels[normalizedBrand] || brand.trim();
 };
 
-const buildOrderConfirmationEmail = ({ order }) => {
+const buildOrderConfirmationEmail = ({
+  order,
+  hasFulfillmentQrCode = false,
+}) => {
   if (!order || typeof order !== "object" || Array.isArray(order)) {
     throw new Error("Confirmed order is required to build confirmation email");
   }
@@ -311,23 +313,26 @@ const buildOrderConfirmationEmail = ({ order }) => {
       : "there";
 
   const fulfillment = order.fulfillment || {};
-
   const pricing = order.pricing || {};
-
   const items = Array.isArray(order.items) ? order.items : [];
-
   const payment = order.payment || {};
-
   const card = payment.card || {};
 
   const isPickup = fulfillment.method === "pickup";
 
+  const qrTitle = isPickup ? "Your pickup QR code" : "Your delivery QR code";
+
+  const qrDescription = isPickup
+    ? "Show this QR code to a Mr. Emilio team member when you pick up your order."
+    : "If your order is handed directly to you, show this QR code to the delivery driver.";
+
+  const qrHelpText = isPickup
+    ? "This QR code verifies your order. Keep it available until your order is picked up."
+    : "You do not need to be home for delivery. If the order is left at your door, the driver will complete delivery using photo confirmation instead.";
+
   const subtotalInCents = Number(pricing.subtotalInCents || 0);
-
   const deliveryFeeInCents = Number(pricing.deliveryFeeInCents || 0);
-
   const taxInCents = Number(pricing.taxInCents || 0);
-
   const totalInCents = Number(pricing.totalInCents || 0);
 
   const subject = `Order ${orderNumber} confirmed — Mr. Emilio`;
@@ -342,11 +347,8 @@ const buildOrderConfirmationEmail = ({ order }) => {
   const itemRowsHtml = items
     .map((item) => {
       const itemName = escapeHtml(getOrderItemName(item));
-
       const quantity = Number(item.quantity || 0);
-
       const lineTotalInCents = getOrderItemLineTotalInCents(item);
-
       const sizeLabel = getOrderItemSizeLabel(item);
 
       return `
@@ -370,7 +372,7 @@ const buildOrderConfirmationEmail = ({ order }) => {
             >
               ${itemName}
             </div>
-  
+
             <div
               style="
                 margin-top: 5px;
@@ -383,7 +385,7 @@ const buildOrderConfirmationEmail = ({ order }) => {
               ${sizeLabel ? ` · ${escapeHtml(sizeLabel)}` : ""}
             </div>
           </td>
-  
+
           <td
             align="right"
             valign="top"
@@ -424,7 +426,6 @@ const buildOrderConfirmationEmail = ({ order }) => {
         "
       >
         ${escapeHtml(fulfillmentStore)}
-
         ${fulfillmentAddress ? `<br />${escapeHtml(fulfillmentAddress)}` : ""}
       </div>
     `
@@ -438,7 +439,6 @@ const buildOrderConfirmationEmail = ({ order }) => {
         "
       >
         ${escapeHtml(fulfillmentAddress)}
-
         ${
           fulfillmentStore
             ? `<br />Fulfilled by <strong style="color:#182033;">${escapeHtml(
@@ -463,7 +463,6 @@ const buildOrderConfirmationEmail = ({ order }) => {
           "
         >
           Estimated delivery
-
           <br />
 
           <strong style="color:#182033;">
@@ -477,9 +476,7 @@ const buildOrderConfirmationEmail = ({ order }) => {
 
   const textItems = items.map((item) => {
     const quantity = Number(item.quantity || 0);
-
     const lineTotalInCents = getOrderItemLineTotalInCents(item);
-
     const sizeLabel = getOrderItemSizeLabel(item);
 
     const itemDetails = [`Qty ${quantity}`, sizeLabel]
@@ -490,57 +487,42 @@ const buildOrderConfirmationEmail = ({ order }) => {
       item
     )} — ${itemDetails} — ${formatCurrencyFromCents(lineTotalInCents)}`;
   });
+
   const text = [
     `Hi ${customerFirstName},`,
-
     "",
-
     "Thank you! Your order has been placed successfully.",
-
     "",
-
     `Order Number: ${orderNumber}`,
-
     "",
-
     `${fulfillmentTitle}:`,
-
     fulfillmentAddress,
-
     fulfillmentStore ? `Fulfilled by ${fulfillmentStore}` : "",
-
     "",
-
     "Order Summary:",
-
     ...textItems,
-
     "",
-
     `Subtotal: ${formatCurrencyFromCents(subtotalInCents)}`,
-
     isPickup
       ? "Pickup: Free"
       : `Local delivery: ${formatCurrencyFromCents(deliveryFeeInCents)}`,
-
     `Sales tax: ${formatCurrencyFromCents(taxInCents)}`,
-
     `Total: ${formatCurrencyFromCents(totalInCents)}`,
-
     "",
-
     card.last4
       ? `Payment: ${formatCardBrand(card.brand)} ending in ${card.last4}`
       : "Payment: Paid",
-
     "",
-
     isPickup
       ? "We'll prepare your order for pickup."
       : "We'll prepare your order and deliver it to the address above.",
-
     "",
-
+    hasFulfillmentQrCode
+      ? isPickup
+        ? "Your confirmation email includes a QR code to present when picking up your order."
+        : "Your confirmation email includes a QR code you can show to the driver if your order is handed directly to you."
+      : null,
+    hasFulfillmentQrCode ? "" : null,
     "Thank you for shopping with Mr. Emilio.",
   ]
     .filter((line) => line !== null && line !== undefined)
@@ -572,7 +554,6 @@ const buildOrderConfirmationEmail = ({ order }) => {
         >
           <tr>
             <td align="center">
-
               <table
                 role="presentation"
                 width="100%"
@@ -586,8 +567,8 @@ const buildOrderConfirmationEmail = ({ order }) => {
                   overflow: hidden;
                 "
               >
-
                 <!-- MR. EMILIO CONFIRMATION BANNER -->
+
                 <tr>
                   <td
                     align="center"
@@ -621,8 +602,8 @@ const buildOrderConfirmationEmail = ({ order }) => {
                       padding: 26px 26px 8px;
                     "
                   >
-
                     <!-- SUCCESS ICON -->
+
                     <div
                       align="center"
                       style="
@@ -665,6 +646,7 @@ const buildOrderConfirmationEmail = ({ order }) => {
                     </p>
 
                     <!-- ORDER NUMBER -->
+
                     <table
                       role="presentation"
                       width="100%"
@@ -703,6 +685,7 @@ const buildOrderConfirmationEmail = ({ order }) => {
                     </table>
 
                     <!-- FULFILLMENT -->
+
                     <table
                       role="presentation"
                       width="100%"
@@ -742,13 +725,13 @@ const buildOrderConfirmationEmail = ({ order }) => {
                           </div>
 
                           ${fulfillmentDetailsHtml}
-
                           ${estimatedTimeHtml}
                         </td>
                       </tr>
                     </table>
 
                     <!-- ORDER SUMMARY -->
+
                     <table
                       role="presentation"
                       width="100%"
@@ -889,6 +872,7 @@ const buildOrderConfirmationEmail = ({ order }) => {
                     </table>
 
                     <!-- PAYMENT -->
+
                     <table
                       role="presentation"
                       width="100%"
@@ -943,6 +927,7 @@ const buildOrderConfirmationEmail = ({ order }) => {
                     </table>
 
                     <!-- WHAT'S NEXT -->
+
                     <div
                       style="
                         padding: 18px;
@@ -977,6 +962,133 @@ const buildOrderConfirmationEmail = ({ order }) => {
                       </div>
                     </div>
 
+                    ${
+                      hasFulfillmentQrCode
+                        ? `
+                    <!-- ORDER VERIFICATION QR -->
+
+                    <table
+                      role="presentation"
+                      width="100%"
+                      cellspacing="0"
+                      cellpadding="0"
+                      border="0"
+                      style="
+                        margin-top: 14px;
+                        border: 1px solid #dce3ef;
+                        border-radius: 14px;
+                      "
+                    >
+                      <tr>
+                        <td
+                          align="center"
+                          style="
+                            padding: 24px 18px;
+                          "
+                        >
+                          <div
+                            style="
+                              margin: 0;
+                              font-size: 11px;
+                              line-height: 1.2;
+                              font-weight: 700;
+                              letter-spacing: 0.6px;
+                              text-transform: uppercase;
+                              color: #1646ac;
+                            "
+                          >
+                            Order verification
+                          </div>
+
+                          <div
+                            style="
+                              margin-top: 8px;
+                              font-size: 20px;
+                              line-height: 1.25;
+                              font-weight: 700;
+                              color: #182033;
+                            "
+                          >
+                            ${escapeHtml(qrTitle)}
+                          </div>
+
+                          <div
+                            style="
+                              max-width: 420px;
+                              margin: 10px auto 0;
+                              font-size: 14px;
+                              line-height: 1.55;
+                              color: #687386;
+                            "
+                          >
+                            ${escapeHtml(qrDescription)}
+                          </div>
+
+                          <div
+                            style="
+                              margin: 22px auto 0;
+                              text-align: center;
+                            "
+                          >
+                            <img
+                              src="cid:mr-emilio-order-verification-qr"
+                              alt="Verification QR code for order ${escapeHtml(
+                                orderNumber
+                              )}"
+                              width="220"
+                              height="220"
+                              style="
+                                display: block;
+                                width: 220px;
+                                height: 220px;
+                                max-width: 100%;
+                                margin: 0 auto;
+                                padding: 12px;
+                                border: 1px solid #dce3ef;
+                                border-radius: 14px;
+                                background-color: #ffffff;
+                              "
+                            />
+                          </div>
+
+                          <div
+                            style="
+                              margin-top: 16px;
+                              font-size: 13px;
+                              line-height: 1.4;
+                              color: #687386;
+                            "
+                          >
+                            Order
+
+                            <strong
+                              style="
+                                margin-left: 4px;
+                                color: #182033;
+                              "
+                            >
+                              ${escapeHtml(orderNumber)}
+                            </strong>
+                          </div>
+
+                          <div
+                            style="
+                              max-width: 430px;
+                              margin: 16px auto 0;
+                              font-size: 12px;
+                              line-height: 1.55;
+                              color: #687386;
+                            "
+                          >
+                            ${escapeHtml(qrHelpText)}
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+                    `
+                        : ""
+                    }
+
                     <p
                       style="
                         margin: 28px 0 4px;
@@ -987,10 +1099,8 @@ const buildOrderConfirmationEmail = ({ order }) => {
                     >
                       Thank you for shopping with Mr. Emilio.
                     </p>
-
                   </td>
                 </tr>
-
               </table>
             </td>
           </tr>
