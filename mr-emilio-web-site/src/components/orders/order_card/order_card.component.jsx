@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 
 import {
   FiCheck,
@@ -343,6 +344,56 @@ export const OrderCard = ({ order, customerCatalogProducts = [] }) => {
     setIsQrModalOpen(false);
   };
 
+  const qrModal =
+    credential && isQrModalOpen
+      ? createPortal(
+          <QrModalBackdrop role="presentation" onMouseDown={handleCloseQrModal}>
+            <QrModal
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={`qr-title-${order?.id || "order"}`}
+              onMouseDown={(event) => event.stopPropagation()}
+            >
+              <QrModalCloseButton
+                type="button"
+                onClick={handleCloseQrModal}
+                aria-label="Close QR code"
+              >
+                <FiX />
+              </QrModalCloseButton>
+
+              <QrModalEyebrow>Order verification</QrModalEyebrow>
+
+              <QrModalTitle id={`qr-title-${order?.id || "order"}`}>
+                {qrContent.title}
+              </QrModalTitle>
+
+              <QrModalDescription>{qrContent.description}</QrModalDescription>
+
+              <QrModalCodeFrame>
+                <QRCodeSVG
+                  value={credential}
+                  size={320}
+                  level="M"
+                  marginSize={2}
+                  bgColor="#ffffff"
+                  fgColor="#111827"
+                />
+              </QrModalCodeFrame>
+
+              {order?.orderNumber && (
+                <QrModalOrderNumber>
+                  <QrModalOrderLabel>Order</QrModalOrderLabel>
+
+                  <QrModalOrderValue>{order.orderNumber}</QrModalOrderValue>
+                </QrModalOrderNumber>
+              )}
+            </QrModal>
+          </QrModalBackdrop>,
+          document.body
+        )
+      : null;
+
   return (
     <>
       <OrderCardRoot>
@@ -499,51 +550,7 @@ export const OrderCard = ({ order, customerCatalogProducts = [] }) => {
         )}
       </OrderCardRoot>
 
-      {credential && isQrModalOpen && (
-        <QrModalBackdrop role="presentation" onMouseDown={handleCloseQrModal}>
-          <QrModal
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={`qr-title-${order?.id || "order"}`}
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            <QrModalCloseButton
-              type="button"
-              onClick={handleCloseQrModal}
-              aria-label="Close QR code"
-            >
-              <FiX />
-            </QrModalCloseButton>
-
-            <QrModalEyebrow>Order verification</QrModalEyebrow>
-
-            <QrModalTitle id={`qr-title-${order?.id || "order"}`}>
-              {qrContent.title}
-            </QrModalTitle>
-
-            <QrModalDescription>{qrContent.description}</QrModalDescription>
-
-            <QrModalCodeFrame>
-              <QRCodeSVG
-                value={credential}
-                size={320}
-                level="M"
-                marginSize={2}
-                bgColor="#ffffff"
-                fgColor="#111827"
-              />
-            </QrModalCodeFrame>
-
-            {order?.orderNumber && (
-              <QrModalOrderNumber>
-                <QrModalOrderLabel>Order</QrModalOrderLabel>
-
-                <QrModalOrderValue>{order.orderNumber}</QrModalOrderValue>
-              </QrModalOrderNumber>
-            )}
-          </QrModal>
-        </QrModalBackdrop>
-      )}
+      {qrModal}
     </>
   );
 };
