@@ -5,12 +5,21 @@ const customersCatalogControllers = require("../customersCatalog/customers.contr
 
 const {
   buildPendingOrderPayload,
+  validateOrderStatusTransition,
+  resolveQrFulfillmentCompletion,
   ORDER_STATUSES,
   PAYMENT_STATUSES,
   ORDER_TIMELINE_STATUSES,
 } = require("./orders.handlers");
 
-const { FULFILLMENT_VERIFICATION_STATUSES } = require("./orders.constants");
+const {
+  FULFILLMENT_VERIFICATION_STATUSES,
+  FULFILLMENT_COMPLETION_METHODS,
+} = require("./orders.constants");
+
+const {
+  verifyFulfillmentVerificationCredential,
+} = require("./fulfillment_verification.helpers");
 
 const ORDERS_COLLECTION = "ordersCatalog";
 
@@ -372,6 +381,296 @@ const markOrderAsPaymentFailed = async ({
   return updatedOrder.data();
 };
 
+const updateOrderStatus = async ({ orderId, status }) => {
+  if (typeof orderId !== "string" || !orderId.trim()) {
+    const error = new Error("Order id is required");
+
+    error.statusCode = 400;
+
+    throw error;
+  }
+
+  const normalizedOrderId = orderId.trim();
+
+  const orderRef = firebaseController.db
+    .collection(ORDERS_COLLECTION)
+    .doc(normalizedOrderId);
+
+  const updatedOrder = await firebaseController.db.runTransaction(
+    async (transaction) => {
+      const orderSnapshot = await transaction.get(orderRef);
+
+      if (!orderSnapshot.exists) {
+        const error = new Error("Order was not found");
+
+        error.statusCode = 404;
+
+        throw error;
+      }
+
+      const existingOrder = orderSnapshot.data();
+
+      const transition = validateOrderStatusTransition({
+        order: existingOrder,
+
+        nextStatus: status,
+      });
+
+      /**
+       * Idempotency:
+       *
+       * Repeating:
+       *
+       * confirmed -> out_for_delivery
+       *
+       * after the order is already out_for_delivery
+       * should not create another timeline entry.
+       */
+      if (transition.isNoop) {
+        return existingOrder;
+      }
+
+      const now = new Date().toISOString();
+
+      const existingStatusHistory = Array.isArray(existingOrder.statusHistory)
+        ? existingOrder.statusHistory
+        : [];
+
+      const nextStatusHistory = [
+        ...existingStatusHistory,
+
+        {
+          status: transition.nextStatus,
+
+          createdAt: now,
+        },
+      ];
+
+      transaction.set(
+        orderRef,
+
+        {
+          status: transition.nextStatus,
+
+          statusHistory: nextStatusHistory,
+
+          updatedAt: now,
+        },
+
+        {
+          merge: true,
+        }
+      );
+
+      return {
+        ...existingOrder,
+
+        status: transition.nextStatus,
+
+        statusHistory: nextStatusHistory,
+
+        updatedAt: now,
+      };
+    }
+  );
+
+  return updatedOrder;
+};
+
+const completeOrderWithQr = async ({ credential }) => {
+  const verification = verifyFulfillmentVerificationCredential(credential);
+
+  if (!verification.valid) {
+    const error = new Error(
+      "The fulfillment verification credential is invalid"
+    );
+
+    error.statusCode = 400;
+
+    error.details = {
+      reason: verification.reason,
+    };
+
+    throw error;
+  }
+
+  const credentialPayload = verification.payload;
+
+  const orderRef = firebaseController.db
+    .collection(ORDERS_COLLECTION)
+    .doc(credentialPayload.orderId);
+
+  const completedOrder = await firebaseController.db.runTransaction(
+    async (transaction) => {
+      const orderSnapshot = await transaction.get(orderRef);
+
+      if (!orderSnapshot.exists) {
+        const error = new Error(
+          "The order connected to this QR code was not found"
+        );
+
+        error.statusCode = 404;
+
+        throw error;
+      }
+
+      const existingOrder = orderSnapshot.data();
+
+      /**
+       * The signed credential contains both the
+       * Firestore order id and the customer-facing
+       * order number.
+       *
+       * Both must match the authoritative order.
+       */
+      if (existingOrder.orderNumber !== credentialPayload.orderNumber) {
+        const error = new Error("The QR code does not match this order");
+
+        error.statusCode = 409;
+
+        error.details = {
+          reason: "ORDER_NUMBER_MISMATCH",
+        };
+
+        throw error;
+      }
+
+      const orderVerificationVersion = Number(
+        existingOrder.fulfillmentVerification?.version
+      );
+
+      if (
+        !Number.isInteger(orderVerificationVersion) ||
+        orderVerificationVersion !== credentialPayload.version
+      ) {
+        const error = new Error(
+          "The QR code version is no longer valid for this order"
+        );
+
+        error.statusCode = 409;
+
+        error.details = {
+          reason: "FULFILLMENT_VERIFICATION_VERSION_MISMATCH",
+
+          credentialVersion: credentialPayload.version,
+
+          orderVersion: Number.isInteger(orderVerificationVersion)
+            ? orderVerificationVersion
+            : null,
+        };
+
+        throw error;
+      }
+
+      const verificationStatus = existingOrder.fulfillmentVerification?.status;
+
+      if (verificationStatus !== FULFILLMENT_VERIFICATION_STATUSES.ACTIVE) {
+        const error = new Error(
+          verificationStatus === FULFILLMENT_VERIFICATION_STATUSES.USED
+            ? "This QR code has already been used"
+            : "This QR code is not active"
+        );
+
+        error.statusCode = 409;
+
+        error.details = {
+          reason:
+            verificationStatus === FULFILLMENT_VERIFICATION_STATUSES.USED
+              ? "FULFILLMENT_VERIFICATION_ALREADY_USED"
+              : "FULFILLMENT_VERIFICATION_NOT_ACTIVE",
+
+          verificationStatus: verificationStatus || null,
+
+          usedAt: existingOrder.fulfillmentVerification?.usedAt || null,
+        };
+
+        throw error;
+      }
+
+      const completion = resolveQrFulfillmentCompletion({
+        order: existingOrder,
+      });
+
+      const now = new Date().toISOString();
+
+      const existingStatusHistory = Array.isArray(existingOrder.statusHistory)
+        ? existingOrder.statusHistory
+        : [];
+
+      const nextStatusHistory = [
+        ...existingStatusHistory,
+
+        {
+          status: completion.timelineStatus,
+          createdAt: now,
+        },
+      ];
+
+      const nextFulfillmentVerification = {
+        ...existingOrder.fulfillmentVerification,
+
+        status: FULFILLMENT_VERIFICATION_STATUSES.USED,
+
+        usedAt: now,
+      };
+
+      const fulfillmentCompletion = {
+        method: FULFILLMENT_COMPLETION_METHODS.QR_SCAN,
+
+        completedAt: now,
+      };
+
+      transaction.set(
+        orderRef,
+
+        {
+          status: completion.nextStatus,
+
+          statusHistory: nextStatusHistory,
+
+          fulfillmentVerification: nextFulfillmentVerification,
+
+          fulfillmentCompletion,
+
+          updatedAt: now,
+        },
+
+        {
+          merge: true,
+        }
+      );
+
+      return {
+        ...existingOrder,
+
+        status: completion.nextStatus,
+
+        statusHistory: nextStatusHistory,
+
+        fulfillmentVerification: nextFulfillmentVerification,
+
+        fulfillmentCompletion,
+
+        updatedAt: now,
+      };
+    }
+  );
+
+  return {
+    status: "fulfillment_completed",
+
+    completion: {
+      method: FULFILLMENT_COMPLETION_METHODS.QR_SCAN,
+
+      orderStatus: completedOrder.status,
+
+      completedAt: completedOrder.fulfillmentCompletion?.completedAt || null,
+    },
+
+    order: completedOrder,
+  };
+};
+
 module.exports = {
   getOrderById,
   getOrdersByCustomerId,
@@ -379,4 +678,6 @@ module.exports = {
   markOrderAsPaid,
   markOrderAsRequiresAttention,
   markOrderAsPaymentFailed,
+  updateOrderStatus,
+  completeOrderWithQr,
 };

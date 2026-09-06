@@ -261,6 +261,8 @@ const OrderTimelineView = ({ timeline }) => {
 export const OrderCard = ({ order, customerCatalogProducts = [] }) => {
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
 
+  console.log("OrderCard order:", JSON.stringify(order, null, 2));
+
   const timeline = useMemo(() => {
     return buildOrderTimeline(order);
   }, [order]);

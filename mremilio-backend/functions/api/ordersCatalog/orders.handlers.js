@@ -19,6 +19,233 @@ const createOrderHandlerError = (message, statusCode = 500, details = null) => {
   return error;
 };
 
+const resolveQrFulfillmentCompletion = ({ order }) => {
+  if (!isPlainObject(order)) {
+    throw createOrderHandlerError(
+      "A valid order is required to complete fulfillment",
+      400
+    );
+  }
+
+  const fulfillmentMethod = order.fulfillment?.method;
+  const currentStatus = order.status;
+
+  if (
+    order.fulfillmentVerification?.status !==
+    FULFILLMENT_VERIFICATION_STATUSES.ACTIVE
+  ) {
+    throw createOrderHandlerError(
+      "Fulfillment verification is not active for this order",
+      409,
+      {
+        verificationStatus: order.fulfillmentVerification?.status || null,
+      }
+    );
+  }
+
+  /**
+   * Pickup
+   *
+   * confirmed -> picked_up
+   */
+  if (fulfillmentMethod === "pickup") {
+    if (currentStatus !== ORDER_STATUSES.CONFIRMED) {
+      throw createOrderHandlerError(
+        `Pickup order cannot be completed by QR from status "${currentStatus}"`,
+        409,
+        {
+          fulfillmentMethod,
+          currentStatus,
+          requiredStatus: ORDER_STATUSES.CONFIRMED,
+        }
+      );
+    }
+
+    return {
+      nextStatus: ORDER_STATUSES.PICKED_UP,
+      timelineStatus: ORDER_TIMELINE_STATUSES.PICKED_UP,
+    };
+  }
+
+  /**
+   * Local Delivery
+   *
+   * The driver must first start delivery:
+   *
+   * confirmed -> out_for_delivery
+   *
+   * QR completion is only allowed afterward:
+   *
+   * out_for_delivery -> delivered
+   */
+  if (fulfillmentMethod === "local_delivery") {
+    if (currentStatus !== ORDER_STATUSES.OUT_FOR_DELIVERY) {
+      throw createOrderHandlerError(
+        `Local delivery order cannot be completed by QR from status "${currentStatus}"`,
+        409,
+        {
+          fulfillmentMethod,
+          currentStatus,
+          requiredStatus: ORDER_STATUSES.OUT_FOR_DELIVERY,
+        }
+      );
+    }
+
+    return {
+      nextStatus: ORDER_STATUSES.DELIVERED,
+      timelineStatus: ORDER_TIMELINE_STATUSES.DELIVERED,
+    };
+  }
+
+  throw createOrderHandlerError(
+    `Unsupported fulfillment method "${fulfillmentMethod || "unknown"}"`,
+    400
+  );
+};
+
+const validateOrderStatusTransition = ({ order, nextStatus }) => {
+  if (!isPlainObject(order)) {
+    throw createOrderHandlerError(
+      "A valid order is required to change order status",
+      400
+    );
+  }
+
+  const currentStatus = order.status;
+
+  const fulfillmentMethod = order.fulfillment?.method;
+
+  if (typeof nextStatus !== "string" || !nextStatus.trim()) {
+    throw createOrderHandlerError("A target order status is required", 400);
+  }
+
+  const normalizedNextStatus = nextStatus.trim();
+
+  const allowedOperationalStatuses = new Set([
+    ORDER_STATUSES.PICKED_UP,
+    ORDER_STATUSES.OUT_FOR_DELIVERY,
+    ORDER_STATUSES.DELIVERED,
+  ]);
+
+  if (!allowedOperationalStatuses.has(normalizedNextStatus)) {
+    throw createOrderHandlerError(
+      `Order status "${normalizedNextStatus}" cannot be set through the fulfillment status operation`,
+      400
+    );
+  }
+
+  /**
+   * Repeating the same request is treated as an
+   * idempotent operation.
+   */
+  if (currentStatus === normalizedNextStatus) {
+    return {
+      allowed: true,
+
+      isNoop: true,
+
+      currentStatus,
+
+      nextStatus: normalizedNextStatus,
+    };
+  }
+
+  if (fulfillmentMethod === "pickup") {
+    if (
+      currentStatus === ORDER_STATUSES.CONFIRMED &&
+      normalizedNextStatus === ORDER_STATUSES.PICKED_UP
+    ) {
+      return {
+        allowed: true,
+
+        isNoop: false,
+
+        currentStatus,
+
+        nextStatus: normalizedNextStatus,
+      };
+    }
+
+    throw createOrderHandlerError(
+      `Pickup order cannot transition from "${currentStatus}" to "${normalizedNextStatus}"`,
+      409,
+      {
+        fulfillmentMethod,
+
+        currentStatus,
+
+        requestedStatus: normalizedNextStatus,
+
+        allowedNextStatus:
+          currentStatus === ORDER_STATUSES.CONFIRMED
+            ? ORDER_STATUSES.PICKED_UP
+            : null,
+      }
+    );
+  }
+
+  if (fulfillmentMethod === "local_delivery") {
+    if (
+      currentStatus === ORDER_STATUSES.CONFIRMED &&
+      normalizedNextStatus === ORDER_STATUSES.OUT_FOR_DELIVERY
+    ) {
+      return {
+        allowed: true,
+
+        isNoop: false,
+
+        currentStatus,
+
+        nextStatus: normalizedNextStatus,
+      };
+    }
+
+    if (
+      currentStatus === ORDER_STATUSES.OUT_FOR_DELIVERY &&
+      normalizedNextStatus === ORDER_STATUSES.DELIVERED
+    ) {
+      return {
+        allowed: true,
+
+        isNoop: false,
+
+        currentStatus,
+
+        nextStatus: normalizedNextStatus,
+      };
+    }
+
+    let allowedNextStatus = null;
+
+    if (currentStatus === ORDER_STATUSES.CONFIRMED) {
+      allowedNextStatus = ORDER_STATUSES.OUT_FOR_DELIVERY;
+    }
+
+    if (currentStatus === ORDER_STATUSES.OUT_FOR_DELIVERY) {
+      allowedNextStatus = ORDER_STATUSES.DELIVERED;
+    }
+
+    throw createOrderHandlerError(
+      `Local delivery order cannot transition from "${currentStatus}" to "${normalizedNextStatus}"`,
+      409,
+      {
+        fulfillmentMethod,
+
+        currentStatus,
+
+        requestedStatus: normalizedNextStatus,
+
+        allowedNextStatus,
+      }
+    );
+  }
+
+  throw createOrderHandlerError(
+    `Unsupported fulfillment method "${fulfillmentMethod || "unknown"}"`,
+    400
+  );
+};
+
 const isPlainObject = (value) =>
   Boolean(value) && typeof value === "object" && !Array.isArray(value);
 
@@ -294,12 +521,19 @@ const buildPendingOrderPayload = ({
     updatedAt: now,
   };
 };
+
 module.exports = {
   createOrderHandlerError,
 
+  resolveQrFulfillmentCompletion,
+
   buildPendingOrderPayload,
 
+  validateOrderStatusTransition,
+
   ORDER_STATUSES,
+
   PAYMENT_STATUSES,
+
   ORDER_TIMELINE_STATUSES,
 };
